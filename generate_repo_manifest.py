@@ -29,7 +29,8 @@ def generate_repo():
         f.write(md5_hash)
 
     # Generate Gothic-themed index.html for Kodi browsing
-    files = [f for f in os.listdir('.') if f.endswith('.zip') or f.startswith('addons.xml')]
+    # Only show the repository zip to the user to avoid confusion
+    files = [f for f in os.listdir('.') if f.startswith('repository.vibestream') or f.startswith('addons.xml')]
     files.sort()
     
     links_html = ""
