@@ -79,6 +79,8 @@ class FenLightPlayer(xbmc_player):
 	def monitor(self):
 		try:
 			ensure_dialog_dead, total_check_time = False, 0
+			# Close loading/resolver dialog as soon as playback has started so user sees video
+			self.playback_close_dialogs()
 			if self.media_type == 'episode':
 				play_random_continual = self.sources_object.random_continual
 				play_random = self.sources_object.random
