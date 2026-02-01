@@ -25,8 +25,9 @@ def run_setup_wizard():
 	]
 	labels = [i[0] for i in preset_choices]
 	choice = select_dialog(labels, heading='Select Quality Preset')
-	if choice != -1:
-		set_setting('vibestream.quality.preset', preset_choices[choice][1])
+	if choice:
+		preset_id = [i[1] for i in preset_choices if i[0] == choice][0]
+		set_setting('vibestream.quality.preset', preset_id)
 
 	# 3. Trakt Setup
 	from modules.trakt_auth_wizard import run_trakt_wizard
