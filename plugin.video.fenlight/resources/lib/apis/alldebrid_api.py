@@ -15,7 +15,7 @@ show_busy_dialog, confirm_dialog = kodi_utils.show_busy_dialog, kodi_utils.confi
 sleep, ok_dialog = kodi_utils.sleep, kodi_utils.ok_dialog
 progress_dialog, notification, hide_busy_dialog, xbmc_monitor = kodi_utils.progress_dialog, kodi_utils.notification, kodi_utils.hide_busy_dialog, kodi_utils.xbmc_monitor
 base_url = 'https://api.alldebrid.com/v4/'
-user_agent = 'Fen Light for Kodi'
+user_agent = 'VibeStream for Kodi'
 timeout = 20.0
 icon = get_icon('alldebrid')
 

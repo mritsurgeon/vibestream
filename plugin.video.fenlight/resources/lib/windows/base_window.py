@@ -26,11 +26,14 @@ def open_window(import_info, skin_xml, **kwargs):
 	'''
 	try:
 		xml_window = create_window(import_info, skin_xml, **kwargs)
+		if xml_window is None:
+			return None
 		choice = xml_window.run()
 		del xml_window
 		return choice
 	except Exception as e:
 		logger('error in open_window', str(e))
+		return None
 
 def create_window(import_info, skin_xml, **kwargs):
 	'''
@@ -43,7 +46,8 @@ def create_window(import_info, skin_xml, **kwargs):
 		return xml_window
 	except Exception as e:
 		logger('error in create_window', str(e))
-		return notification('Error')
+		notification('Error creating window')
+		return None
 
 def window_manager(obj):
 	def close():

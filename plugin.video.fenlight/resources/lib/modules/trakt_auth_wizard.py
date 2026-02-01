@@ -18,8 +18,13 @@ def run_trakt_wizard(skip_confirm=False):
     from apis.trakt_api import trakt_authenticate, trakt_revoke_authentication
     trakt_revoke_authentication()  # Clear old token
 
-    if trakt_authenticate():
+    # During wizard skip sync to avoid DB ops (and possible malformed DB) before setup completes
+    if trakt_authenticate(skip_sync=skip_confirm):
         set_setting('trakt.user_keys_setup', 'true')
-        kodi_dialog().ok('Success', 'Trakt is now authorized. Your watch history and lists will sync.')
+        if skip_confirm:
+            # Wizard flow: don't show blocking ok_dialog so we can continue to next step (Real-Debrid)
+            notification('Trakt authorized. Continuing setup…', 2500)
+        else:
+            kodi_dialog().ok('Success', 'Trakt is now authorized. Your watch history and lists will sync.')
     else:
         kodi_dialog().ok('Error', 'Authorization failed. Make sure you entered the PIN at trakt.tv/activate before it expired.')

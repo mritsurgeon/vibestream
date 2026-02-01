@@ -68,7 +68,10 @@ class MenuEditor:
 		list_type = 'edited' if edited else'default'
 		current_list = edited or default
 		if default == new_contents: return notification('No New Items', 1500)
-		new_entry = [i for i in new_contents if not i in default][0]
+		new_entries = [i for i in new_contents if not i in default]
+		if not new_entries:
+			return notification('No New Items', 1500)
+		new_entry = new_entries[0]
 		new_entry_translated_name = new_entry.get('name')
 		if not confirm_dialog(text='New item [B]%s[/B] Exists[CR]Would you like to add this to the Menu?' % new_entry_translated_name): return notification('Cancelled', 1500)
 		item_position = self._menu_select(current_list, new_entry_translated_name, position_list=True)

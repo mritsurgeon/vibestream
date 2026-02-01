@@ -226,7 +226,7 @@ class TVShows:
 		self.all_episodes, self.open_extras = default_all_episodes(), media_open_action('tvshow') == 1
 		self.is_folder = False if self.open_extras else True
 		self.watched_indicators = watched_indicators()
-		self.watched_title = 'Trakt' if self.watched_indicators == 1 else 'Fen Light'
+		self.watched_title = 'Trakt' if self.watched_indicators == 1 else 'VibeStream'
 		self.watched_info = watched_info_tvshow(get_database(self.watched_indicators))
 		self.window_command = 'ActivateWindow(Videos,%s,return)' if self.is_external else 'Container.Update(%s)'
 		if self.custom_order:

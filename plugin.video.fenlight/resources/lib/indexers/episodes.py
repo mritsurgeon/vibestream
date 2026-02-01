@@ -102,7 +102,7 @@ def build_episode_list(params):
 	append = item_list.append
 	watched_indicators, adjust_hours = watched_indicators_info(), date_offset_info()
 	current_date, hide_watched = get_datetime(), is_home and widget_hide_watched()
-	watched_title = 'Trakt' if watched_indicators == 1 else 'Fen Light'
+	watched_title = 'Trakt' if watched_indicators == 1 else 'VibeStream'
 	meta = tvshow_meta('tmdb_id', params.get('tmdb_id'), tmdb_api_key(), mpaa_region(), current_date)
 	meta_get = meta.get
 	tmdb_id, tvdb_id, imdb_id, tvshow_plot, orig_title = meta_get('tmdb_id'), meta_get('tvdb_id'), meta_get('imdb_id'), meta_get('plot'), meta_get('original_title')
@@ -286,7 +286,7 @@ def build_single_episode(list_type, params={}):
 	current_date, adjust_hours, unwatched_info, hide_watched = get_datetime(), date_offset_info(), single_ep_unwatched_episodes(), is_home and widget_hide_watched()
 	api_key, mpaa_region_value = tmdb_api_key(), mpaa_region()
 	watched_db = get_database(watched_indicators)
-	watched_title = 'Trakt' if watched_indicators == 1 else 'Fen Light'
+	watched_title = 'Trakt' if watched_indicators == 1 else 'VibeStream'
 	category_name = _get_category_name()
 	if list_type == 'episode.next':
 		include_unwatched, include_unaired, nextep_content = nextep_include_unwatched(), nextep_include_unaired(), nextep_method()

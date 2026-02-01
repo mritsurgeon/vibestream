@@ -17,7 +17,7 @@ xbmc_monitor, progress_dialog, get_icon = kodi_utils.xbmc_monitor, kodi_utils.pr
 sleep, confirm_dialog, ok_dialog = kodi_utils.sleep, kodi_utils.confirm_dialog, kodi_utils.ok_dialog
 base_url = 'https://www.premiumize.me/api/'
 client_id = '888228107'
-user_agent = 'Fen Light for Kodi'
+user_agent = 'VibeStream for Kodi'
 timeout = 20.0
 icon = get_icon('premiumize')
 

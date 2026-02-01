@@ -95,7 +95,7 @@ def call_trakt(path, params={}, data=None, is_delete=False, with_auth=True, meth
 			
 		elif status_code == 401:
 			if xbmc_player().isPlaying() == False:
-				if with_auth and confirm_dialog(heading='Authorize Trakt', text='You must authenticate with Trakt. Do you want to authenticate now?') and trakt_authenticate():
+				if with_auth and confirm_dialog(heading='VibeStream: Authorize Trakt', text='You must authenticate with Trakt. Do you want to authenticate now?') and trakt_authenticate():
 					response = send_query()
 				else: pass
 			else: return
@@ -189,7 +189,7 @@ def trakt_refresh_token():
 		set_setting('trakt.refresh', response["refresh_token"])
 		set_setting('trakt.expires', str(time.time() + 86400))
 
-def trakt_authenticate(dummy=''):
+def trakt_authenticate(dummy='', skip_sync=False):
 	code = trakt_get_device_code()
 	if not code:
 		notification('Trakt: Could not get activation code', 5000)
@@ -206,7 +206,8 @@ def trakt_authenticate(dummy=''):
 			set_setting('trakt.user', str(user['username']))
 		except: pass
 		notification('Trakt Account Authorized', 3000)
-		trakt_sync_activities(force_update=True)
+		if not skip_sync:
+			trakt_sync_activities(force_update=True)
 		return True
 	notification('Trakt Error Authorizing', 3000)
 	return False
@@ -602,7 +603,10 @@ def trakt_add_to_list(params):
 	else:
 		key = 'shows'
 		media_ids = [(tmdb_id, 'tmdb'), (imdb_id, 'imdb'), (tvdb_id, 'tvdb')]
-		media_id, media_key = next(item for item in media_ids if item[0] not in ('None', None, ''))
+		matched = next((item for item in media_ids if item[0] not in ('None', None, '')), None)
+		if matched is None:
+			return
+		media_id, media_key = matched
 		if media_id in (tmdb_id, tvdb_id): media_id = int(media_id)
 	selected = get_trakt_list_selection()
 	if selected is not None:
@@ -621,7 +625,10 @@ def trakt_remove_from_list(params):
 	else:
 		key = 'shows'
 		media_ids = [(tmdb_id, 'tmdb'), (imdb_id, 'imdb'), (tvdb_id, 'tvdb')]
-		media_id, media_key = next(item for item in media_ids if item[0] not in ('None', None, ''))
+		matched = next((item for item in media_ids if item[0] not in ('None', None, '')), None)
+		if matched is None:
+			return
+		media_id, media_key = matched
 		if media_id in (tmdb_id, tvdb_id): media_id = int(media_id)
 	selected = get_trakt_list_selection()
 	if selected is not None:

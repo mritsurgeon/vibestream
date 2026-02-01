@@ -43,10 +43,13 @@ class Navigator:
 	def main(self):
 		from modules.setup_wizard import first_run_check
 		first_run_check()
-		if self.params_get('full_list', 'false') == 'true': browse_list = get_main_lists(self.list_name)[0]
-		else: browse_list = currently_used_list(self.list_name)
+		if self.params_get('full_list', 'false') == 'true':
+			main_lists_result = get_main_lists(self.list_name)
+			browse_list = (main_lists_result[0] if main_lists_result and len(main_lists_result) > 0 else None) or []
+		else:
+			browse_list = currently_used_list(self.list_name) or []
 		for count, item in enumerate(browse_list):
-			iconImage = item.get('iconImage')
+			iconImage = item.get('iconImage') or ''
 			icon, original_image = (iconImage, True) if iconImage.startswith('http') else (iconImage, False)
 			cm_items = [('[B]Move[/B]', run_plugin % build_url({'mode': 'menu_editor.move', 'active_list': self.list_name, 'position': count})),
 						('[B]Remove[/B]', run_plugin % build_url({'mode': 'menu_editor.remove', 'active_list': self.list_name, 'position': count})),

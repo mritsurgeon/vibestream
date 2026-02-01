@@ -12,7 +12,7 @@ base_url = 'https://easydebrid.com/api/v1/'
 download = 'link/generate'
 stats = 'user/details'
 cache = 'link/lookup'
-user_agent = 'Fen Light for Kodi'
+user_agent = 'VibeStream for Kodi'
 timeout = 20.0
 session = make_session(base_url)
 

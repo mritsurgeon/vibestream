@@ -73,7 +73,10 @@ class SettingsCache:
 		clear_property('fenlight.%s' % setting_id)
 
 	def setting_info(self, setting_id):
-		return [i for i in default_settings if i['setting_id'] == setting_id][0]
+		matches = [i for i in default_settings if i['setting_id'] == setting_id]
+		if not matches:
+			return None
+		return matches[0]
 
 	def clean_database(self):
 		try:
@@ -142,6 +145,8 @@ def set_string(params):
 def set_numeric(params):
 	setting_id = params['setting_id']
 	setting_values = default_setting_values(setting_id)
+	if setting_values is None:
+		return
 	values_get = setting_values.get
 	min_value, max_value = int(values_get('min_value', '0')), int(values_get('max_value', '100000000000000'))
 	negative_included = any((n < 0 for n in [min_value, max_value]))
@@ -161,13 +166,19 @@ def set_numeric(params):
 
 def set_path(params):
 	setting_id = params['setting_id']
-	browse_mode = int(default_setting_values(setting_id)['browse_mode'])
+	info = default_setting_values(setting_id)
+	if info is None:
+		return
+	browse_mode = int(info.get('browse_mode', 0))
 	new_value = kodi_dialog().browse(browse_mode, '', '', defaultt=get_setting('fenlight.%s' % setting_id))
 	set_setting(setting_id, new_value)
 
 def set_from_list(params):
 	setting_id = params['setting_id']
-	settings_list = [(v, k) for k, v in default_setting_values(setting_id)['settings_options'].items()]
+	info = default_setting_values(setting_id)
+	if info is None:
+		return
+	settings_list = [(v, k) for k, v in info.get('settings_options', {}).items()]
 	new_value = select_dialog(settings_list, **{'items': json.dumps([{'line1': item[0]} for item in settings_list]), 'narrow_window': 'true'})
 	if not new_value: return
 	setting_value = new_value[1]
@@ -185,9 +196,12 @@ def restore_setting_default(params):
 	if not silent and not confirm_dialog(): return
 	try:
 		setting_id = params['setting_id']
-		setting_default = default_setting_values(setting_id)['setting_default']
-		set_setting(setting_id, setting_default)
-	except:
+		info = default_setting_values(setting_id)
+		if info is None:
+			if not silent: ok_dialog(text='Unknown setting')
+			return
+		set_setting(setting_id, info['setting_default'])
+	except Exception:
 		if not silent: ok_dialog(text='Error restoring default setting')
 
 def default_setting_values(setting_id):
@@ -208,7 +222,7 @@ default_settings = [
 {'setting_id': 'update.username', 'setting_type': 'string', 'setting_default': 'thejason40'},
 {'setting_id': 'update.location', 'setting_type': 'string', 'setting_default': 'thejason40.github.io'},
 #==================== Watched Indicators
-{'setting_id': 'watched_indicators', 'setting_type': 'action', 'setting_default': '0', 'settings_options': {'0': 'Fen Light', '1': 'Trakt'}},
+{'setting_id': 'watched_indicators', 'setting_type': 'action', 'setting_default': '0', 'settings_options': {'0': 'VibeStream', '1': 'Trakt'}},
 #======+============= Trakt Cache
 {'setting_id': 'trakt.sync_interval', 'setting_type': 'action', 'setting_default': '30', 'min_value': '5', 'max_value': '600'},
 {'setting_id': 'trakt.refresh_widgets', 'setting_type': 'boolean', 'setting_default': 'true'},

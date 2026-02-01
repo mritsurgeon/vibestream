@@ -452,7 +452,7 @@ def upload_logfile(params):
 	if not path_exists(log_file): return ok_dialog(text='Error. Log Upload Failed')
 	try:
 		with open_file(log_file) as f: text = f.read()
-		UserAgent = 'Fenlight %s' % addon_version()
+		UserAgent = 'VibeStream %s' % addon_version()
 		response = requests.post('%s%s' % (url, 'documents'), data=text.encode('utf-8', errors='ignore'), headers={'User-Agent': UserAgent}).json()
 		user_code = response['key']
 		if 'key' in response:

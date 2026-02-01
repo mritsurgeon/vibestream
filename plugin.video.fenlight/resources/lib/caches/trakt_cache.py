@@ -1,6 +1,7 @@
 from threading import Thread
 import json
-from caches.base_cache import connect_database
+import sqlite3
+from caches.base_cache import connect_database, make_databases, database_locations, delete_file
 from modules.kodi_utils import sleep, confirm_dialog, close_all_dialog
 # from modules.kodi_utils import logger
 
@@ -18,6 +19,18 @@ TC_BASE_GET = 'SELECT data FROM trakt_data WHERE id = ?'
 TC_BASE_SET = 'INSERT OR REPLACE INTO trakt_data (id, data) VALUES (?, ?)'
 TC_BASE_DELETE = 'DELETE FROM trakt_data WHERE id = ?'
 DELETE_LISTS_WITH_MEDIA = 'SELECT id FROM maincache WHERE id LIKE %s'
+
+def _try_recreate_trakt_db():
+	"""On malformed trakt DB, delete file and recreate so future operations succeed."""
+	try:
+		path = database_locations['trakt_db']
+		try:
+			delete_file(path)
+		except Exception:
+			pass
+		make_databases()
+	except Exception:
+		pass
 
 class TraktCache:	
 	def get(self, string):
@@ -71,13 +84,19 @@ class TraktWatched():
 		self._executemany(PROGRESS_INSERT, insert_list)
 
 	def _executemany(self, command, insert_list):
-		dbcon = connect_database('trakt_db')
-		dbcon.executemany(command, insert_list)
+		try:
+			dbcon = connect_database('trakt_db')
+			dbcon.executemany(command, insert_list)
+		except (sqlite3.DatabaseError, sqlite3.OperationalError):
+			_try_recreate_trakt_db()
 
 	def _delete(self, command, args):
-		dbcon = connect_database('trakt_db')
-		dbcon.execute(command, args)
-		dbcon.execute('VACUUM')
+		try:
+			dbcon = connect_database('trakt_db')
+			dbcon.execute(command, args)
+			dbcon.execute('VACUUM')
+		except (sqlite3.DatabaseError, sqlite3.OperationalError):
+			_try_recreate_trakt_db()
 
 trakt_watched_cache = TraktWatched()
 
