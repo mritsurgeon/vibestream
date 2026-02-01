@@ -874,33 +874,39 @@ def trakt_sync_activities(force_update=False):
 	if not trakt_user_active and not force_update: return 'no account'
 	try: latest = trakt_get_activity()
 	except: return 'failed'
+	if latest is None: return 'failed'
 	cached = reset_activity(latest)
-	if not _compare(latest['all'], cached['all']): return 'not needed'
+	if cached is None: return 'failed'
+	if not _compare(latest.get('all'), cached.get('all')): return 'not needed'
 	lists_actions, refresh_movies_progress, refresh_shows_progress, clear_tvshow_watched_cache = [], False, False, False
-	cached_movies, latest_movies = cached['movies'], latest['movies']
-	cached_shows, latest_shows = cached['shows'], latest['shows']
-	cached_episodes, latest_episodes = cached['episodes'], latest['episodes']
-	cached_lists, latest_lists = cached['lists'], latest['lists']
-	if _compare(latest['recommendations'], cached['recommendations']): clear_trakt_recommendations()
-	if _compare(latest['favorites'], cached['favorites']): clear_trakt_favorites()
-	if _compare(latest_movies['collected_at'], cached_movies['collected_at']): clear_trakt_collection_watchlist_data('collection', 'movie')
-	if _compare(latest_episodes['collected_at'], cached_episodes['collected_at']): clear_trakt_collection_watchlist_data('collection', 'tvshow')
-	if _compare(latest_movies['watchlisted_at'], cached_movies['watchlisted_at']): clear_trakt_collection_watchlist_data('watchlist', 'movie')
-	if _compare(latest_shows['watchlisted_at'], cached_shows['watchlisted_at']): clear_trakt_collection_watchlist_data('watchlist', 'tvshow')
-	if _compare(latest_shows['hidden_at'], cached_shows['hidden_at']):
+	cached_movies = cached.get('movies') or {}
+	latest_movies = latest.get('movies') or {}
+	cached_shows = cached.get('shows') or {}
+	latest_shows = latest.get('shows') or {}
+	cached_episodes = cached.get('episodes') or {}
+	latest_episodes = latest.get('episodes') or {}
+	cached_lists = cached.get('lists') or {}
+	latest_lists = latest.get('lists') or {}
+	if _compare(latest.get('recommendations'), cached.get('recommendations')): clear_trakt_recommendations()
+	if _compare(latest.get('favorites'), cached.get('favorites')): clear_trakt_favorites()
+	if _compare(latest_movies.get('collected_at'), cached_movies.get('collected_at')): clear_trakt_collection_watchlist_data('collection', 'movie')
+	if _compare(latest_episodes.get('collected_at'), cached_episodes.get('collected_at')): clear_trakt_collection_watchlist_data('collection', 'tvshow')
+	if _compare(latest_movies.get('watchlisted_at'), cached_movies.get('watchlisted_at')): clear_trakt_collection_watchlist_data('watchlist', 'movie')
+	if _compare(latest_shows.get('watchlisted_at'), cached_shows.get('watchlisted_at')): clear_trakt_collection_watchlist_data('watchlist', 'tvshow')
+	if _compare(latest_shows.get('hidden_at'), cached_shows.get('hidden_at')):
 		clear_properties('episode')
 		clear_trakt_hidden_data('progress_watched')
-	if _compare(latest_movies['watched_at'], cached_movies['watched_at']):
+	if _compare(latest_movies.get('watched_at'), cached_movies.get('watched_at')):
 		clear_properties('movie')
 		trakt_indicators_movies()
-	if _compare(latest_episodes['watched_at'], cached_episodes['watched_at']):
+	if _compare(latest_episodes.get('watched_at'), cached_episodes.get('watched_at')):
 		clear_properties('episode')
 		trakt_indicators_tv()
 		# clear_tvshow_watched_cache = True
-	if _compare(latest_movies['paused_at'], cached_movies['paused_at']): refresh_movies_progress = True
-	if _compare(latest_episodes['paused_at'], cached_episodes['paused_at']): refresh_shows_progress = True
-	if _compare(latest_lists['updated_at'], cached_lists['updated_at']): lists_actions.append('my_lists')
-	if _compare(latest_lists['liked_at'], cached_lists['liked_at']): lists_actions.append('liked_lists')
+	if _compare(latest_movies.get('paused_at'), cached_movies.get('paused_at')): refresh_movies_progress = True
+	if _compare(latest_episodes.get('paused_at'), cached_episodes.get('paused_at')): refresh_shows_progress = True
+	if _compare(latest_lists.get('updated_at'), cached_lists.get('updated_at')): lists_actions.append('my_lists')
+	if _compare(latest_lists.get('liked_at'), cached_lists.get('liked_at')): lists_actions.append('liked_lists')
 	if refresh_movies_progress or refresh_shows_progress:
 		progress_info = trakt_playback_progress()
 		if refresh_movies_progress:

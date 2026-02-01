@@ -49,11 +49,15 @@ class SettingsCache:
 	def set(self, setting_id, setting_value=None):
 		dbcon = connect_database('settings_db')
 		setting_info = default_setting_values(setting_id)
-		setting_type, setting_default = setting_info['setting_type'], setting_info['setting_default']
-		if setting_value is None: setting_value = setting_default
+		if setting_info is None:
+			setting_type, setting_default = 'string', ''
+			if setting_value is None: setting_value = ''
+		else:
+			setting_type, setting_default = setting_info['setting_type'], setting_info['setting_default']
+			if setting_value is None: setting_value = setting_default
 		dbcon.execute(BASE_SET, (setting_id, setting_type, setting_default, setting_value))
 		self.set_memory_cache(setting_id, setting_value)
-		if setting_type == 'action' and 'settings_options' in setting_info:
+		if setting_info is not None and setting_type == 'action' and 'settings_options' in setting_info:
 			name_setting_id = '%s_name' % setting_id
 			opts = setting_info['settings_options']
 			# Guard: setting_value can be None; avoid KeyError / invalid index
@@ -181,7 +185,7 @@ def set_from_list(params):
 	settings_list = [(v, k) for k, v in info.get('settings_options', {}).items()]
 	new_value = select_dialog(settings_list, **{'items': json.dumps([{'line1': item[0]} for item in settings_list]), 'narrow_window': 'true'})
 	if not new_value: return
-	setting_value = new_value[1]
+	setting_value = new_value[1] if isinstance(new_value, (list, tuple)) and len(new_value) >= 2 else new_value
 	set_setting(setting_id, setting_value)
 
 def set_source_folder_path(params):
@@ -213,6 +217,12 @@ default_settings = [
 #===============================================================================#
 #==================== General
 {'setting_id': 'auto_start_fenlight', 'setting_type': 'boolean', 'setting_default': 'false'},
+# VibeStream internal (wizard & maintenance)
+{'setting_id': 'vibestream.setup_wizard_run', 'setting_type': 'string', 'setting_default': 'false'},
+{'setting_id': 'vibestream.maintenance.last_run', 'setting_type': 'string', 'setting_default': '0.0'},
+{'setting_id': 'vibestream.maintenance.enabled', 'setting_type': 'boolean', 'setting_default': 'true'},
+{'setting_id': 'vibestream.maintenance.notify', 'setting_type': 'boolean', 'setting_default': 'false'},
+{'setting_id': 'trakt.user_keys_setup', 'setting_type': 'string', 'setting_default': 'false'},
 {'setting_id': 'default_addon_fanart', 'setting_type': 'path', 'setting_default': default_addon_fanart, 'browse_mode': '2'},
 {'setting_id': 'limit_concurrent_threads', 'setting_type': 'boolean', 'setting_default': 'false'},
 {'setting_id': 'max_threads', 'setting_type': 'action', 'setting_default': '60', 'min_value': '10', 'max_value': '250'},

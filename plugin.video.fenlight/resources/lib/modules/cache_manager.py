@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
+import sqlite3
 import sqlite3 as database
 from modules import kodi_utils
 from caches.base_cache import current_dbs, database_locations
@@ -123,7 +124,7 @@ class CacheManager:
                          count += cursor.rowcount
                          
                          # 2. (Optional) Enforce max age if we had created_at. We don't.
-                     except sqlite3.OperationalError:
+                     except database.OperationalError:
                          # Table might not have expires column (e.g. settings table)
                          pass
                 conn.close()

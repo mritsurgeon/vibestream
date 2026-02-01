@@ -9,6 +9,14 @@ confirm_dialog = kodi_utils.confirm_dialog
 select_dialog = kodi_utils.select_dialog
 
 def run_setup_wizard():
+	try:
+		_run_setup_wizard()
+	except Exception as e:
+		kodi_utils.logger('VibeStream setup_wizard', str(e))
+		set_setting('vibestream.setup_wizard_run', 'true')
+		# Don't re-raise: return so Navigator.main() can build the list and not crash
+
+def _run_setup_wizard():
 	# 1. Welcome — user can skip and go straight to the addon
 	if not confirm_dialog(heading='Welcome to VibeStream!',
 						 text='This wizard will help you set up Trakt, Real-Debrid, and your Quality Presets for the best experience.\n\nStart setup now?',
@@ -32,17 +40,28 @@ def run_setup_wizard():
 			set_setting('vibestream.quality.preset', matches[0])
 
 	# 3. Trakt Setup
-	from modules.trakt_auth_wizard import run_trakt_wizard
-	run_trakt_wizard(skip_confirm=True)
+	try:
+		from modules.trakt_auth_wizard import run_trakt_wizard
+		run_trakt_wizard(skip_confirm=True)
+	except Exception as e:
+		kodi_utils.logger('VibeStream setup_wizard Trakt', str(e))
+		notification('Trakt setup skipped due to an error.', 4000)
 
 	# 4. Real-Debrid Setup
-	if confirm_dialog(heading='Real-Debrid Setup', text='Do you want to authorize Real-Debrid now?'):
-		from apis.real_debrid_api import RealDebridAPI
-		RealDebridAPI().auth()
+	try:
+		if confirm_dialog(heading='Real-Debrid Setup', text='Do you want to authorize Real-Debrid now?'):
+			from apis.real_debrid_api import RealDebridAPI
+			RealDebridAPI().auth()
+	except Exception as e:
+		kodi_utils.logger('VibeStream setup_wizard Real-Debrid', str(e))
 
 	# Final
 	set_setting('vibestream.setup_wizard_run', 'true')
-	kodi_utils.ok_dialog('Setup Complete', 'VibeStream is now configured! Enjoy your movies and shows.')
+	try:
+		kodi_utils.ok_dialog('Setup Complete', 'VibeStream is now configured! Enjoy your movies and shows.')
+	except Exception as e:
+		kodi_utils.logger('VibeStream setup_wizard final', str(e))
+		notification('Setup complete.', 3000)
 
 def first_run_check():
 	if get_setting('vibestream.setup_wizard_run', 'false') == 'false':

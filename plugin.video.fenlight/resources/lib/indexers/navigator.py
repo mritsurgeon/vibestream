@@ -41,25 +41,41 @@ class Navigator:
 		self.is_home = home()
 
 	def main(self):
-		from modules.setup_wizard import first_run_check
-		first_run_check()
-		if self.params_get('full_list', 'false') == 'true':
-			main_lists_result = get_main_lists(self.list_name)
-			browse_list = (main_lists_result[0] if main_lists_result and len(main_lists_result) > 0 else None) or []
-		else:
-			browse_list = currently_used_list(self.list_name) or []
-		for count, item in enumerate(browse_list):
-			iconImage = item.get('iconImage') or ''
-			icon, original_image = (iconImage, True) if iconImage.startswith('http') else (iconImage, False)
-			cm_items = [('[B]Move[/B]', run_plugin % build_url({'mode': 'menu_editor.move', 'active_list': self.list_name, 'position': count})),
-						('[B]Remove[/B]', run_plugin % build_url({'mode': 'menu_editor.remove', 'active_list': self.list_name, 'position': count})),
-						('[B]Add Content[/B]', run_plugin % build_url({'mode': 'menu_editor.add', 'active_list': self.list_name, 'position': count})),
-						('[B]Restore Menu[/B]', run_plugin % build_url({'mode': 'menu_editor.restore', 'active_list': self.list_name, 'position': count})),
-						('[B]Check for New Menu Items[/B]', run_plugin % build_url({'mode': 'menu_editor.update', 'active_list': self.list_name, 'position': count})),
-						('[B]Reload Menu[/B]', run_plugin % build_url({'mode': 'menu_editor.reload', 'active_list': self.list_name, 'position': count})),
-						('[B]Browse Removed items[/B]', run_plugin % build_url({'mode': 'menu_editor.browse', 'active_list': self.list_name, 'position': count}))]
-			self.add(item, item.get('name', ''), icon, original_image, cm_items=cm_items)
-		self.end_directory()
+		try:
+			from modules.setup_wizard import first_run_check
+			first_run_check()
+			if self.params_get('full_list', 'false') == 'true':
+				main_lists_result = get_main_lists(self.list_name)
+				browse_list = (main_lists_result[0] if main_lists_result and len(main_lists_result) > 0 else None) or []
+			else:
+				browse_list = currently_used_list(self.list_name) or []
+			for count, item in enumerate(browse_list):
+				iconImage = item.get('iconImage') or ''
+				icon, original_image = (iconImage, True) if iconImage.startswith('http') else (iconImage, False)
+				cm_items = [('[B]Move[/B]', run_plugin % build_url({'mode': 'menu_editor.move', 'active_list': self.list_name, 'position': count})),
+							('[B]Remove[/B]', run_plugin % build_url({'mode': 'menu_editor.remove', 'active_list': self.list_name, 'position': count})),
+							('[B]Add Content[/B]', run_plugin % build_url({'mode': 'menu_editor.add', 'active_list': self.list_name, 'position': count})),
+							('[B]Restore Menu[/B]', run_plugin % build_url({'mode': 'menu_editor.restore', 'active_list': self.list_name, 'position': count})),
+							('[B]Check for New Menu Items[/B]', run_plugin % build_url({'mode': 'menu_editor.update', 'active_list': self.list_name, 'position': count})),
+							('[B]Reload Menu[/B]', run_plugin % build_url({'mode': 'menu_editor.reload', 'active_list': self.list_name, 'position': count})),
+							('[B]Browse Removed items[/B]', run_plugin % build_url({'mode': 'menu_editor.browse', 'active_list': self.list_name, 'position': count}))]
+				self.add(item, item.get('name', ''), icon, original_image, cm_items=cm_items)
+		except Exception as e:
+			try:
+				k.logger('VibeStream Navigator.main', str(e))
+			except Exception:
+				pass
+		try:
+			self.end_directory()
+		except Exception as e:
+			try:
+				k.logger('VibeStream Navigator.end_directory', str(e))
+				handle = int(sys.argv[1])
+				set_content(handle, '')
+				set_category(handle, self.category_name)
+				end_directory(handle)
+			except Exception:
+				pass
 
 	def discover(self):
 		self.add({'mode': 'navigator.discover_contents', 'media_type': 'movie'}, 'Movies', 'movies')

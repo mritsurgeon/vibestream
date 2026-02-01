@@ -317,10 +317,12 @@ class BaseCache(object):
 			current_time = get_timestamp()
 			dbcon = connect_database(self.dbfile)
 			cache_data = dbcon.execute(BASE_GET % self.table, (string,)).fetchone()
-			if cache_data:
-				if ignore_expiry or cache_data[0] > current_time:
-					try: result = json.loads(cache_data[1])
-					except: self.delete(string)
+			if cache_data is not None and len(cache_data) >= 2:
+				expires, data_raw = cache_data[0], cache_data[1]
+				if ignore_expiry or expires > current_time:
+					if data_raw is not None:
+						try: result = json.loads(data_raw)
+						except: self.delete(string)
 				else:
 					if delete_if_expired: self.delete(string)
 		except: pass

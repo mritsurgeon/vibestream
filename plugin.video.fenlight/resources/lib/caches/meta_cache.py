@@ -31,7 +31,7 @@ class MetaCache:
 			if meta is None:
 				dbcon = connect_database('metacache_db')
 				cache_data = dbcon.execute(GET_MOVIE_SHOW % id_type, (media_type, media_id)).fetchone()
-				if cache_data:
+				if cache_data is not None and len(cache_data) >= 2 and cache_data[0] is not None:
 					meta, expiry = eval(cache_data[0]), cache_data[1]
 					if expiry < current_time:
 						self.delete(media_type, id_type, media_id, meta=meta)
@@ -48,7 +48,7 @@ class MetaCache:
 			if meta is None:
 				dbcon = connect_database('metacache_db')
 				cache_data = dbcon.execute(GET_SEASON, (prop_string,)).fetchone()
-				if cache_data:
+				if cache_data is not None and len(cache_data) >= 2 and cache_data[0] is not None:
 					meta, expiry = eval(cache_data[0]), cache_data[1]
 					if expiry < current_time:
 						self.delete_season(prop_string)
@@ -132,7 +132,7 @@ class MetaCache:
 			dbcon = connect_database('metacache_db')
 			current_time = get_timestamp()
 			cache_data = dbcon.execute(GET_FUNCTION, (prop_string,)).fetchone()
-			if cache_data:
+			if cache_data is not None and len(cache_data) >= 3 and cache_data[1] is not None:
 				if cache_data[2] > current_time: result = eval(cache_data[1])
 				else: dbcon.execute(DELETE_FUNCTION, (prop_string,))
 		except: pass

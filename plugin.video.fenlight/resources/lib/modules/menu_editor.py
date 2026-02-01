@@ -222,10 +222,15 @@ class MenuEditor:
 	def _remove_active_shortcut_folder(self, main_menu_items_list, folder_name):
 		for x in main_menu_items_list:
 			try:
-				match = [i for i in x[1] if str(i['name']) == str(folder_name)][0]
+				if not x or len(x) < 2 or not x[1]:
+					continue
+				matches = [i for i in x[1] if str(i.get('name')) == str(folder_name)]
+				if not matches:
+					continue
+				match = matches[0]
 				new_list = [i for i in x[1] if i != match]
 				self._db_execute('set', x[0], new_list, refresh=False)
-			except: pass
+			except (IndexError, TypeError, KeyError): pass
 
 	def _db_execute(self, db_action, list_name, list_contents=[], list_type='edited', refresh=True):
 		if db_action == 'set': navigator_cache.set_list(list_name, list_type, list_contents)

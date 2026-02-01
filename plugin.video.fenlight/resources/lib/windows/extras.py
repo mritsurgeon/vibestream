@@ -65,7 +65,9 @@ class Extras(BaseDialog):
 				'make_more_like_this', 'make_reviews', 'make_comments', 'make_in_lists', 'make_trivia', 'make_blunders', 'make_parentsguide',
 				'make_videos', 'make_year', 'make_genres', 'make_network', 'make_collection')
 		}
-		self.tasks = [getattr(self, i) for i in self.mode_config.get(self.mode, self.mode_config[0])]
+		default_tasks = self.mode_config.get(0, ())
+		task_names = self.mode_config.get(self.mode, default_tasks) or ()
+		self.tasks = [getattr(self, i) for i in task_names]
 
 	def onInit(self):
 		self.set_home_property('window_loaded', 'true')

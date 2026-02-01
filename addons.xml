@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.fenlight" name="VibeStream" provider-name="mritsurgeon" version="1.0.102">
+<addon id="plugin.video.fenlight" name="VibeStream" provider-name="mritsurgeon" version="1.0.103">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
@@ -21,7 +21,7 @@
             <icon>icon.png</icon>
             <fanart>fanart.png</fanart>
         </assets>
-        <news>INFO: VibeStream 1.0.102 - Exception guards (setting_info, preset, browse_list, Trakt next, default_setting_values); DB malformed handling; open_window None guard.</news>
+        <news>INFO: VibeStream 1.0.103 - VibeStream settings in default_settings (setup_wizard, maintenance, trakt.user_keys_setup); sqlite3 import; settings_cache None guard.</news>
     </extension>
 </addon>
 <addon id="repository.vibestream" name="VibeStream Repository" version="1.0.0" provider-name="mritsurgeon">

@@ -38,7 +38,7 @@ class TraktCache:
 		try:
 			dbcon = connect_database('trakt_db')
 			cache_data = dbcon.execute(TC_BASE_GET, (string,)).fetchone()
-			if cache_data:
+			if cache_data is not None and len(cache_data) >= 1 and cache_data[0] is not None:
 				try: result = json.loads(cache_data[0])
 				except: self.delete(string)
 		except: pass
@@ -112,7 +112,7 @@ def reset_activity(latest_activities):
 	try:
 		dbcon = connect_database('trakt_db')
 		data = dbcon.execute(TC_BASE_GET, (string,)).fetchone()
-		if data:
+		if data is not None and len(data) >= 1 and data[0] is not None:
 			try: cached_data = json.loads(data[0])
 			except: cached_data = default_activities()
 		else: cached_data = default_activities()

@@ -136,9 +136,12 @@ def ignore_results_filter():
 	return int(get_setting('fenlight.results.ignore_filter', '0'))
 
 def trakt_sync_interval():
-	setting = get_setting('fenlight.trakt.sync_interval', '25')
-	interval = int(setting) * 60
-	return setting, interval
+	try:
+		setting = get_setting('fenlight.trakt.sync_interval', '25') or '25'
+		interval = int(setting) * 60
+		return (setting, interval)
+	except (TypeError, ValueError):
+		return ('25', 1500)
 
 def lists_sort_order(setting):
 	return int(get_setting('fenlight.sort.%s' % setting, '0'))

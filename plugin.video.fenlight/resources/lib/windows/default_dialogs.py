@@ -17,7 +17,13 @@ class Select(BaseDialog):
 		self.multi_choice = self.kwargs.get('multi_choice', 'false')
 		self.multi_line = self.kwargs.get('multi_line', 'false')
 		self.preselect = self.kwargs.get('preselect', [])
-		self.items = json.loads(self.kwargs['items'])
+		items_raw = self.kwargs.get('items', '[]')
+		try:
+			self.items = json.loads(items_raw) if items_raw else []
+		except (TypeError, ValueError):
+			self.items = []
+		if not isinstance(self.items, list):
+			self.items = []
 		self.heading = self.kwargs.get('heading', '')
 		self.media_type = self.kwargs.get('media_type', '')
 		self.narrow_window = self.kwargs.get('narrow_window', 'false')
@@ -86,19 +92,19 @@ class Select(BaseDialog):
 		elif action in self.context_actions or action in self.closing_actions: return self.close()
 
 	def make_menu(self):
+		enum = self.enumerate == 'true'
 		def builder():
 			for count, item in enumerate(self.items, 1):
 				listitem = self.make_listitem()
-				if enum: line1 = '%02d. %s' % (count, item['line1'])
-				else: line1 = item['line1']
-				if 'line2' in item: line2 = item['line2']
-				else: line2 = ''
-				if 'icon' in item: listitem.setProperty('icon', item['icon'])
-				else: listitem.setProperty('icon', '')
+				line1_val = item.get('line1', item) if isinstance(item, dict) else str(item)
+				if enum: line1 = '%02d. %s' % (count, line1_val)
+				else: line1 = line1_val
+				line2 = item.get('line2', '') if isinstance(item, dict) else ''
+				icon_val = item.get('icon', '') if isinstance(item, dict) else ''
+				listitem.setProperty('icon', icon_val)
 				listitem.setProperty('line1', line1)
 				listitem.setProperty('line2', line2)
 				yield listitem
-		enum = self.enumerate == 'true'
 		self.item_list = list(builder())
 
 	def set_properties(self):

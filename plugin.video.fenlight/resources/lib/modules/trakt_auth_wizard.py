@@ -16,15 +16,30 @@ def run_trakt_wizard(skip_confirm=False):
         return
 
     from apis.trakt_api import trakt_authenticate, trakt_revoke_authentication
-    trakt_revoke_authentication()  # Clear old token
+    try:
+        trakt_revoke_authentication()  # Clear old token
+    except Exception as e:
+        logger('VibeStream trakt_wizard revoke', str(e))
 
     # During wizard skip sync to avoid DB ops (and possible malformed DB) before setup completes
-    if trakt_authenticate(skip_sync=skip_confirm):
+    try:
+        ok = trakt_authenticate(skip_sync=skip_confirm)
+    except Exception as e:
+        logger('VibeStream trakt_wizard authenticate', str(e))
+        notification('Trakt authorization error.', 4000)
+        return
+    if ok:
         set_setting('trakt.user_keys_setup', 'true')
         if skip_confirm:
             # Wizard flow: don't show blocking ok_dialog so we can continue to next step (Real-Debrid)
             notification('Trakt authorized. Continuing setup…', 2500)
         else:
-            kodi_dialog().ok('Success', 'Trakt is now authorized. Your watch history and lists will sync.')
+            try:
+                kodi_dialog().ok('Success', 'Trakt is now authorized. Your watch history and lists will sync.')
+            except Exception:
+                notification('Trakt authorized.', 3000)
     else:
-        kodi_dialog().ok('Error', 'Authorization failed. Make sure you entered the PIN at trakt.tv/activate before it expired.')
+        try:
+            kodi_dialog().ok('Error', 'Authorization failed. Make sure you entered the PIN at trakt.tv/activate before it expired.')
+        except Exception:
+            notification('Authorization failed.', 4000)
