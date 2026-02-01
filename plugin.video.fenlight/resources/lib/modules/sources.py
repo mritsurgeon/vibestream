@@ -132,9 +132,16 @@ class Sources():
 
 	def get_sources(self):
 		qm = QualityManager()
+		title_display = self.meta.get('rootname') or self.meta.get('title') or ''
+		logger('VibeStream get_sources', 'START media_type=%s tmdb_id=%s season=%s episode=%s title=%s internal_scrapers=%s external=%s' % (
+			self.media_type, self.tmdb_id, self.season, self.episode, title_display[:50], list(self.active_internal_scrapers), self.active_external))
 		
 		# 1. Try Raw Cache
 		raw_results = get_cached_sources(self.media_type, self.tmdb_id, self.season, self.episode)
+		if raw_results:
+			logger('VibeStream get_sources', 'CACHE HIT raw_count=%s' % len(raw_results))
+		else:
+			logger('VibeStream get_sources', 'CACHE MISS, will scrape')
 		
 		if not raw_results:
 			# 2. Scrape if no cache
@@ -156,14 +163,27 @@ class Sources():
 			
 			# Cache Raw Results
 			if raw_results: set_cached_sources(self.media_type, self.tmdb_id, raw_results, self.season, self.episode)
+		
+		# Verbose: raw results count and by provider
+		if raw_results:
+			by_provider = {}
+			for r in raw_results:
+				p = r.get('scrape_provider', 'unknown')
+				by_provider[p] = by_provider.get(p, 0) + 1
+			logger('VibeStream get_sources', 'RAW results total=%s by_provider=%s' % (len(raw_results), by_provider))
+		else:
+			logger('VibeStream get_sources', 'RAW results total=0 (no cache, scrape returned nothing) internal=%s external=%s' % (list(self.active_internal_scrapers), self.active_external))
 
 		# 3. Full scrape then process all results (no quality preset removal)
 		if not raw_results:
 			self.orig_results = []
+			self._no_results_debug = {'raw_count': 0, 'orig_count': 0, 'scrapers': list(self.active_internal_scrapers) + (['external'] if self.active_external else []), 'reason': 'no_raw_sources'}
 			return self._process_post_results()
 		results = self.process_results(raw_results)
 		self.orig_results = list(results) if results else []
+		logger('VibeStream get_sources', 'AFTER process_results (filters) count=%s (was raw=%s)' % (len(results), len(raw_results)))
 		if not results:
+			self._no_results_debug = {'raw_count': len(raw_results), 'orig_count': len(self.orig_results), 'scrapers': list(self.active_internal_scrapers) + (['external'] if self.active_external else []), 'reason': 'all_filtered_in_process_results'}
 			return self._process_post_results()
 		# 4. Stamp sources that exceed selected quality preset (Outside selected quality)
 		qm.stamp_sources(results)
@@ -192,9 +212,12 @@ class Sources():
 				coco_adapter = CocoScrapersAdapter()
 				if coco_adapter.health_check()[0]:
 					raw_coco = coco_adapter.search(self._coco_query_info())
-					self.sources.extend(self._normalize_coco_sources(raw_coco or []))
+					normalized = self._normalize_coco_sources(raw_coco or [])
+					self.sources.extend(normalized)
+					logger('VibeStream get_sources', 'CocoScrapers raw=%s normalized=%s' % (len(raw_coco or []), len(normalized)))
 				else:
 					# Fallback to Legacy
+					logger('VibeStream get_sources', 'CocoScrapers not available, using Legacy external')
 					self.activate_providers('external', external, False)
 			if self.background: [i.join() for i in self.threads]
 		elif self.active_internal_scrapers: self.scrapers_dialog()
@@ -222,14 +245,20 @@ class Sources():
 			clear_property('fs_filterless_search')
 		self.uncached_results = self.sort_results([i for i in results if 'Uncached' in i.get('cache_provider', '')])
 		results = [i for i in results if not i in self.uncached_results]
+		after_uncached = len(results)
 		if self.ignore_scrape_filters:
 			self.filters_ignored = True
 			results = self.sort_results(results)
 		else:
 			results = self.sort_results(results)
+			after_sort = len(results)
 			results = self.filter_results(results)
+			after_quality = len(results)
 			results = self.filter_audio(results)
+			after_audio = len(results)
 			for file_type in filter_keys: results = self.special_filter(results, file_type)
+			after_special = len(results)
+			logger('VibeStream process_results', 'filter steps: after_sort=%s after_quality_filter=%s after_audio=%s after_special=%s' % (after_sort, after_quality, after_audio, after_special))
 		results = self.sort_preferred_autoplay(results)
 		results = self.sort_preferred_autoplay(results)
 		results = self.sort_first(results)
@@ -434,6 +463,8 @@ class Sources():
 		return [i[2] for i in scraper_list]
 
 	def _process_post_results(self):
+		debug = getattr(self, '_no_results_debug', {})
+		logger('VibeStream _process_post_results', 'entered raw_count=%s orig_count=%s reason=%s' % (debug.get('raw_count', '?'), debug.get('orig_count', '?'), debug.get('reason', '?')))
 		if self.auto_rescrape_with_all in (1, 2) and self.active_external and not self.rescrape_with_all:
 			self.rescrape_with_all = True
 			if self.auto_rescrape_with_all == 1 or confirm_dialog(heading=self.meta.get('rootname', ''), text='No results.[CR]Retry With All Scrapers?'):
@@ -464,17 +495,23 @@ class Sources():
 						return self.playback_prep()
 		orig = getattr(self, 'orig_results', [])
 		if orig and not self.background:
+			logger('VibeStream _process_post_results', 'have orig_results=%s offering Access Filtered Results ignore_results_filter=%s' % (len(orig), self.ignore_results_filter))
 			# When quality preset or other filters removed all results, always offer filtered results (matches startup optimization intent).
 			if self.ignore_results_filter == 0:
 				if confirm_dialog(heading=self.meta.get('rootname', ''), text='No results after quality filter.[CR]Access Filtered Results?'):
 					return self._process_ignore_filters()
+				self._no_results_debug['reason'] = 'user_declined_filtered_results'
 				return self._no_results()
 			if self.ignore_results_filter == 1:
 				return self._process_ignore_filters()
 			if self.ignore_results_filter == 2 and confirm_dialog(heading=self.meta.get('rootname', ''), text='No results. Access Filtered Results?'):
 				return self._process_ignore_filters()
 			if self.ignore_results_filter == 2:
+				self._no_results_debug['reason'] = 'user_declined_filtered_results'
 				return self._no_results()
+		if not orig:
+			self._no_results_debug = getattr(self, '_no_results_debug', {})
+			self._no_results_debug.setdefault('reason', 'no_orig_results')
 		return self._no_results()
 
 	def _process_ignore_filters(self):
@@ -486,6 +523,11 @@ class Sources():
 		return self.play_source(results)
 
 	def _no_results(self):
+		debug = getattr(self, '_no_results_debug', {})
+		title_display = self.meta.get('rootname') or self.meta.get('title') or ''
+		logger('VibeStream NO RESULTS (verbose)', 'title=%s media_type=%s tmdb_id=%s season=%s episode=%s raw_count=%s orig_count=%s scrapers=%s reason=%s' % (
+			title_display[:60], self.media_type, self.tmdb_id, self.season, self.episode,
+			debug.get('raw_count', '?'), debug.get('orig_count', '?'), debug.get('scrapers', []), debug.get('reason', '?')))
 		self._kill_progress_dialog()
 		hide_busy_dialog()
 		if self.background: return notification('[B]Next Up:[/B] No Results', 5000)
