@@ -225,7 +225,15 @@ class Images():
 
 	def imageviewer(self):
 		hide_busy_dialog()
-		return open_window(('windows.imageviewer', 'ImageViewer'), 'imageviewer.xml', all_images=self.params['all_images'], index=int(self.params['current_index']))
+		# Guard: current_index can be missing or None (avoid TypeError / list index None)
+		idx = self.params.get('current_index', 0)
+		try:
+			idx = int(idx) if idx is not None else 0
+		except (TypeError, ValueError):
+			idx = 0
+		if idx < 0:
+			idx = 0
+		return open_window(('windows.imageviewer', 'ImageViewer'), 'imageviewer.xml', all_images=self.params['all_images'], index=idx)
 
 	def delete_image(self, image_url=None, thumb_url=None):
 		image_url, thumb_url = image_url or self.params['image_url'], thumb_url or self.params['thumb_url']

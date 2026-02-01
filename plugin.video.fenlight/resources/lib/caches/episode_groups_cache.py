@@ -10,7 +10,9 @@ string = str
 
 class EpisodeGroupsCache:
 	def get(self, tmdb_id):
-		try: data = eval(connect_database('episode_groups_db').execute(GET, (string(tmdb_id),)).fetchone()[0])
+		try:
+			row = connect_database('episode_groups_db').execute(GET, (string(tmdb_id),)).fetchone()
+			data = eval(row[0]) if row is not None else {}
 		except: data = {}
 		return data
 

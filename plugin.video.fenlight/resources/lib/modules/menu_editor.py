@@ -17,7 +17,13 @@ class MenuEditor:
 	def __init__(self, params):
 		self.name = self._get_menu_item(get_infolabel('ListItem.FileNameAndPath')).get('name', '')
 		self.active_list = params.get('active_list')
-		self.position = int(params.get('position', '0'))
+		# Guard: position must be int for list indexing (avoid "list indices must be integers or slices, not NoneType")
+		try:
+			self.position = int(params.get('position') or 0)
+		except (TypeError, ValueError):
+			self.position = 0
+		if self.position < 0:
+			self.position = 0
 		self.action = params.get('action')
 		try: self.list_name = main_list_name_dict[self.active_list]
 		except: self.list_name = params.get('name')
@@ -25,10 +31,11 @@ class MenuEditor:
 	def move(self):
 		list_items = navigator_cache.currently_used_list(self.active_list)
 		if len(list_items) == 1: return notification('Cancelled', 1500)
+		pos = self.position if isinstance(self.position, int) and 0 <= self.position < len(list_items) else 0
 		choice_items = [i for i in list_items if str(i['name']) != str(self.name)]
 		new_position = self._menu_select(choice_items, self.name, multi_line='true', position_list=True)
-		if new_position == None or new_position == self.position: return
-		list_items.insert(new_position, list_items.pop(self.position))
+		if new_position is None or not isinstance(new_position, int) or new_position == pos: return
+		list_items.insert(new_position, list_items.pop(pos))
 		self._db_execute('set', self.active_list, list_items)
 
 	def remove(self):
@@ -50,7 +57,9 @@ class MenuEditor:
 		try: new_item = [i for i in default if str(i['name']) == str(self.name)][0]
 		except: return notification('No Results', 1500)
 		list_items = [i for i in current_list if str(i['name']) != str(self.name)]
-		list_items.insert(self.position, new_item)
+		pos = self.position if isinstance(self.position, int) and self.position >= 0 else 0
+		pos = min(pos, len(list_items))
+		list_items.insert(pos, new_item)
 		self._db_execute('set', self.active_list, list_items, list_type)
 
 	def update(self):
@@ -74,7 +83,7 @@ class MenuEditor:
 		except: return notification('No Results', 1500)
 		if not choice_items: return notification('No Results', 1500)
 		browse_item = self._menu_select(choice_items, list_name)
-		if browse_item == None: return
+		if browse_item is None or not isinstance(browse_item, int) or browse_item < 0 or browse_item >= len(choice_items): return
 		browse_item = choice_items[browse_item]
 		if browse_item.get('mode') == 'build_popular_people': command = 'RunPlugin(%s)'
 		else: command = 'Container.Update(%s)'
@@ -103,21 +112,23 @@ class MenuEditor:
 		else:
 			list_items = navigator_cache.get_shortcut_folder_contents(self.active_list)
 			if self.action == 'rename':
-				current_item = list_items[self.position]
+				pos = self.position if self.position is not None and 0 <= self.position < len(list_items) else 0
+				current_item = list_items[pos]
 				item_name = current_item['name']
 				new_item_name = self._get_external_name_input(item_name)
 				if not new_item_name or new_item_name == item_name: return
 				current_item['name'] = new_item_name
-				list_items[self.position] == current_item
+				list_items[pos] = current_item
 			elif self.action == 'remove':
 				if not confirm_dialog(): return notification('Cancelled', 1500)
 				list_items = [i for i in list_items if str(i['name']) != str(self.name)]
 			elif self.action == 'move':
 				if len(list_items) == 1: return notification('Cancelled', 1500)
+				pos = self.position if isinstance(self.position, int) and 0 <= self.position < len(list_items) else 0
 				choice_items = [i for i in list_items if str(i['name']) != str(self.name)]
 				new_position = self._menu_select(choice_items, self.name, multi_line='true', position_list=True)
-				if new_position == None or new_position == self.position: return
-				list_items.insert(new_position, list_items.pop(self.position))
+				if new_position is None or not isinstance(new_position, int) or new_position == pos: return
+				list_items.insert(new_position, list_items.pop(pos))
 			elif self.action == 'add':
 				return self.shortcut_folder_add()
 		self._db_execute('set', self.active_list, list_items, 'shortcut_folder')

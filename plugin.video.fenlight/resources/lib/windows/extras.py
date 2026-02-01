@@ -106,7 +106,9 @@ class Extras(BaseDialog):
 				show_busy_dialog()
 				try:
 					list_item, position = self.get_listitem(focus_id), self.get_position(focus_id)
-					chosen = self.get_attribute(self, list_item.getProperty(self.item_action_dict[focus_id]))[self.get_position(focus_id)]
+					content_list = self.get_attribute(self, list_item.getProperty(self.item_action_dict[focus_id]))
+					idx = position if position is not None and position >= 0 else 0
+					chosen = content_list[idx]
 					user, list_slug = chosen['user']['ids']['slug'], chosen['ids']['slug']
 					function, new_value = (like_a_list, 'true') if list_item.getProperty('liked_status') == 'false' else (unlike_a_list, 'false')
 					new_value = 'true' if list_item.getProperty('liked_status') == 'false' else 'false'
@@ -141,7 +143,9 @@ class Extras(BaseDialog):
 				if not chosen_var: return
 				try:
 					self.close_all()
-					chosen = self.get_attribute(self, chosen_var)[position]
+					content = self.get_attribute(self, chosen_var)
+					idx = position if position is not None and position >= 0 else 0
+					chosen = content[idx]
 					list_name, user, slug = chosen['name'], chosen['user']['ids']['slug'], chosen['ids']['slug']
 					self.selected = self.folder_runner({'mode': 'trakt.list.build_trakt_list', 'user': user, 'slug': slug, 'list_type': 'user_lists', 'list_name': list_name})
 					self.close()
@@ -756,9 +760,11 @@ class ShowTextMedia(BaseDialog):
 	def __init__(self, *args, **kwargs):
 		BaseDialog.__init__(self, *args)
 		self.text = kwargs.get('text')
-		self.position = kwargs.get('current_index', None)
+		pos = kwargs.get('current_index', None)
 		self.text_is_list = isinstance(self.text, list)
 		self.len_text = len(self.text) if self.text_is_list else None
+		# Default to 0 when position is None to avoid "list indices must be integers or slices, not NoneType"
+		self.position = 0 if (self.text_is_list and pos is None) else pos
 		self.window_id = 2099
 		self.setProperty('poster', kwargs.get('poster'))
 
@@ -779,6 +785,9 @@ class ShowTextMedia(BaseDialog):
 	def update_text(self, direction=None):
 		if direction == 'previous': self.position = self.position - 1 if self.position > 0 else self.len_text - 1
 		elif direction == 'next': self.position = 0 if self.position == self.len_text - 1 else self.position + 1
+		# Guard against None position (e.g. from get_position() or unset current_index)
+		if self.text_is_list and (self.position is None or self.position < 0):
+			self.position = 0
 		self.set_text(2001, self.text[self.position] if self.text_is_list else self.text)
 		if self.text_is_list:
 			if self.position == 0: self.setProperty('previous_display', 'false')

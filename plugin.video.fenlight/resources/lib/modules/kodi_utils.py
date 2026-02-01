@@ -472,6 +472,7 @@ def fetch_kodi_imagecache(image):
 		dbcon = database.connect(translate_path('special://database/Textures13.db'), timeout=40.0)
 		dbcur = dbcon.cursor()
 		dbcur.execute("SELECT cachedurl FROM texture WHERE url = ?", (image,))
-		result = dbcur.fetchone()[0]
+		row = dbcur.fetchone()
+		result = row[0] if row is not None else None
 	except: pass
 	return result

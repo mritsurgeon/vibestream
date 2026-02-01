@@ -179,7 +179,11 @@ class BaseDialog(window_xml_dialog):
 		return execute_builtin(command, block)
 	
 	def get_position(self, window_id):
-		return self.get_control(window_id).getSelectedPosition()
+		pos = self.get_control(window_id).getSelectedPosition()
+		# Kodi can return None/-1 when control has no selection; avoid "list indices must be integers or slices, not NoneType"
+		if pos is None or pos < 0:
+			return 0
+		return pos
 
 	def get_listitem(self, window_id):
 		return self.get_control(window_id).getSelectedItem()

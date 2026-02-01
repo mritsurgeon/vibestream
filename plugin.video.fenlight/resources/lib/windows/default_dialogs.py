@@ -33,8 +33,10 @@ class Select(BaseDialog):
 		if self.preselect:
 			if len(self.preselect) == len(self.item_list): self.setProperty('select_button', 'deselect_all')
 			for index in self.preselect:
-				self.item_list[index].setProperty('check_status', 'checked')
-				self.chosen_indexes.append(index)
+				# Guard: list indices must be integers, not NoneType
+				if index is not None and isinstance(index, int) and 0 <= index < len(self.item_list):
+					self.item_list[index].setProperty('check_status', 'checked')
+					self.chosen_indexes.append(index)
 		self.setFocusId(self.window_id)
 
 	def run(self):
@@ -65,10 +67,16 @@ class Select(BaseDialog):
 		if action in self.selection_actions:
 			if not self.control_id: return
 			position = self.get_position(self.window_id)
+			# Guard: position must be valid index (get_position can still be None in edge cases)
+			if position is None or not isinstance(position, int) or position < 0:
+				position = 0
+			if position >= len(self.item_list):
+				position = len(self.item_list) - 1 if self.item_list else 0
 			if self.multi_choice == 'true':
 				if chosen_listitem.getProperty('check_status') == 'checked':
 					chosen_listitem.setProperty('check_status', '')
-					self.chosen_indexes.remove(position)
+					if position in self.chosen_indexes:
+						self.chosen_indexes.remove(position)
 				else:
 					chosen_listitem.setProperty('check_status', 'checked')
 					self.chosen_indexes.append(position)

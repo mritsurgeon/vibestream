@@ -127,7 +127,9 @@ class NavigatorCache:
 		contents = None
 		try:
 			dbcon = connect_database('navigator_db')
-			contents = eval(dbcon.execute(GET_LIST, (list_name, list_type)).fetchone()[0])
+			row = dbcon.execute(GET_LIST, (list_name, list_type)).fetchone()
+			if row is not None:
+				contents = eval(row[0])
 		except: pass
 		return contents
 
@@ -163,7 +165,8 @@ class NavigatorCache:
 	def get_shortcut_folder_contents(self, list_name):
 		try:
 			dbcon = connect_database('navigator_db')
-			contents = eval(dbcon.execute(GET_FOLDER_CONTENTS, (list_name, 'shortcut_folder')).fetchone()[0])
+			row = dbcon.execute(GET_FOLDER_CONTENTS, (list_name, 'shortcut_folder')).fetchone()
+			contents = eval(row[0]) if row is not None else []
 		except: contents = []
 		return contents
 

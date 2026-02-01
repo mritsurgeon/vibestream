@@ -22,7 +22,8 @@ class SettingsCache:
 		try:
 			dbcon = connect_database('settings_db')
 			setting_id = setting_id.replace('fenlight.', '')
-			setting_value = dbcon.execute(BASE_GET, (setting_id,)).fetchone()[0]
+			row = dbcon.execute(BASE_GET, (setting_id,)).fetchone()
+			setting_value = row[0] if row is not None else None
 			self.set_memory_cache(setting_id, setting_value)
 		except: setting_value = None
 		return setting_value
@@ -54,7 +55,9 @@ class SettingsCache:
 		self.set_memory_cache(setting_id, setting_value)
 		if setting_type == 'action' and 'settings_options' in setting_info:
 			name_setting_id = '%s_name' % setting_id
-			name_setting_value = setting_info['settings_options'][setting_value]
+			opts = setting_info['settings_options']
+			# Guard: setting_value can be None; avoid KeyError / invalid index
+			name_setting_value = opts.get(setting_value, opts.get(setting_default, '')) if setting_value is not None else opts.get(setting_default, '')
 			dbcon.execute(BASE_SET, (name_setting_id, 'name', '', name_setting_value))
 			self.set_memory_cache(name_setting_id, name_setting_value)
 
