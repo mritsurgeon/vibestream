@@ -266,18 +266,18 @@ def clear_icons():
         dbcur = dbcon.cursor()
         
         # Get the cached paths
-        icon = dbcur.execute("SELECT cachedurl FROM texture WHERE url ='" + addonPath + "/plugin.video.fenlight/resources/media/fenlight_icon.png';").fetchone()
-        fanart = dbcur.execute("SELECT cachedurl FROM texture WHERE url ='" + addonPath + "/plugin.video.fenlight/resources/media/fenlight_plus_fanart.png';").fetchone()
+        icon = dbcur.execute("SELECT cachedurl FROM texture WHERE url ='" + addonPath + "/plugin.video.fenlight/resources/media/vibestream_icon.png';").fetchone()
+        fanart = dbcur.execute("SELECT cachedurl FROM texture WHERE url ='" + addonPath + "/plugin.video.fenlight/resources/media/vibestream_fanart.png';").fetchone()
         
         if icon is not None:
             if xbmcvfs.exists(thumbnailsPath + icon[0]):
                 xbmcvfs.delete(thumbnailsPath + icon[0])
-            dbcur.execute("DELETE FROM texture WHERE url ='" + addonPath + "/plugin.video.fenlight/resources/media/fenlight_icon.png';")
+            dbcur.execute("DELETE FROM texture WHERE url ='" + addonPath + "/plugin.video.fenlight/resources/media/vibestream_icon.png';")
         
         if fanart is not None:
             if xbmcvfs.exists(thumbnailsPath + fanart[0]):
                 xbmcvfs.delete(thumbnailsPath + fanart[0])
-            dbcur.execute("DELETE FROM texture WHERE url ='" + addonPath + "/plugin.video.fenlight/resources/media/fenlight_plus_fanart.png';")
+            dbcur.execute("DELETE FROM texture WHERE url ='" + addonPath + "/plugin.video.fenlight/resources/media/vibestream_fanart.png';")
         
         # Commit changes before closing the connection
         dbcon.commit()

@@ -37,7 +37,7 @@
                     <align>left</align>
                     <aligny>top</aligny>
                     <aspectratio aligny="top">keep</aspectratio>
-                    <texture colordiffuse="FFCCCCCC">fenlight_common/fenlight.png</texture>
+                    <texture colordiffuse="FFCCCCCC">fenlight_common/vibestream.png</texture>
                 </control>
                 <control type="label">
                     <width max="1700">auto</width>
@@ -48,7 +48,7 @@
                     <textcolor>FFCCCCCC</textcolor>
                     <align>center</align>
                     <aligny>center</aligny>
-                    <label>[UPPERCASE][B]FENLIGHT - SETTINGS[/B][/UPPERCASE]</label>
+                    <label>[UPPERCASE][B]VIBESTREAM - SETTINGS[/B][/UPPERCASE]</label>
                 </control>
             </control>
             <control type="fixedlist" id="2000">
@@ -422,7 +422,7 @@
                      </item>
                       <item>
                           <visible>Container(2000).HasFocus(10)</visible>
-                          <property name="setting_label">Autostart FenLight When Kodi Starts</property>
+                          <property name="setting_label">Autostart VibeStream When Kodi Starts</property>
                           <property name="setting_type">boolean</property>
                           <property name="setting_value">$INFO[Window(10000).Property(fenlight.auto_start_fenlight)]</property>
                           <property name="setting_description">Enable this and VibeStream will autostart after running its services upon Kodi start</property>
@@ -438,7 +438,7 @@
                       </item>
                       <item>
                           <visible>Container(2000).HasFocus(10)</visible>
-                          <visible>!String.EndsWith(Window(10000).Property(fenlight.default_addon_fanart),fenlight_plus_fanart.png)</visible>
+                          <visible>!String.EndsWith(Window(10000).Property(fenlight.default_addon_fanart),vibestream_fanart.png)</visible>
                           <property name="setting_label">    - Restore Default Background Image</property>
                           <property name="setting_type">action</property>
                           <property name="setting_value">...</property>

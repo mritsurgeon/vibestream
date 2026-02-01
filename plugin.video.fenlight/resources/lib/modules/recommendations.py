@@ -2,7 +2,7 @@
 from modules.watched_status import get_recently_watched
 from modules.metadata import movie_meta, tvshow_meta
 from modules.settings import tmdb_api_key, mpaa_region
-from modules.kodi_utils import get_datetime
+from modules.utils import get_datetime
 from apis.tmdb_api import tmdb_api_key as get_tmdb_key
 
 class RecommendationsManager:
