@@ -23,7 +23,16 @@ def generate_repo():
     with open("addons.xml.md5", "w") as f:
         f.write(md5_hash)
 
-    print("Generated addons.xml and addons.xml.md5")
+    # Generate index.html for Kodi browsing
+    files = [f for f in os.listdir('.') if f.endswith('.zip') or f.startswith('addons.xml')]
+    index_content = "<html><body><h1>VibeStream Repository</h1><ul>\n"
+    for f in files:
+        index_content += f'<li><a href="{f}">{f}</a></li>\n'
+    index_content += "</ul></body></html>"
+    with open("index.html", "w") as f:
+        f.write(index_content)
+
+    print("Generated addons.xml, addons.xml.md5, and index.html")
 
 if __name__ == "__main__":
     generate_repo()
