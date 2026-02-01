@@ -134,7 +134,7 @@
                                 <textcolor>FFCCCCCC</textcolor>
                                 <align>left</align>
                                 <aligny>center</aligny>
-                                <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Size: [/B][/COLOR]$INFO[ListItem.Property(size_label)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Hoster: [/B][/COLOR]$INFO[ListItem.Property(source_type)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Site: [/B][/COLOR]$INFO[ListItem.Property(source_site)][/UPPERCASE]</label>
+                                <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]File size: [/B][/COLOR]$INFO[ListItem.Property(size_label)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Status: [/B][/COLOR]$INFO[ListItem.Property(source_type_friendly)]     [COLOR $INFO[ListItem.Property(highlight)]][B]From: [/B][/COLOR]$INFO[ListItem.Property(source_site)][/UPPERCASE]</label>
                                 <scroll>false</scroll>
                             </control>
                             <control type="label">
@@ -146,7 +146,7 @@
                                 <textcolor>FFCCCCCC</textcolor>
                                 <align>left</align>
                                 <aligny>center</aligny>
-                                <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Info: [/B][/COLOR]$INFO[ListItem.Property(extraInfo)][/UPPERCASE]</label>
+                                <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Details: [/B][/COLOR]$INFO[ListItem.Property(extraInfo)][/UPPERCASE]</label>
                                 <scroll>false</scroll>
                             </control>
                             <control type="label">
@@ -158,7 +158,7 @@
                                 <textcolor>FFCCCCCC</textcolor>
                                 <align>left</align>
                                 <aligny>center</aligny>
-                                <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Title: [/B][/COLOR]$INFO[ListItem.Property(count)] $INFO[ListItem.Property(name)][/UPPERCASE]</label>
+                                <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]File: [/B][/COLOR]$INFO[ListItem.Property(count)] $INFO[ListItem.Property(name)][/UPPERCASE]</label>
                                 <scroll>false</scroll>
                             </control>
                         </control>
@@ -235,7 +235,7 @@
                                     <textcolor>FF1F2020</textcolor>
                                     <align>left</align>
                                     <aligny>center</aligny>
-                                    <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Size: [/B][/COLOR]$INFO[ListItem.Property(size_label)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Hoster: [/B][/COLOR]$INFO[ListItem.Property(source_type)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Site: [/B][/COLOR]$INFO[ListItem.Property(source_site)][/UPPERCASE]</label>
+                                    <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]File size: [/B][/COLOR]$INFO[ListItem.Property(size_label)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Status: [/B][/COLOR]$INFO[ListItem.Property(source_type_friendly)]     [COLOR $INFO[ListItem.Property(highlight)]][B]From: [/B][/COLOR]$INFO[ListItem.Property(source_site)][/UPPERCASE]</label>
                                     <scroll>Control.HasFocus(2000)</scroll>
                                 </control>
                                 <control type="label">
@@ -247,7 +247,7 @@
                                     <textcolor>FF1F2020</textcolor>
                                     <align>left</align>
                                     <aligny>center</aligny>
-                                    <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Info: [/B][/COLOR]$INFO[ListItem.Property(extraInfo)][/UPPERCASE]</label>
+                                    <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Details: [/B][/COLOR]$INFO[ListItem.Property(extraInfo)][/UPPERCASE]</label>
                                     <scroll>Control.HasFocus(2000)</scroll>
                                 </control>
                                 <control type="label">
@@ -259,7 +259,7 @@
                                     <textcolor>FF1F2020</textcolor>
                                     <align>left</align>
                                     <aligny>center</aligny>
-                                    <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Title: [/B][/COLOR]$INFO[ListItem.Property(count)] $INFO[ListItem.Property(name)][/UPPERCASE]</label>
+                                    <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]File: [/B][/COLOR]$INFO[ListItem.Property(count)] $INFO[ListItem.Property(name)][/UPPERCASE]</label>
                                     <scroll>Control.HasFocus(2000)</scroll>
                                 </control>
                             </control>
@@ -403,7 +403,7 @@
                                 <textcolor>FFCCCCCC</textcolor>
                                 <align>left</align>
                                 <aligny>center</aligny>
-                                <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Size: [/B][/COLOR]$INFO[ListItem.Property(size_label)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Hoster: [/B][/COLOR]$INFO[ListItem.Property(source_type)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Site: [/B][/COLOR]$INFO[ListItem.Property(source_site)][/UPPERCASE]</label>
+                                <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]File size: [/B][/COLOR]$INFO[ListItem.Property(size_label)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Status: [/B][/COLOR]$INFO[ListItem.Property(source_type_friendly)]     [COLOR $INFO[ListItem.Property(highlight)]][B]From: [/B][/COLOR]$INFO[ListItem.Property(source_site)][/UPPERCASE]</label>
                                 <scroll>false</scroll>
                             </control>
                             <control type="label">
@@ -415,7 +415,7 @@
                                 <textcolor>FFCCCCCC</textcolor>
                                 <align>left</align>
                                 <aligny>center</aligny>
-                                <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Info: [/B][/COLOR]$INFO[ListItem.Property(extraInfo)][/UPPERCASE]</label>
+                                <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Details: [/B][/COLOR]$INFO[ListItem.Property(extraInfo)][/UPPERCASE]</label>
                                 <scroll>false</scroll>
                             </control>
                             <control type="label">
@@ -427,7 +427,7 @@
                                 <textcolor>FFCCCCCC</textcolor>
                                 <align>left</align>
                                 <aligny>center</aligny>
-                                <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Title: [/B][/COLOR]$INFO[ListItem.Property(count)] $INFO[ListItem.Property(name)][/UPPERCASE]</label>
+                                <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]File: [/B][/COLOR]$INFO[ListItem.Property(count)] $INFO[ListItem.Property(name)][/UPPERCASE]</label>
                                 <scroll>false</scroll>
                             </control>
                         </control>
@@ -504,7 +504,7 @@
                                     <textcolor>FF1F2020</textcolor>
                                     <align>left</align>
                                     <aligny>center</aligny>
-                                    <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Size: [/B][/COLOR]$INFO[ListItem.Property(size_label)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Hoster: [/B][/COLOR]$INFO[ListItem.Property(source_type)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Site: [/B][/COLOR]$INFO[ListItem.Property(source_site)][/UPPERCASE]</label>
+                                    <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]File size: [/B][/COLOR]$INFO[ListItem.Property(size_label)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Status: [/B][/COLOR]$INFO[ListItem.Property(source_type_friendly)]     [COLOR $INFO[ListItem.Property(highlight)]][B]From: [/B][/COLOR]$INFO[ListItem.Property(source_site)][/UPPERCASE]</label>
                                     <scroll>Control.HasFocus(2001)</scroll>
                                 </control>
                                 <control type="label">
@@ -516,7 +516,7 @@
                                     <textcolor>FF1F2020</textcolor>
                                     <align>left</align>
                                     <aligny>center</aligny>
-                                    <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Info: [/B][/COLOR]$INFO[ListItem.Property(extraInfo)][/UPPERCASE]</label>
+                                    <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Details: [/B][/COLOR]$INFO[ListItem.Property(extraInfo)][/UPPERCASE]</label>
                                     <scroll>Control.HasFocus(2001)</scroll>
                                 </control>
                                 <control type="label">
@@ -528,7 +528,7 @@
                                     <textcolor>FF1F2020</textcolor>
                                     <align>left</align>
                                     <aligny>center</aligny>
-                                    <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Title: [/B][/COLOR]$INFO[ListItem.Property(count)] $INFO[ListItem.Property(name)][/UPPERCASE]</label>
+                                    <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]File: [/B][/COLOR]$INFO[ListItem.Property(count)] $INFO[ListItem.Property(name)][/UPPERCASE]</label>
                                     <scroll>Control.HasFocus(2001)</scroll>
                                 </control>
                             </control>
@@ -677,7 +677,7 @@
                                 <align>left</align>
                                 <aligny>center</aligny>
                                 <scroll>false</scroll>
-                                <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Size: [/B][/COLOR]$INFO[ListItem.Property(size_label)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Hoster: [/B][/COLOR]$INFO[ListItem.Property(source_type)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Site: [/B][/COLOR]$INFO[ListItem.Property(source_site)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Info: [/B][/COLOR]$INFO[ListItem.Property(extraInfo)][/UPPERCASE]</label>
+                                <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]File size: [/B][/COLOR]$INFO[ListItem.Property(size_label)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Status: [/B][/COLOR]$INFO[ListItem.Property(source_type_friendly)]     [COLOR $INFO[ListItem.Property(highlight)]][B]From: [/B][/COLOR]$INFO[ListItem.Property(source_site)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Details: [/B][/COLOR]$INFO[ListItem.Property(extraInfo)][/UPPERCASE]</label>
                             </control>
                             <control type="label">
                                 <top>80</top>
@@ -764,7 +764,7 @@
                                     <textcolor>FF1F2020</textcolor>
                                     <align>left</align>
                                     <aligny>center</aligny>
-                                    <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]Size: [/B][/COLOR]$INFO[ListItem.Property(size_label)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Hoster: [/B][/COLOR]$INFO[ListItem.Property(source_type)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Site: [/B][/COLOR]$INFO[ListItem.Property(source_site)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Info: [/B][/COLOR]$INFO[ListItem.Property(extraInfo)][/UPPERCASE]</label>
+                                    <label>[UPPERCASE][COLOR $INFO[ListItem.Property(highlight)]][B]File size: [/B][/COLOR]$INFO[ListItem.Property(size_label)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Status: [/B][/COLOR]$INFO[ListItem.Property(source_type_friendly)]     [COLOR $INFO[ListItem.Property(highlight)]][B]From: [/B][/COLOR]$INFO[ListItem.Property(source_site)]     [COLOR $INFO[ListItem.Property(highlight)]][B]Details: [/B][/COLOR]$INFO[ListItem.Property(extraInfo)][/UPPERCASE]</label>
                                     <scroll>Control.HasFocus(2002)</scroll>
                                 </control>
                                 <control type="label">

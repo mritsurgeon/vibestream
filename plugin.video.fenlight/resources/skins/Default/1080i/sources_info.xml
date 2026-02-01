@@ -67,7 +67,7 @@
                     <textcolor>FFCCCCCC</textcolor>
                     <align>left</align>
                     <aligny>center</aligny>
-                    <label>[UPPERCASE][COLOR $INFO[Window.Property(highlight)]][B]Provider: [/B][/COLOR]$INFO[Window.Property(provider)][/UPPERCASE]</label>
+                    <label>[UPPERCASE][COLOR $INFO[Window.Property(highlight)]][B]Service: [/B][/COLOR]$INFO[Window.Property(provider)][/UPPERCASE]</label>
                 </control>
                 <control type="label">
                     <top>50</top>
@@ -77,7 +77,7 @@
                     <textcolor>FFCCCCCC</textcolor>
                     <align>left</align>
                     <aligny>center</aligny>
-                    <label>[UPPERCASE][COLOR $INFO[Window.Property(highlight)]][B]Provider: [/B][/COLOR]$INFO[Window.Property(source_type)][/UPPERCASE]</label>
+                    <label>[UPPERCASE][COLOR $INFO[Window.Property(highlight)]][B]Status: [/B][/COLOR]$INFO[Window.Property(source_type_friendly)][/UPPERCASE]</label>
                 </control>
                 <control type="label">
                     <top>100</top>
@@ -87,7 +87,7 @@
                     <textcolor>FFCCCCCC</textcolor>
                     <align>left</align>
                     <aligny>center</aligny>
-                    <label>[UPPERCASE][COLOR $INFO[Window.Property(highlight)]][B]Site: [/B][/COLOR]$INFO[Window.Property(source_site)][/UPPERCASE]</label>
+                    <label>[UPPERCASE][COLOR $INFO[Window.Property(highlight)]][B]From: [/B][/COLOR]$INFO[Window.Property(source_site)][/UPPERCASE]</label>
                 </control>
                 <control type="label">
                     <top>150</top>
@@ -107,7 +107,7 @@
                     <textcolor>FFCCCCCC</textcolor>
                     <align>left</align>
                     <aligny>center</aligny>
-                    <label>[UPPERCASE][COLOR $INFO[Window.Property(highlight)]][B]Size: [/B][/COLOR]$INFO[Window.Property(size_label)][/UPPERCASE]</label>
+                    <label>[UPPERCASE][COLOR $INFO[Window.Property(highlight)]][B]File size: [/B][/COLOR]$INFO[Window.Property(size_label)][/UPPERCASE]</label>
                 </control>
                 <control type="label">
                     <top>250</top>
@@ -138,7 +138,7 @@
                     <textcolor>FFCCCCCC</textcolor>
                     <align>left</align>
                     <aligny>top</aligny>
-                    <label>[UPPERCASE][COLOR $INFO[Window.Property(highlight)]][B]Title: [/B][/COLOR]$INFO[Window.Property(name)][/UPPERCASE]</label>
+                    <label>[UPPERCASE][COLOR $INFO[Window.Property(highlight)]][B]File: [/B][/COLOR]$INFO[Window.Property(name)][/UPPERCASE]</label>
                 </control>
             </control>
         </control>

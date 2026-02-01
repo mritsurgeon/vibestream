@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.fenlight" name="VibeStream" provider-name="mritsurgeon" version="1.0.108">
+<addon id="plugin.video.fenlight" name="VibeStream" provider-name="mritsurgeon" version="1.0.109">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
@@ -21,7 +21,7 @@
             <icon>icon.png</icon>
             <fanart>fanart.png</fanart>
         </assets>
-        <news>INFO: VibeStream 1.0.108 - Verbose scraping logs for No Results debugging.</news>
+        <news>INFO: VibeStream 1.0.109 - Simpler source labels (File size, Status, From, Details) and friendly status text (Ready to play, Not in cloud, etc.).</news>
     </extension>
 </addon>
 <addon id="repository.vibestream" name="VibeStream Repository" version="1.0.1" provider-name="mritsurgeon">

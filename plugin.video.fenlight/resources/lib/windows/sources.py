@@ -17,6 +17,21 @@ info_icons_dict = {'easynews': get_icon('easynews'), 'alldebrid': get_icon('alld
 info_quality_dict = {'4k': get_icon('flag_4k'), '1080p': get_icon('flag_1080p'), '720p': get_icon('flag_720p'), 'sd': get_icon('flag_sd')}
 quality_choices = ('4K', '1080P', '720P', 'SD', 'CAM/SCR/TELE')
 prerelease_values, prerelease_key = ('CAM', 'SCR', 'TELE'), 'CAM/SCR/TELE'
+
+def _source_type_friendly(raw):
+	"""Map technical source_type to simple labels for non-technical users."""
+	if not raw:
+		return ''
+	r = raw.upper()
+	if 'UNCACHED' in r:
+		return 'Not in cloud' if 'PACK' not in r else 'Not in cloud (pack)'
+	if 'CACHED' in r:
+		return 'Ready to play' if 'PACK' not in r else 'Ready to play (pack)'
+	if 'UNCHECKED' in r:
+		return 'May need a moment' if 'PACK' not in r else 'May need a moment (pack)'
+	if 'DIRECT' in r:
+		return 'Direct link'
+	return raw
 poster_lists, pack_check = ('list', 'medialist'), ('true', 'show', 'season')
 xml_choices = [('List', img_url % 'rcgKRWk'), ('Rows', img_url % 'wHvaixs'), ('WideList', img_url % '4UwfSLy')]
 run_plugin_str = 'RunPlugin(%s)'
@@ -137,30 +152,32 @@ class SourcesResults(BaseDialog):
 					quality_note = get('quality_preset_note', '')
 					if quality_note: extraInfo = '[B]%s[/B] | %s' % (quality_note, extraInfo)
 					if not extraInfo: extraInfo = 'N/A'
+					source_type_raw = ''
 					if scrape_provider == 'external':
 						source_site = upper(get('provider'))
 						provider = upper(get('debrid', source_site).replace('.me', ''))
 						provider_lower = lower(provider)
 						provider_icon = self.get_provider_and_path(provider_lower)[1]
 						if 'Uncached' in item['cache_provider']:
-							if 'seeders' in item: set_properties({'source_type': 'UNCACHED (%d SEEDERS)' % get('seeders', 0)})
-							else: set_properties({'source_type': 'UNCACHED'})
-							set_properties({'highlight': 'FF7C7C7C'})
+							source_type_raw = 'UNCACHED (%d SEEDERS)' % get('seeders', 0) if 'seeders' in item else 'UNCACHED'
+							set_properties({'source_type': source_type_raw, 'highlight': 'FF7C7C7C'})
 						else:
 							cache_flag = 'UNCHECKED' if provider in ('REAL-DEBRID', 'ALLDEBRID') else '[B]CACHED[/B]'
+							source_type_raw = '%s [B]PACK[/B]' % cache_flag if pack else cache_flag
 							if highlight_type == 0: key = provider_lower
 							else: key = basic_quality
-							set_properties({'highlight': self.info_highlights_dict[key]})
-							if pack: set_properties({'source_type': '%s [B]PACK[/B]' % cache_flag})
-							else: set_properties({'source_type': '%s' % cache_flag})
+							set_properties({'highlight': self.info_highlights_dict[key], 'source_type': source_type_raw})
 						set_properties({'provider': provider})
 					else:
 						source_site = upper(source)
 						provider, provider_icon = self.get_provider_and_path(lower(source))
+						source_type_raw = 'DIRECT'
 						if highlight_type == 0: key = provider
 						else: key = basic_quality
-						set_properties({'highlight': self.info_highlights_dict[key], 'source_type': 'DIRECT', 'provider': upper(provider)})
-					set_properties({'name': upper(name), 'source_site': source_site, 'provider_icon': provider_icon, 'quality_icon': quality_icon, 'count': '%02d.' % count,
+						set_properties({'highlight': self.info_highlights_dict[key], 'source_type': source_type_raw, 'provider': upper(provider)})
+					source_type_friendly = _source_type_friendly(source_type_raw)
+					set_properties({'name': upper(name), 'source_site': source_site, 'source_type_friendly': source_type_friendly,
+								'provider_icon': provider_icon, 'quality_icon': quality_icon, 'count': '%02d.' % count,
 								'size_label': get('size_label', 'N/A'), 'extraInfo': extraInfo, 'quality': upper(quality), 'hash': get('hash', 'N/A'), 'source': json.dumps(item)})	
 					yield listitem
 				except: pass
@@ -399,6 +416,7 @@ class SourcesInfo(BaseDialog):
 		quality, quality_path = self.get_quality_and_path()
 		self.setProperty('name', self.item_get_property('name'))
 		self.setProperty('source_type', self.item_get_property('source_type'))
+		self.setProperty('source_type_friendly', self.item_get_property('source_type_friendly') or _source_type_friendly(self.item_get_property('source_type')))
 		self.setProperty('source_site', self.item_get_property('source_site'))
 		self.setProperty('size_label', self.item_get_property('size_label'))
 		self.setProperty('extraInfo', self.item_get_property('extraInfo'))
