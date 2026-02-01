@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addons>
-<addon id="plugin.video.fenlight" name="VibeStream" provider-name="Ian" version="1.0.0">
+<addon id="plugin.video.fenlight" name="VibeStream" provider-name="mritsurgeon" version="1.0.0">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
@@ -18,8 +18,8 @@
         <platform>all</platform>
 		<disclaimer lang="en">The author of this addon does not host any of the content which is found and has no affiliation with any of the content providers.</disclaimer>
         <assets>
-            <icon>resources/media/vibestream_icon.png</icon>
-            <fanart>resources/media/vibestream_fanart.png</fanart>
+            <icon>icon.png</icon>
+            <fanart>fanart.png</fanart>
         </assets>
         <news>INFO: VibeStream 1.0.0 Initial Release with Auto-Fallback and Setup Wizard.</news>
     </extension>
