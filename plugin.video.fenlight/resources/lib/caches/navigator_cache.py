@@ -3,6 +3,9 @@ from caches.base_cache import connect_database
 from modules.kodi_utils import get_property, set_property, clear_property
 # from modules.kodi_utils import logger
 
+# Bump this when default menu structure changes so upgraded users get new defaults.
+MENU_DEFAULTS_VERSION = '1.0.106'
+
 GET_LIST = 'SELECT list_contents FROM navigator WHERE list_name = ? AND list_type = ?'
 SET_LIST = 'INSERT OR REPLACE INTO navigator VALUES (?, ?, ?)'
 DELETE_LIST = 'DELETE FROM navigator WHERE list_name=? and list_type=?'
@@ -76,6 +79,14 @@ main_menus = {'RootList': root_list, 'MovieList': movie_list, 'TVShowList': tvsh
 
 class NavigatorCache:
 	def get_main_lists(self, list_name):
+		# On upgrade, refresh default menus so users see the simplified Netflix-style lists.
+		stored_version = self.get_list('__menu_version__', 'default')
+		if stored_version is None or stored_version != MENU_DEFAULTS_VERSION:
+			self.rebuild_database()
+			self.set_list('__menu_version__', 'default', MENU_DEFAULTS_VERSION)
+			# Apply new defaults to Movie/TV edited lists so the new order shows without "Restore Menu".
+			for list_name in ('MovieList', 'TVShowList'):
+				self.set_list(list_name, 'edited', main_menus[list_name])
 		default_contents = self.get_memory_cache(list_name, 'default')
 		if not default_contents:
 			default_contents = self.get_list(list_name, 'default')

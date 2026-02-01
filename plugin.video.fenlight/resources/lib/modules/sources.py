@@ -63,6 +63,7 @@ class Sources():
 		self.ext_name, self.ext_folder, self.provider_defaults, self.ext_sources = '', '', [], None
 		self.progress_dialog, self.progress_thread = None, None
 		self.playing_filename = ''
+		self.orig_results = []
 		self.count_tuple = (('sources_4k', '4K', self._quality_length), ('sources_1080p', '1080p', self._quality_length), ('sources_720p', '720p', self._quality_length),
 							('sources_sd', '', self._quality_length_sd), ('sources_total', '', self._quality_length_final))
 
@@ -156,12 +157,15 @@ class Sources():
 			# Cache Raw Results
 			if raw_results: set_cached_sources(self.media_type, self.tmdb_id, raw_results, self.season, self.episode)
 
-		# 3. Apply Quality Preset Filter
+		# 3. Store pre-filter results for "Access Filtered Results?" when quality filter removes all
+		if raw_results:
+			self.orig_results = self.process_results(raw_results)
+		else:
+			self.orig_results = []
+		# 4. Apply Quality Preset Filter
 		filtered_results = qm.filter_sources(raw_results)
-		
-		# 4. Standard Processing (Sort, Dedupe, etc.)
+		# 5. Standard Processing (Sort, Dedupe, etc.)
 		results = self.process_results(filtered_results)
-		
 		if not results: return self._process_post_results()
 		if self.autoscrape: return results
 		else: return self.play_source(results)
@@ -457,7 +461,8 @@ class Sources():
 						self.params.update({'custom_season': season, 'custom_episode': episode, 'episode_group_label': '[B]CUSTOM GROUP: S%02dE%02d[/B]' % (season, episode)})
 						self.threads, self.rescrape_with_episode_group, self.rescrape_with_all, self.disabled_ext_ignored, self.prescrape = [], True, True, True, False
 						return self.playback_prep()
-		if self.orig_results and not self.background:
+		orig = getattr(self, 'orig_results', [])
+		if orig and not self.background:
 			if self.ignore_results_filter == 0: return self._no_results()
 			if self.ignore_results_filter == 1 or confirm_dialog(heading=self.meta.get('rootname', ''), text='No results. Access Filtered Results?'):
 				return self._process_ignore_filters()
@@ -466,7 +471,7 @@ class Sources():
 	def _process_ignore_filters(self):
 		if self.autoplay: notification('Filters Ignored & Autoplay Disabled')
 		self.filters_ignored, self.autoplay = True, False
-		results = self.sort_results(self.orig_results)
+		results = self.sort_results(getattr(self, 'orig_results', []))
 		results = self.sort_preferred_autoplay(results)
 		results = self.sort_first(results)
 		return self.play_source(results)
