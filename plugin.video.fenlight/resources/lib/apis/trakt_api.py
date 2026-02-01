@@ -140,13 +140,14 @@ def trakt_get_device_token(device_codes):
 		expires_in = device_codes['expires_in']
 		sleep_interval = device_codes['interval']
 		user_code = str(device_codes['user_code'])
-		verification_url = str(device_codes['verification_url'])
+		verification_url = str(device_codes.get('verification_url', 'https://trakt.tv/activate'))
 		try: copy2clip(user_code)
 		except Exception as e:
 			kodi_utils.logger('TRAKT ERROR 1', e)
 		t_o = 5
-		content = '[CR]Scan the QR Code or navigate to: [B]%s[/B][CR]Enter the following code: [B]%s[/B]' % (str(device_codes['verification_url']), user_code)
-		direct_url = f"{verification_url}/{user_code}"
+		# Same approach as Real-Debrid: user goes to trakt.tv/activate and enters the one-time PIN
+		content = '[CR]1. Go to: [B]https://trakt.tv/activate[/B][CR][CR]2. Enter this one-time PIN in your browser:[CR][B]%s[/B]' % user_code
+		direct_url = 'https://trakt.tv/activate/%s' % user_code
 		tiny_url = requests.get('http://tinyurl.com/api-create.php', params={'url': direct_url}, timeout=t_o).text
 		qr_icon = 'https://qrcode.tec-it.com/API/QRCode?data=%s&backcolor=%%23ffffff&size=small&quietzone=1&errorcorrection=H' % tiny_url
 		progressDialog = progress_dialog('Trakt Authorize', qr_icon)
@@ -190,6 +191,9 @@ def trakt_refresh_token():
 
 def trakt_authenticate(dummy=''):
 	code = trakt_get_device_code()
+	if not code:
+		notification('Trakt: Could not get activation code', 5000)
+		return False
 	token = trakt_get_device_token(code)
 	if token:
 		set_setting('trakt.token', token["access_token"])

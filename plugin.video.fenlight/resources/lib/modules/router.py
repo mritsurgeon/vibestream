@@ -11,7 +11,8 @@ def routing(sys):
 	mode = _get('mode', 'navigator.main')
 	if 'navigator.' in mode:
 		from indexers.navigator import Navigator
-		return exec('Navigator(params).%s()' % mode.split('.')[1])
+		exec('Navigator(params).%s()' % mode.split('.')[1])
+		return mode
 	if 'menu_editor.' in mode:
 		from modules.menu_editor import MenuEditor
 		return exec('MenuEditor(params).%s()' % mode.split('.')[1])

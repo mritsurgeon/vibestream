@@ -9,9 +9,10 @@ confirm_dialog = kodi_utils.confirm_dialog
 select_dialog = kodi_utils.select_dialog
 
 def run_setup_wizard():
-	# 1. Welcome
-	if not confirm_dialog(heading='Welcome to VibeStream!', 
-						 text='This wizard will help you set up Trakt, Real-Debrid, and your Quality Presets for the best experience.\n\nStart now?'):
+	# 1. Welcome — user can skip and go straight to the addon
+	if not confirm_dialog(heading='Welcome to VibeStream!',
+						 text='This wizard will help you set up Trakt, Real-Debrid, and your Quality Presets for the best experience.\n\nStart setup now?',
+						 ok_label='Start Setup', cancel_label='Skip for Now'):
 		set_setting('vibestream.setup_wizard_run', 'true')
 		return
 
