@@ -1,21 +1,26 @@
 import os
 import hashlib
+import xml.etree.ElementTree as ET
 
 def generate_repo():
-    repo_dir = "packages"
-    if not os.path.exists(repo_dir):
-        os.makedirs(repo_dir)
-
-    addon_xml_path = "plugin.video.fenlight/addon.xml"
-    with open(addon_xml_path, 'r') as f:
-        addon_xml = f.read()
-
-    # Simple addons.xml generation
     addons_xml_content = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n<addons>\n"
-    addons_xml_content += addon_xml
-    addons_xml_content += "\n</addons>"
+    
+    for item in os.listdir('.'):
+        if os.path.isdir(item):
+            xml_path = os.path.join(item, 'addon.xml')
+            if os.path.exists(xml_path):
+                with open(xml_path, 'r', encoding='utf-8') as f:
+                    # Skip the XML declaration if present
+                    lines = f.readlines()
+                    if lines[0].startswith('<?xml'):
+                        addons_xml_content += "".join(lines[1:])
+                    else:
+                        addons_xml_content += "".join(lines)
+                addons_xml_content += "\n"
 
-    with open("addons.xml", "w") as f:
+    addons_xml_content += "</addons>"
+
+    with open("addons.xml", "w", encoding='utf-8') as f:
         f.write(addons_xml_content)
 
     # MD5 hash
@@ -25,6 +30,7 @@ def generate_repo():
 
     # Generate Gothic-themed index.html for Kodi browsing
     files = [f for f in os.listdir('.') if f.endswith('.zip') or f.startswith('addons.xml')]
+    files.sort()
     
     links_html = ""
     for f in files:
@@ -100,7 +106,7 @@ def generate_repo():
 </body>
 </html>"""
 
-    with open("index.html", "w") as f:
+    with open("index.html", "w", encoding='utf-8') as f:
         f.write(index_content)
 
     print("Generated addons.xml, addons.xml.md5, and Gothic index.html")

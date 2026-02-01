@@ -1,48 +1,38 @@
 #!/usr/bin/env python3
 import os
 import zipfile
-import shutil
+import xml.etree.ElementTree as ET
 
-# Configuration
-ADDON_ID = "plugin.video.fenlight"
-ADDON_NAME = "VibeStream"
-VERSION = "1.0.0"
-SOURCE_DIR = "plugin.video.fenlight"
-OUTPUT_FILENAME = f"vibestream-{VERSION}.zip"
-EXCLUDES = [
-    ".git",
-    "__pycache__",
-    ".DS_Store",
-    ".antigravityignore",
-    ".idea",
-    ".vscode",
-    "brain",
-    ".gemini"
-]
+def get_addon_info(addon_dir):
+    xml_path = os.path.join(addon_dir, 'addon.xml')
+    if not os.path.exists(xml_path):
+        return None, None
+    tree = ET.parse(xml_path)
+    root = tree.getroot()
+    return root.attrib['id'], root.attrib['version']
 
-def create_package():
-    print(f"Packaging {ADDON_NAME} v{VERSION}...")
-    
-    if not os.path.exists(SOURCE_DIR):
-        print(f"Error: Source directory {SOURCE_DIR} not found.")
+def create_package(addon_dir):
+    addon_id, version = get_addon_info(addon_dir)
+    if not addon_id:
         return
-
-    with zipfile.ZipFile(OUTPUT_FILENAME, 'w', zipfile.ZIP_DEFLATED) as zipf:
-        for root, dirs, files in os.walk(SOURCE_DIR):
-            # Apply excludes
-            dirs[:] = [d for d in dirs if d not in EXCLUDES]
-            
+    
+    output_filename = f"{addon_id}-{version}.zip"
+    print(f"Packaging {addon_id} v{version}...")
+    
+    excludes = [".git", "__pycache__", ".DS_Store", "brain", ".gemini", ".idea", ".vscode"]
+    
+    with zipfile.ZipFile(output_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
+        for root, dirs, files in os.walk(addon_dir):
+            dirs[:] = [d for d in dirs if d not in excludes]
             for file in files:
-                if file in EXCLUDES or any(file.endswith(ext) for ext in [".pyc", ".pyo"]):
+                if file in excludes or any(file.endswith(ext) for ext in [".pyc", ".pyo"]):
                     continue
-                    
                 abs_path = os.path.join(root, file)
-                rel_path = os.path.relpath(abs_path, os.path.join(SOURCE_DIR, ".."))
-                
-                print(f"  Adding: {rel_path}")
+                rel_path = os.path.relpath(abs_path, os.path.join(addon_dir, ".."))
                 zipf.write(abs_path, rel_path)
-
-    print(f"\nDone! Package saved as: {OUTPUT_FILENAME}")
+    print(f"  Saved: {output_filename}")
 
 if __name__ == "__main__":
-    create_package()
+    for item in os.listdir('.'):
+        if os.path.isdir(item) and os.path.exists(os.path.join(item, 'addon.xml')):
+            create_package(item)
