@@ -24,12 +24,12 @@
         <news>INFO: VibeStream 1.0.103 - VibeStream settings in default_settings (setup_wizard, maintenance, trakt.user_keys_setup); sqlite3 import; settings_cache None guard.</news>
     </extension>
 </addon>
-<addon id="repository.vibestream" name="VibeStream Repository" version="1.0.0" provider-name="mritsurgeon">
+<addon id="repository.vibestream" name="VibeStream Repository" version="1.0.1" provider-name="mritsurgeon">
 	<extension point="xbmc.addon.repository" name="VibeStream Repository">
 		<dir>
-			<info compressed="false">https://mritsurgeon.github.io/vibestream/addons.xml</info>
-			<checksum>https://mritsurgeon.github.io/vibestream/addons.xml.md5</checksum>
-			<datadir zip="true">https://mritsurgeon.github.io/vibestream/packages/</datadir>
+			<info compressed="false">https://raw.githubusercontent.com/mritsurgeon/vibestream/main/addons.xml</info>
+			<checksum>https://raw.githubusercontent.com/mritsurgeon/vibestream/main/addons.xml.md5</checksum>
+			<datadir zip="true">https://raw.githubusercontent.com/mritsurgeon/vibestream/main/packages/</datadir>
 		</dir>
 	</extension>
 	<extension point="xbmc.addon.metadata">
