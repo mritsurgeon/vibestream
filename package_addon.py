@@ -17,11 +17,16 @@ def create_package(addon_dir):
         return
     
     output_filename = f"{addon_id}-{version}.zip"
+    addon_output_dir = os.path.join("packages", addon_id)
+    if not os.path.exists(addon_output_dir):
+        os.makedirs(addon_output_dir)
+    
+    full_output_path = os.path.join(addon_output_dir, output_filename)
     print(f"Packaging {addon_id} v{version}...")
     
     excludes = [".git", "__pycache__", ".DS_Store", "brain", ".gemini", ".idea", ".vscode"]
     
-    with zipfile.ZipFile(output_filename, 'w', zipfile.ZIP_DEFLATED) as zipf:
+    with zipfile.ZipFile(full_output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for root, dirs, files in os.walk(addon_dir):
             dirs[:] = [d for d in dirs if d not in excludes]
             for file in files:
@@ -30,7 +35,7 @@ def create_package(addon_dir):
                 abs_path = os.path.join(root, file)
                 rel_path = os.path.relpath(abs_path, os.path.join(addon_dir, ".."))
                 zipf.write(abs_path, rel_path)
-    print(f"  Saved: {output_filename}")
+    print(f"  Saved: {full_output_path}")
 
 if __name__ == "__main__":
     for item in os.listdir('.'):

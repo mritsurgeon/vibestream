@@ -30,12 +30,17 @@ def generate_repo():
 
     # Generate Gothic-themed index.html for Kodi browsing
     # Only show the repository zip to the user to avoid confusion
-    files = [f for f in os.listdir('.') if f.startswith('repository.vibestream') or f.startswith('addons.xml')]
-    files.sort()
+    repo_zips = []
+    for root, dirs, files in os.walk('.'):
+        for f in files:
+            if f.startswith('repository.vibestream') and f.endswith('.zip'):
+                repo_zips.append(os.path.join(root, f))
     
     links_html = ""
-    for f in files:
+    for f in sorted(repo_zips):
         links_html += f'<li><a href="{f}">{f}</a></li>\n'
+    links_html += '<li><a href="addons.xml">addons.xml</a></li>\n'
+    links_html += '<li><a href="addons.xml.md5">addons.xml.md5</a></li>\n'
     
     index_content = f"""<!DOCTYPE html>
 <html lang="en">
