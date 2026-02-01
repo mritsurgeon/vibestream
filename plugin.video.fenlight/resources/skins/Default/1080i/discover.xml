@@ -38,15 +38,25 @@
                 <texture colordiffuse="FFCCCCCC">fenlight_common/vibestream.png</texture>
             </control>
             <control type="label">
-                <width max="1635">auto</width>
-                <top>12</top>
-                <left>30</left>
-                <height>20</height>
-                <font>font12</font> <!-- FENLIGHT_26 -->
+                <width max="400">auto</width>
+                <top>8</top>
+                <left>50</left>
+                <height>22</height>
+                <font>font12</font>
                 <textcolor>FFCCCCCC</textcolor>
                 <shadowcolor>FF000000</shadowcolor>
-                <align>center</align>
-                <label>[UPPERCASE][B]DISCOVER[/B][/UPPERCASE]</label>
+                <align>left</align>
+                <label>[B]VibeStream[/B]</label>
+            </control>
+            <control type="label">
+                <width max="1200">auto</width>
+                <top>30</top>
+                <left>50</left>
+                <height>18</height>
+                <font>font12</font>
+                <textcolor>FFA9A8A8</textcolor>
+                <align>left</align>
+                <label>I wrote this for my wife Sibo because she loves TV 💩</label>
             </control>
             <control type="image">
                 <left>1302</left>

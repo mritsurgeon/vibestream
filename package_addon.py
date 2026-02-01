@@ -25,12 +25,14 @@ def create_package(addon_dir):
     print(f"Packaging {addon_id} v{version}...")
     
     excludes = [".git", "__pycache__", ".DS_Store", "brain", ".gemini", ".idea", ".vscode"]
-    
+    # Legacy Fen Light art no longer used (VibeStream uses vibestream_icon/fanart only)
+    exclude_files = {"fenlight_plus_fanart.png", "fenlight_fanart2.png", "fenlight_plus_icon.png", "fenlight_classic.jpg", "flpfa.jpg"}
+
     with zipfile.ZipFile(full_output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for root, dirs, files in os.walk(addon_dir):
             dirs[:] = [d for d in dirs if d not in excludes]
             for file in files:
-                if file in excludes or any(file.endswith(ext) for ext in [".pyc", ".pyo"]):
+                if file in excludes or file in exclude_files or any(file.endswith(ext) for ext in [".pyc", ".pyo"]):
                     continue
                 abs_path = os.path.join(root, file)
                 rel_path = os.path.relpath(abs_path, os.path.join(addon_dir, ".."))

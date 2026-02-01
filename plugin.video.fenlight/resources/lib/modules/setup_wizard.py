@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 from modules import kodi_utils
 from caches.settings_cache import set_setting, get_setting
 
@@ -24,7 +25,15 @@ def _run_setup_wizard():
 		set_setting('vibestream.setup_wizard_run', 'true')
 		return
 
-	# 2. Quality Preset
+	# 2. Trakt Setup (auth first so user expects it before quality)
+	try:
+		from modules.trakt_auth_wizard import run_trakt_wizard
+		run_trakt_wizard(skip_confirm=True)
+	except Exception as e:
+		kodi_utils.logger('VibeStream setup_wizard Trakt', str(e))
+		notification('Trakt setup skipped due to an error.', 4000)
+
+	# 3. Quality Preset
 	from modules.quality_manager import PRESETS, PRESET_1080P_BALANCED
 	preset_choices = [
 		('4K / Ultra (Best for high-speed fiber)', '4k_ultra'),
@@ -33,19 +42,13 @@ def _run_setup_wizard():
 		('Low / Slow (Maximum stability)', 'low')
 	]
 	labels = [i[0] for i in preset_choices]
-	choice = select_dialog(labels, heading='Select Quality Preset')
+	list_items = [{'line1': label} for label in labels]
+	kwargs = {'items': json.dumps(list_items), 'heading': 'Select Quality Preset'}
+	choice = select_dialog(labels, **kwargs)
 	if choice:
 		matches = [i[1] for i in preset_choices if i[0] == choice]
 		if matches:
 			set_setting('vibestream.quality.preset', matches[0])
-
-	# 3. Trakt Setup
-	try:
-		from modules.trakt_auth_wizard import run_trakt_wizard
-		run_trakt_wizard(skip_confirm=True)
-	except Exception as e:
-		kodi_utils.logger('VibeStream setup_wizard Trakt', str(e))
-		notification('Trakt setup skipped due to an error.', 4000)
 
 	# 4. Real-Debrid Setup
 	try:

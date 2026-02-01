@@ -13,7 +13,7 @@ from modules.source_utils import get_cache_expiry, make_alias_dict
 from modules.scraping_adapters.cocoscrapers import CocoScrapersAdapter
 from caches.source_cache import get_cached_sources, set_cached_sources
 from modules.quality_manager import QualityManager
-from modules.utils import change_image_resolution, adjust_premiered_date, get_datetime, make_thread_list_enumerate, batch_replace, append_module_to_syspath, manual_function_import, manual_module_import
+from modules.utils import change_image_resolution, adjust_premiered_date, get_datetime, make_thread_list_enumerate, batch_replace, append_module_to_syspath, manual_function_import, manual_module_import, safe_string, remove_accents
 from modules.health_manager import health_manager
 logger = kodi_utils.logger
 
@@ -479,11 +479,17 @@ class Sources():
 
 	def get_search_title(self):
 		search_title = self.meta.get('custom_title', None) or self.meta.get('english_title') or self.meta.get('title')
-		return search_title
+		try:
+			return safe_string(remove_accents(search_title)) if search_title else search_title
+		except Exception:
+			return safe_string(search_title) if search_title else search_title
 
 	def get_search_year(self):
 		year = self.meta.get('custom_year', None) or self.meta.get('year')
-		return year
+		try:
+			return safe_string(remove_accents(year)) if year is not None else year
+		except Exception:
+			return safe_string(year) if year is not None else year
 
 	def get_season(self):
 		season = self.meta.get('custom_season', None) or self.meta.get('season')

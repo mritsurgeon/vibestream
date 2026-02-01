@@ -13,6 +13,7 @@ tp, build_url, notification, addon, make_listitem, list_dirs = k.translate_path,
 add_item, set_content, end_directory, set_view_mode, add_items, get_infolabel = k.add_item, k.set_content, k.end_directory, k.set_view_mode, k.add_items, k.get_infolabel
 set_sort_method, set_category, container_refresh_input, current_window_object = k.set_sort_method, k.set_category, k.container_refresh_input, k.current_window_object
 close_all_dialog, sleep, home, get_property, set_property, fanart = k.close_all_dialog, k.sleep, k.home, k.get_property, k.set_property, k.get_addon_fanart()
+ADDON_DESCRIPTION = "I wrote this for my wife Sibo because she loves TV 💩"
 download_directory, easynews_authorized, get_icon, container_refresh = s.download_directory, s.easynews_authorized, k.get_icon, k.container_refresh
 get_shortcut_folders, currently_used_list, get_shortcut_folder_contents = nc.get_shortcut_folders, nc.currently_used_list, nc.get_shortcut_folder_contents
 get_main_lists, authorized_debrid_check, trakt_user_active = nc.get_main_lists, s.authorized_debrid_check, s.trakt_user_active
@@ -42,6 +43,10 @@ class Navigator:
 
 	def main(self):
 		try:
+			# Netflix/HBO-style: clean category title at root; set description for skins
+			if self.list_name == 'RootList':
+				self.category_name = 'VibeStream'
+				set_property('fenlight.addon_description', ADDON_DESCRIPTION)
 			from modules.setup_wizard import first_run_check
 			first_run_check()
 			if self.params_get('full_list', 'false') == 'true':
@@ -437,6 +442,8 @@ class Navigator:
 		from caches.discover_cache import discover_cache
 		action, media_type = self.params_get('action', ''), self.params_get('media_type')
 		if not action:
+			self.category_name = 'Discover — Movies' if media_type == 'movie' else 'Discover — TV Shows'
+			# First item always allows creating a new list (empty state is functional)
 			self.add({'mode': 'discover_choice', 'media_type': media_type, 'isFolder': 'false'}, '[I]Make New Discover List...[/I]', 'new')
 			results = discover_cache.get_all(media_type)
 			if media_type == 'movie': mode, action = 'build_movie_list', 'tmdb_movies_discover'

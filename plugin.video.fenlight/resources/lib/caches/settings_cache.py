@@ -285,7 +285,8 @@ default_settings = [
 {'setting_id': 'meta_filter', 'setting_type': 'boolean', 'setting_default': 'false'},
 {'setting_id': 'use_viewtypes', 'setting_type': 'boolean', 'setting_default': 'true'},
 {'setting_id': 'manual_viewtypes', 'setting_type': 'boolean', 'setting_default': 'false'},
-{'setting_id': 'view.main', 'setting_type': 'string', 'setting_default': '55'},
+# Default to Kodi poster view (500) for Netflix-style layout; users can change in Tools → Set Views
+{'setting_id': 'view.main', 'setting_type': 'string', 'setting_default': '500'},
 {'setting_id': 'view.movies', 'setting_type': 'string', 'setting_default': '500'},
 {'setting_id': 'view.tvshows', 'setting_type': 'string', 'setting_default': '500'},
 {'setting_id': 'view.seasons', 'setting_type': 'string', 'setting_default': '55'},

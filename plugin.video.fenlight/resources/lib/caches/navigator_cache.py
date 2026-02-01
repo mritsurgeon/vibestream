@@ -16,79 +16,43 @@ tvshow_random_converts = {'navigator.genres': 'tmdb_tv_genres', 'navigator.provi
 anime_random_converts = {'navigator.genres': 'tmdb_anime_genres', 'navigator.providers': 'tmdb_anime_providers', 'navigator.years': 'tmdb_anime_year',
 'navigator.decades': 'tmdb_anime_decade', 'navigator.certifications': 'trakt_anime_certifications'}
 
+# Root: Netflix/HBO-style order — content first, then Search/Discover, then My List, secondary, tools.
+# Every action here must have a handler in router.py and corresponding indexer (movies/tvshows/navigator).
 root_list = [
 {'name': 'Movies', 'mode': 'navigator.main', 'action': 'MovieList', 'iconImage': 'movies'},
 {'name': 'TV Shows', 'mode': 'navigator.main', 'action': 'TVShowList', 'iconImage': 'tv'},
-{'name': 'Anime', 'mode': 'navigator.main', 'action': 'AnimeList', 'iconImage': 'anime'},
-{'name': 'People', 'mode': 'navigator.people', 'iconImage': 'genre_family'},
 {'name': 'Search', 'mode': 'navigator.search', 'iconImage': 'search'},
 {'name': 'Discover', 'mode': 'navigator.discover', 'iconImage': 'discover'},
-{'name': 'Random Lists', 'mode': 'navigator.random_lists', 'iconImage': 'random'},
-{'name': 'My Lists', 'mode': 'navigator.my_content', 'iconImage': 'lists'},
-{'name': 'My Services', 'mode': 'navigator.premium', 'iconImage': 'premium'},
+{'name': 'My List', 'mode': 'navigator.my_content', 'iconImage': 'lists'},
 {'name': 'Favorites', 'mode': 'navigator.favorites', 'iconImage': 'favorites'},
+{'name': 'People', 'mode': 'navigator.people', 'iconImage': 'genre_family'},
+{'name': 'Anime', 'mode': 'navigator.main', 'action': 'AnimeList', 'iconImage': 'anime'},
+{'name': 'Random', 'mode': 'navigator.random_lists', 'iconImage': 'random'},
+{'name': 'My Services', 'mode': 'navigator.premium', 'iconImage': 'premium'},
 {'name': 'Downloads', 'mode': 'navigator.downloads', 'iconImage': 'downloads'},
 {'name': 'Tools', 'mode': 'navigator.tools', 'iconImage': 'settings2'}
 			]
 
 movie_list = [
-{'name': 'Trending', 'mode': 'build_movie_list', 'action': 'trakt_movies_trending', 'random_support': 'true', 'iconImage': 'trending'},
-{'name': 'Trending UK', 'mode': 'build_movie_list', 'action': 'trakt_movies_trending_uk', 'random_support': 'true', 'iconImage': 'trending'},
-{'name': 'Trending Recent', 'mode': 'build_movie_list', 'action': 'trakt_movies_trending_recent', 'iconImage': 'trending_recent'},
-{'name': 'Trending Recent UK', 'mode': 'build_movie_list', 'action': 'trakt_movies_trending_recent_uk', 'iconImage': 'trending_recent'},
-{'name': 'Popular', 'mode': 'build_movie_list', 'action': 'tmdb_movies_popular', 'random_support': 'true', 'iconImage': 'popular'},
+{'name': 'Continue Watching', 'mode': 'build_movie_list', 'action': 'in_progress_movies', 'iconImage': 'player'},
+{'name': 'Trending Recent / Latest', 'mode': 'build_movie_list', 'action': 'trakt_movies_trending_recent', 'iconImage': 'trending_recent'},
 {'name': 'Popular Today', 'mode': 'build_movie_list', 'action': 'tmdb_movies_popular_today', 'random_support': 'true', 'iconImage': 'popular_today'},
 {'name': 'Premieres', 'mode': 'build_movie_list', 'action': 'tmdb_movies_premieres', 'random_support': 'true', 'iconImage': 'fresh'},
-{'name': 'Latest Releases', 'mode': 'build_movie_list', 'action': 'tmdb_movies_latest_releases', 'random_support': 'true', 'iconImage': 'dvd'},
-{'name': 'Most Watched', 'mode': 'build_movie_list', 'action': 'trakt_movies_most_watched', 'random_support': 'true', 'iconImage': 'most_watched'},
-{'name': 'Most Favorited', 'mode': 'build_movie_list', 'action': 'trakt_movies_most_favorited', 'random_support': 'true', 'iconImage': 'favorites'},
-{'name': 'Top 10 Box Office', 'mode': 'build_movie_list', 'action': 'trakt_movies_top10_boxoffice', 'iconImage': 'box_office'},
-{'name': 'Blockbusters', 'mode': 'build_movie_list', 'action': 'tmdb_movies_blockbusters', 'random_support': 'true', 'iconImage': 'most_voted'},
-{'name': 'In Theaters', 'mode': 'build_movie_list', 'action': 'tmdb_movies_in_theaters', 'random_support': 'true', 'iconImage': 'intheatres'},
-{'name': 'Up Coming', 'mode': 'build_movie_list', 'action': 'tmdb_movies_upcoming', 'random_support': 'true', 'iconImage': 'lists'},
-{'name': 'Oscar Winners', 'mode': 'build_movie_list', 'action': 'tmdb_movies_oscar_winners', 'random_support': 'true', 'iconImage': 'oscar_winners'},
-{'name': 'Genres', 'mode': 'navigator.genres', 'menu_type': 'movie', 'random_support': 'true', 'iconImage': 'genres'},
+{'name': 'Classics', 'mode': 'build_movie_list', 'action': 'tmdb_movies_classics', 'random_support': 'true', 'iconImage': 'most_voted'},
 {'name': 'Providers', 'mode': 'navigator.providers', 'menu_type': 'movie', 'random_support': 'true', 'iconImage': 'providers'},
-{'name': 'Providers UK', 'mode': 'navigator.providersuk', 'menu_type': 'movie', 'iconImage': 'providers'},
-{'name': 'Languages', 'mode': 'navigator.languages', 'menu_type': 'movie', 'random_support': 'true', 'iconImage': 'languages'},
-{'name': 'Years', 'mode': 'navigator.years', 'menu_type': 'movie', 'random_support': 'true', 'iconImage': 'calender'},
-{'name': 'Decades', 'mode': 'navigator.decades', 'menu_type': 'movie', 'random_support': 'true', 'iconImage': 'calendar_decades'},
-{'name': 'Certifications', 'mode': 'navigator.certifications', 'menu_type': 'movie', 'random_support': 'true', 'iconImage': 'certifications'},
-{'name': 'Because You Watched...', 'iconImage': 'because_you_watched', 'mode': 'navigator.because_you_watched', 'menu_type': 'movie'},
-{'name': 'New For You (Recommendations)', 'mode': 'build_movie_list', 'action': 'recommendations_discovery', 'iconImage': 'discover'},
-{'name': 'Watched', 'mode': 'build_movie_list', 'action': 'watched_movies', 'iconImage': 'watched_1'},
-{'name': 'Recently Watched', 'mode': 'build_movie_list', 'action': 'recent_watched_movies', 'iconImage': 'watched_recent'},
-{'name': 'In Progress', 'mode': 'build_movie_list', 'action': 'in_progress_movies', 'iconImage': 'player'}
+{'name': 'Watched', 'mode': 'build_movie_list', 'action': 'watched_movies', 'iconImage': 'watched_1'}
 			]
 
 tvshow_list = [
-{'name': 'Trending', 'mode': 'build_tvshow_list', 'action': 'trakt_tv_trending', 'random_support': 'true', 'iconImage': 'trending'},
-{'name': 'Trending UK', 'mode': 'build_tvshow_list', 'action': 'trakt_tv_trending_uk', 'iconImage': 'trending'},
-{'name': 'Trending Recent', 'mode': 'build_tvshow_list', 'action': 'trakt_tv_trending_recent', 'random_support': 'true', 'iconImage': 'trending_recent'},
-{'name': 'Trending Recent UK', 'mode': 'build_tvshow_list', 'action': 'trakt_tv_trending_recent_uk', 'iconImage': 'trending_recent'},
-{'name': 'Popular', 'mode': 'build_tvshow_list', 'action': 'tmdb_tv_popular', 'random_support': 'true', 'iconImage': 'popular'},
+{'name': 'Continue Watching', 'mode': 'build_tvshow_list', 'action': 'in_progress_tvshows', 'iconImage': 'player'},
+{'name': 'Next Episodes', 'mode': 'build_next_episode', 'iconImage': 'next_episodes'},
+{'name': 'Trending Recent / Latest', 'mode': 'build_tvshow_list', 'action': 'trakt_tv_trending_recent', 'random_support': 'true', 'iconImage': 'trending_recent'},
 {'name': 'Popular Today', 'mode': 'build_tvshow_list', 'action': 'tmdb_tv_popular_today', 'random_support': 'true', 'iconImage': 'popular_today'},
 {'name': 'Premieres', 'mode': 'build_tvshow_list', 'action': 'tmdb_tv_premieres', 'random_support': 'true', 'iconImage': 'fresh'},
-{'name': 'Most Watched', 'mode': 'build_tvshow_list', 'action': 'trakt_tv_most_watched', 'random_support': 'true', 'iconImage': 'most_watched'},
-{'name': 'Most Favorited', 'mode': 'build_tvshow_list', 'action': 'trakt_tv_most_favorited', 'random_support': 'true', 'iconImage': 'favorites'},
-{'name': 'Airing Today', 'mode': 'build_tvshow_list', 'action': 'tmdb_tv_airing_today', 'random_support': 'true', 'iconImage': 'live'},
-{'name': 'On the Air', 'mode': 'build_tvshow_list', 'action': 'tmdb_tv_on_the_air', 'random_support': 'true', 'iconImage': 'ontheair'},
-{'name': 'Up Coming', 'mode': 'build_tvshow_list', 'action': 'tmdb_tv_upcoming', 'random_support': 'true', 'iconImage': 'lists'},
-{'name': 'Genres', 'mode': 'navigator.genres', 'menu_type': 'tvshow', 'random_support': 'true', 'iconImage': 'genres'},
+{'name': 'Classics', 'mode': 'build_tvshow_list', 'action': 'tmdb_tv_classics', 'random_support': 'true', 'iconImage': 'most_voted'},
 {'name': 'Providers', 'mode': 'navigator.providers', 'menu_type': 'tvshow', 'random_support': 'true', 'iconImage': 'providers'},
-{'name': 'Providers UK', 'mode': 'navigator.providersuk', 'menu_type': 'tvshow', 'iconImage': 'providers'},
 {'name': 'Networks', 'mode': 'navigator.networks', 'menu_type': 'tvshow', 'random_support': 'true', 'iconImage': 'networks'},
-{'name': 'Languages', 'mode': 'navigator.languages', 'menu_type': 'tvshow', 'random_support': 'true', 'iconImage': 'languages'},
-{'name': 'Years', 'mode': 'navigator.years', 'menu_type': 'tvshow', 'random_support': 'true', 'iconImage': 'calender'},
-{'name': 'Decades', 'mode': 'navigator.decades', 'menu_type': 'tvshow', 'random_support': 'true', 'iconImage': 'calendar_decades'},
-{'name': 'Certifications', 'mode': 'navigator.certifications', 'menu_type': 'tvshow', 'random_support': 'true', 'iconImage': 'certifications'},
-{'name': 'Because You Watched...', 'mode': 'navigator.because_you_watched', 'menu_type': 'tvshow', 'iconImage': 'because_you_watched'},
-{'name': 'New For You (Recommendations)', 'mode': 'build_tvshow_list', 'action': 'recommendations_discovery', 'iconImage': 'discover'},
-{'name': 'Watched', 'mode': 'build_tvshow_list', 'action': 'watched_tvshows', 'iconImage': 'watched_1'},
-{'name': 'In Progress', 'mode': 'build_tvshow_list', 'action': 'in_progress_tvshows', 'iconImage': 'in_progress_tvshow'},
-{'name': 'Recently Watched Episodes', 'mode': 'build_recently_watched_episode', 'iconImage': 'watched_recent'},
-{'name': 'In Progress Episodes', 'mode': 'build_in_progress_episode', 'iconImage': 'player'},
-{'name': 'Next Episodes', 'mode': 'build_next_episode', 'iconImage': 'next_episodes'}
+{'name': 'Watched', 'mode': 'build_tvshow_list', 'action': 'watched_tvshows', 'iconImage': 'watched_1'}
 			]
 
 anime_list = [

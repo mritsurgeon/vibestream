@@ -18,13 +18,13 @@ watched_indicators, widget_hide_next_page = settings.watched_indicators, setting
 widget_hide_watched, media_open_action, page_limit, paginate = settings.widget_hide_watched, settings.media_open_action, settings.page_limit, settings.paginate
 tmdb_api_key, mpaa_region = settings.tmdb_api_key, settings.mpaa_region
 run_plugin = 'RunPlugin(%s)'
-main = ('tmdb_movies_popular', 'tmdb_movies_popular_today','tmdb_movies_blockbusters','tmdb_movies_in_theaters', 'tmdb_movies_upcoming', 'tmdb_movies_latest_releases',
-'tmdb_movies_premieres', 'tmdb_movies_oscar_winners')
+main = ('tmdb_movies_popular', 'tmdb_movies_popular_today', 'tmdb_movies_top_rated', 'tmdb_movies_blockbusters', 'tmdb_movies_in_theaters', 'tmdb_movies_upcoming', 'tmdb_movies_latest_releases',
+'tmdb_movies_premieres', 'tmdb_movies_classics', 'tmdb_movies_oscar_winners')
 special = ('tmdb_movies_languages', 'tmdb_movies_providers', 'tmdb_movies_providers_uk', 'tmdb_movies_year', 'tmdb_movies_decade', 'tmdb_movies_certifications', 'tmdb_movies_recommendations',
 'tmdb_movies_genres', 'tmdb_movies_search', 'tmdb_movie_keyword_results', 'tmdb_movie_keyword_results_direct')
 personal = {'favorites_movies': ('modules.favorites', 'get_favorites'), 'in_progress_movies': ('modules.watched_status', 'get_in_progress_movies'),
 'watched_movies': ('modules.watched_status', 'get_watched_items'), 'recent_watched_movies': ('modules.watched_status', 'get_recently_watched')}
-trakt_main = ('trakt_movies_trending', 'trakt_movies_trending_recent', 'trakt_movies_trending_uk', 'trakt_movies_trending_recent_uk','trakt_movies_most_watched', 'trakt_movies_most_favorited', 'trakt_movies_top10_boxoffice')
+trakt_main = ('trakt_movies_trending', 'trakt_movies_trending_recent', 'trakt_movies_most_watched', 'trakt_movies_most_favorited', 'trakt_movies_top10_boxoffice')
 trakt_personal = ('trakt_collection', 'trakt_watchlist', 'trakt_collection_lists', 'trakt_watchlist_lists', 'trakt_favorites')
 meta_list_dict = {'tmdb_movies_languages': meta_lists.languages, 'tmdb_movies_providers': meta_lists.watch_providers_movies, 'tmdb_movies_providers_uk': meta_lists.watch_providers_movies_uk, 'tmdb_movies_year': meta_lists.years_movies,
 			'tmdb_movies_decade': meta_lists.decades_movies, 'tmdb_movies_certifications': meta_lists.movie_certifications, 'tmdb_movies_genres': meta_lists.movie_genres}
@@ -211,11 +211,25 @@ class Movies:
 			if progress:
 				info_tag.setResumePoint(float(progress))
 				set_properties({'WatchedProgress': progress})
-			listitem.setLabel(title)
+			# CAM stamp: recent releases (within 120 days) often only have CAM/SCR - show on label and property for skins
+			cam_note = ''
+			if first_airdate and not unaired:
+				try:
+					cur = getattr(self.current_date, 'date', lambda: self.current_date)()
+					fa = getattr(first_airdate, 'date', lambda: first_airdate)()
+					if (cur - fa).days <= 120:
+						cam_note = ' [CAM]'
+				except (TypeError, AttributeError):
+					pass
+			display_title = title + cam_note
+			listitem.setLabel(display_title)
 			listitem.addContextMenuItems(cm)
 			listitem.setArt({'poster': poster, 'fanart': fanart, 'icon': poster, 'clearlogo': clearlogo, 'landscape': landscape, 'thumb': thumb})
-			set_properties({'fenlight.extras_params': extras_params, 'fenlight.options_params': options_params,
-							'belongs_to_collection': belongs_to_movieset, 'fenlight.more_like_this_params': more_like_this_params})
+			props = {'fenlight.extras_params': extras_params, 'fenlight.options_params': options_params,
+				'belongs_to_collection': belongs_to_movieset, 'fenlight.more_like_this_params': more_like_this_params}
+			if cam_note:
+				props['fenlight.quality_note'] = 'CAM'
+			set_properties(props)
 			self.append(((url_params, listitem, False), _position))
 		except: pass
 
