@@ -20,7 +20,7 @@ VibeStream is a high-performance, modular Kodi addon for streaming from Debrid s
 
 ### Option 2: Repository Installation
 1. Go to Kodi **File Manager** -> **Add Source**.
-2. Add `https://thejason40.github.io/packages` (or your updated repo URL).
+2. Add `https://mritsurgeon.github.io/vibestream` (or your raw GitHub URL).
 3. Name it **VibeStream Repo**.
 4. Go to **Settings** -> **Add-ons** -> **Install from repository** -> **VibeStream**.
 
