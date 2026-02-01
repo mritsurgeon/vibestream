@@ -1,14 +1,15 @@
 <addon id="repository.vibestream" name="VibeStream Repository" version="1.0.0" provider-name="mritsurgeon">
 	<extension point="xbmc.addon.repository" name="VibeStream Repository">
 		<dir>
-			<info compressed="false">https://raw.githubusercontent.com/mritsurgeon/vibestream/main/addons.xml</info>
-			<checksum>https://raw.githubusercontent.com/mritsurgeon/vibestream/main/addons.xml.md5</checksum>
-			<datadir zip="true">https://raw.githubusercontent.com/mritsurgeon/vibestream/main/</datadir>
+			<info compressed="false">https://mritsurgeon.github.io/vibestream/addons.xml</info>
+			<checksum>https://mritsurgeon.github.io/vibestream/addons.xml.md5</checksum>
+			<datadir zip="true">https://mritsurgeon.github.io/vibestream/</datadir>
 		</dir>
 	</extension>
 	<extension point="xbmc.addon.metadata">
 		<summary lang="en">Official VibeStream Repository</summary>
 		<description lang="en">Install VibeStream and stay up to date with the latest releases.</description>
+		<disclaimer lang="en">Dedicated to high-performance streaming.</disclaimer>
 		<platform>all</platform>
         <assets>
             <icon>icon.png</icon>

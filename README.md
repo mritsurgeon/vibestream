@@ -25,5 +25,8 @@ VibeStream is a high-performance, modular Kodi addon for streaming from Debrid s
 2. Select **VibeStream Repository**.
 3. Go to **Video add-ons** -> **VibeStream** -> **Install**.
 
+> [!IMPORTANT]
+> **Dependency Note**: VibeStream requires **CocoScrapers**. If the installation fails, please ensure you have the **CocoScrapers Repository** installed first. You can find it at: `https://cocoscrapers.github.io/`
+
 ---
 *VibeStream is built for speed and stability. Enjoy the ultimate streaming experience.*
