@@ -29,28 +29,51 @@ class QualityManager:
     
     def filter_sources(self, sources):
         """
-        Filter sources based on the active preset.
+        Filter sources (used e.g. for retry/fallback). Handles size in GB or MB.
         """
         filtered = []
         max_rank = RESOLUTION_RANKS.get(self.get_max_resolution(), 3)
         max_size_mb = self.get_max_size_gb() * 1024
-        
         for source in sources:
-            # Check Resolution
             quality = source.get('quality', 'SD')
             rank = RESOLUTION_RANKS.get(quality, 1)
-            
             if rank > max_rank:
                 continue
-                
-            # Check Size (if available)
-            size_mb = source.get('size', 0)
-            if size_mb > max_size_mb:
-                continue
-                
+            size_raw = source.get('size', 0) or 0
+            try:
+                size_val = float(size_raw)
+                size_mb = (size_val * 1024) if size_val and size_val < 1000 else size_val
+                if size_mb > max_size_mb:
+                    continue
+            except (TypeError, ValueError):
+                pass
             filtered.append(source)
-            
         return filtered
+
+    def stamp_sources(self, sources):
+        """
+        Full scrape, then stamp only: mark sources that exceed the selected quality preset
+        with a note (e.g. "High usage" / "Outside selected quality") so user can still
+        see and select them. Does not remove any sources.
+        """
+        max_rank = RESOLUTION_RANKS.get(self.get_max_resolution(), 3)
+        max_size_mb = self.get_max_size_gb() * 1024
+        stamp = 'Outside selected quality'
+        for source in sources:
+            source.pop('quality_preset_note', None)
+            quality = source.get('quality', 'SD')
+            rank = RESOLUTION_RANKS.get(quality, 1)
+            over_res = rank > max_rank
+            size_mb = 0
+            try:
+                size_raw = source.get('size', 0) or 0
+                size_val = float(size_raw)
+                size_mb = (size_val * 1024) if size_val and size_val < 1000 else size_val
+            except (TypeError, ValueError):
+                pass
+            over_size = size_mb > max_size_mb
+            if over_res or over_size:
+                source['quality_preset_note'] = stamp
 
     def step_down(self):
         """

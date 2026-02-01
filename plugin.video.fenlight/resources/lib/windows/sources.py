@@ -134,6 +134,8 @@ class SourcesResults(BaseDialog):
 					extraInfo = extraInfo.rstrip('| ')
 					if pack: extraInfo = '[B]%s PACK[/B] | %s' % (get('package'), extraInfo)
 					if self.episode_group_label: extraInfo = '%s | %s' % (self.episode_group_label, extraInfo)
+					quality_note = get('quality_preset_note', '')
+					if quality_note: extraInfo = '[B]%s[/B] | %s' % (quality_note, extraInfo)
 					if not extraInfo: extraInfo = 'N/A'
 					if scrape_provider == 'external':
 						source_site = upper(get('provider'))

@@ -20,15 +20,18 @@ class CocoScrapersAdapter(ScraperInterface):
 
     def search(self, query_info):
         """
-        Delegates search to CocoScrapers.
+        Delegates search to CocoScrapers. Works with script.module.cocoscrapers when installed.
+        Tries getAll(query_info) then getSources(query_info) for API compatibility.
         """
         provider = self._get_provider()
         if not provider: return []
         
         try:
-            # CocoScrapers.getAll returns a list of sources
-            results = provider.getAll(query_info)
-            return results
+            if hasattr(provider, 'getAll'):
+                return provider.getAll(query_info) or []
+            if hasattr(provider, 'getSources'):
+                return provider.getSources(query_info) or []
+            return []
         except Exception as e:
             kodi_utils.logger('CocoScrapers', 'Search failed: %s' % str(e))
             return []

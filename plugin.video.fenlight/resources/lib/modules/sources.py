@@ -9,7 +9,7 @@ from caches.settings_cache import get_setting
 from scrapers import external, folders
 from modules import debrid, kodi_utils, settings, metadata, watched_status
 from modules.player import FenLightPlayer
-from modules.source_utils import get_cache_expiry, make_alias_dict
+from modules.source_utils import get_cache_expiry, make_alias_dict, get_file_info
 from modules.scraping_adapters.cocoscrapers import CocoScrapersAdapter
 from caches.source_cache import get_cached_sources, set_cached_sources
 from modules.quality_manager import QualityManager
@@ -157,18 +157,19 @@ class Sources():
 			# Cache Raw Results
 			if raw_results: set_cached_sources(self.media_type, self.tmdb_id, raw_results, self.season, self.episode)
 
-		# 3. Store pre-filter results for "Access Filtered Results?" when quality filter removes all
-		if raw_results:
-			self.orig_results = self.process_results(raw_results)
-		else:
+		# 3. Full scrape then process all results (no quality preset removal)
+		if not raw_results:
 			self.orig_results = []
-		# 4. Apply Quality Preset Filter
-		filtered_results = qm.filter_sources(raw_results)
-		# 5. Standard Processing (Sort, Dedupe, etc.)
-		results = self.process_results(filtered_results)
-		if not results: return self._process_post_results()
-		if self.autoscrape: return results
-		else: return self.play_source(results)
+			return self._process_post_results()
+		results = self.process_results(raw_results)
+		self.orig_results = list(results) if results else []
+		if not results:
+			return self._process_post_results()
+		# 4. Stamp sources that exceed selected quality preset (Outside selected quality)
+		qm.stamp_sources(results)
+		if self.autoscrape:
+			return results
+		return self.play_source(results)
 
 	def collect_results(self):
 		self.sources.extend(self.prescrape_sources)
@@ -187,11 +188,11 @@ class Sources():
 				self.external_args = (self.meta, self.external_providers, self.debrid_enabled, debrid_service, debrid_token, self.internal_scraper_names,
 										self.prescrape_sources, self.progress_dialog, self.disabled_ext_ignored)
 				
-				# CocoScrapers Integration
+				# CocoScrapers Integration (works when script.module.cocoscrapers is installed)
 				coco_adapter = CocoScrapersAdapter()
 				if coco_adapter.health_check()[0]:
-					# Use CocoScrapers
-					self.sources.extend(coco_adapter.search(self.search_info))
+					raw_coco = coco_adapter.search(self._coco_query_info())
+					self.sources.extend(self._normalize_coco_sources(raw_coco or []))
 				else:
 					# Fallback to Legacy
 					self.activate_providers('external', external, False)
@@ -463,9 +464,17 @@ class Sources():
 						return self.playback_prep()
 		orig = getattr(self, 'orig_results', [])
 		if orig and not self.background:
-			if self.ignore_results_filter == 0: return self._no_results()
-			if self.ignore_results_filter == 1 or confirm_dialog(heading=self.meta.get('rootname', ''), text='No results. Access Filtered Results?'):
+			# When quality preset or other filters removed all results, always offer filtered results (matches startup optimization intent).
+			if self.ignore_results_filter == 0:
+				if confirm_dialog(heading=self.meta.get('rootname', ''), text='No results after quality filter.[CR]Access Filtered Results?'):
+					return self._process_ignore_filters()
+				return self._no_results()
+			if self.ignore_results_filter == 1:
 				return self._process_ignore_filters()
+			if self.ignore_results_filter == 2 and confirm_dialog(heading=self.meta.get('rootname', ''), text='No results. Access Filtered Results?'):
+				return self._process_ignore_filters()
+			if self.ignore_results_filter == 2:
+				return self._no_results()
 		return self._no_results()
 
 	def _process_ignore_filters(self):
@@ -571,6 +580,55 @@ class Sources():
 		self.search_info = {'media_type': self.media_type, 'title': title, 'year': year, 'tmdb_id': self.tmdb_id, 'imdb_id': self.meta.get('imdb_id'), 'aliases': aliases,
 							'season': self.get_season(), 'episode': self.get_episode(), 'tvdb_id': self.meta.get('tvdb_id'), 'ep_name': ep_name, 'expiry_times': expiry_times,
 							'total_seasons': self.meta.get('total_seasons', 1)}
+
+	def _coco_query_info(self):
+		"""Query dict for CocoScrapers getAll/getSources (title, year, imdb_id, tmdb_id, season, episode)."""
+		info = self.search_info
+		return {'title': info.get('title'), 'year': info.get('year'), 'imdb_id': info.get('imdb_id'), 'tmdb_id': info.get('tmdb_id'),
+				'season': info.get('season'), 'episode': info.get('episode'), 'media_type': info.get('media_type'),
+				'ep_name': info.get('ep_name'), 'aliases': info.get('aliases')}
+
+	def _normalize_coco_sources(self, raw_list):
+		"""Normalize CocoScrapers results to app format (quality, size, scrape_provider, display_name, extraInfo)."""
+		normalized = []
+		for item in (raw_list or []):
+			try:
+				if not isinstance(item, dict):
+					continue
+				display_name = item.get('display_name') or item.get('name') or item.get('title') or ''
+				name_or_url = display_name or item.get('url') or ''
+				if not name_or_url and not item.get('hash'):
+					continue
+				quality = item.get('quality')
+				extra_info = item.get('extraInfo')
+				if quality is None or extra_info is None or extra_info == '':
+					q, info_list = get_file_info(name_info=name_or_url or None, url=item.get('url') or None)
+					if quality is None:
+						quality = q
+					if extra_info is None or extra_info == '':
+						extra_info = ' | '.join(info_list) if isinstance(info_list, list) else (info_list or '')
+				try:
+					size_val = float(item.get('size', 0) or 0)
+				except (TypeError, ValueError):
+					size_val = 0
+				size_label = '%.2f GB' % size_val if size_val else 'N/A'
+				out = dict(item)
+				out.update({
+					'name': display_name or name_or_url,
+					'display_name': display_name or name_or_url,
+					'quality': quality or 'SD',
+					'size': size_val,
+					'size_label': size_label,
+					'extraInfo': extra_info,
+					'scrape_provider': 'cocoscrapers',
+					'source': item.get('source') or item.get('provider') or 'CocoScrapers',
+					'debrid': item.get('debrid', 'Real-Debrid'),
+					'cache_provider': item.get('cache_provider', ''),
+				})
+				normalized.append(out)
+			except Exception:
+				continue
+		return normalized
 
 	def _get_module(self, module_type, function):
 		if module_type == 'external': module = function.source(*self.external_args)
