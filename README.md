@@ -1,31 +1,28 @@
-I'm jokingly called this FenLight+. There was always 1 thing I wished Fen could do that it couldn't and that was delete RD Cloud files from the results screen so that I didn't have to go into My Services everytime I accidently added a bad package to the cloud. Now it can. 
+# VibeStream
 
-Since then I've also added more features, such as:
- - an option to unmark previous episode as watched in Next Episodes list
- - re-enabled 'Rollback to Previous Version' option that Tikipeter included in older versions of FenLight
- - UK specific options for "Trending" and "Providers" lists
- - TMDB Lists integration and abilty to export Trakt lists to TMDB
+VibeStream is a high-performance, modular Kodi addon for streaming from Debrid services and Easynews. It is a modernized and refined version of the classic Fen Light, rebuilt with a focus on reliability, visual excellence, and personalized discovery.
 
-This is the first Kodi addon I've ever edited so Tikipeter would probably shed a tear at how I butchered his code. I might keep working to improve this, I might not.
+## ✨ Key Features
 
-<h2>To Update From FenLight</h2>
+- **🛡️ Auto-Fallback Playback**: Intelligent watchdog that detects buffer issues or resolve failures and automatically steps down to the next best source.
+- **📈 Hoster Health Scoring**: Performance-based provider ranking that deprioritizes unreliable hosters based on success rates and latency.
+- **🎯 Smart Recommendations**: A "New For You" discovery engine that analyzes your watch history and suggests personalized content based on your favorite genres.
+- **⚡ Adaptive Quality Presets**: Quickly toggle between 4K, Balanced, and Efficient streaming modes to match your bandwidth.
+- **🧹 Auto-Hygiene**: Automated database and cache cleanup to maintain peak performance without manual intervention.
+- **🎨 Visual Rebrand**: Completely updated visual identity with premium assets and a streamlined "Simple" mode for the Extras page.
 
-In Kodi, go to Addons, open Fen Light -> Tools -> Settings -> General -> scroll down to 'Manage Addon Updates' and change these two fields:
+## 🚀 Installation
 
-<b>Github Username:</b> thejason40<br />
-<b>Github Repo Address:</b> thejason40.github.io
+### Option 1: ZIP Installation (Recommended)
+1. Download the latest `vibestream-1.0.0.zip` from this repository.
+2. In Kodi, go to **Settings** -> **Add-ons** -> **Install from zip file**.
+3. Select the downloaded ZIP and wait for completion.
 
-Now go back to the Tools menu, and select Update Utilities -> Check For Updates
+### Option 2: Repository Installation
+1. Go to Kodi **File Manager** -> **Add Source**.
+2. Add `https://thejason40.github.io/packages` (or your updated repo URL).
+3. Name it **VibeStream Repo**.
+4. Go to **Settings** -> **Add-ons** -> **Install from repository** -> **VibeStream**.
 
-<h2>To Install Fresh</h2>
-
-Go to Kodi -> File Manager -> Add Source -> add
-
-`https://thejason40.github.io/packages`
-
-call it "FenPlus"
-
-Then go to Kodi -> Settings -> Add Ons -> Install from Zip -> FenPlus -> Install FenLight+ 2.0.10.
-
-<hr>
-<i>Full credit to Tikipeter for creating Fen and FenLight. Thanks to minicoz for forking Tiki's repository before it was taken down.</i>
+---
+*VibeStream is built for speed and stability. Enjoy the ultimate streaming experience.*

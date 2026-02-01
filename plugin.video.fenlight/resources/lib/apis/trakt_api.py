@@ -63,27 +63,54 @@ def call_trakt(path, params={}, data=None, is_delete=False, with_auth=True, meth
 				resp = requests.post(API_ENDPOINT % path, json=data, headers=headers, timeout=timeout)
 			elif is_delete: resp = requests.delete(API_ENDPOINT % path, headers=headers, timeout=timeout)
 			else: resp = requests.get(API_ENDPOINT % path, params=params, headers=headers, timeout=timeout)
+			
+			# Handle 429 Too Many Requests
+			if resp.status_code == 429:
+				return resp # Let the loop handle it
+				
 			resp.raise_for_status()
 		except Exception as e: return logger('Trakt Error', str(e))
 		return resp
+		
 	CLIENT_ID = trakt_client()
 	if CLIENT_ID in empty_setting_check: return no_client_key()
 	headers = {'Content-Type': 'application/json', 'trakt-api-version': '2', 'trakt-api-key': CLIENT_ID}
 	if pagination: params['page'] = page_no
-	response = send_query()
-	try: status_code = response.status_code
-	except: return None
-	if status_code == 401:
-		if xbmc_player().isPlaying() == False:
-			if with_auth and confirm_dialog(heading='Authorize Trakt', text='You must authenticate with Trakt. Do you want to authenticate now?') and trakt_authenticate():
-				response = send_query()
-			else: pass
-		else: return
-	elif status_code == 429:
-		headers = response.headers
-		if 'Retry-After' in headers:
-			sleep(1000 * headers['Retry-After'])
-			response = send_query()
+	
+	# Rate Limited Retry Loop
+	response = None
+	for attempt in range(1, 4): # 3 attempts
+		response = send_query()
+		if not response: # Network error or other exception
+			if attempt < 3: sleep(2000)
+			continue
+			
+		try: status_code = response.status_code
+		except: status_code = 0
+		
+		if status_code == 429:
+			retry_after = int(response.headers.get('Retry-After', 1))
+			sleep(min(retry_after, 10) * 1000) # Sleep, capped at 10s? usage dictates respect provided header
+			continue # Retry
+			
+		elif status_code == 401:
+			if xbmc_player().isPlaying() == False:
+				if with_auth and confirm_dialog(heading='Authorize Trakt', text='You must authenticate with Trakt. Do you want to authenticate now?') and trakt_authenticate():
+					response = send_query()
+				else: pass
+			else: return
+			break # Don't retry auth errors unless we re-authed (which uses its own recursion logic/flow usually)
+			
+		elif status_code >= 500: # Server error
+			if attempt < 3: sleep(pow(2, attempt) * 1000) # Exponential backoff: 2s, 4s
+			continue
+			
+		else: # Success or other client error
+			break
+			
+	if not response: return None
+	if response.status_code == 429: return None # Still limited after retries
+	
 	response.encoding = 'utf-8'
 	try: result = response.json()
 	except: return None
@@ -91,7 +118,7 @@ def call_trakt(path, params={}, data=None, is_delete=False, with_auth=True, meth
 	if method == 'sort_by_headers' and 'X-Sort-By' in headers and 'X-Sort-How' in headers:
 		try: result = sort_list(headers['X-Sort-By'], headers['X-Sort-How'], result)
 		except: pass
-	if pagination: return (result, headers['X-Pagination-Page-Count'])
+	if pagination: return (result, headers.get('X-Pagination-Page-Count', 1)) # Default 1 to avoid crash
 	else: return result
 
 def trakt_get_device_code():
@@ -385,7 +412,16 @@ def trakt_watchlist(media_type, dummy_arg):
 
 def trakt_fetch_collection_watchlist(list_type, media_type):
 	def _process(params):
-		data = get_trakt(params)
+		params['pagination'] = True
+		params['page_no'] = 1
+		result_data, page_count = get_trakt(params)
+		data = []
+		if result_data: data.extend(result_data)
+		if page_count > 1:
+			for i in range(2, page_count + 1):
+				params['page_no'] = i
+				page_data, _ = get_trakt(params)
+				if page_data: data.extend(page_data)
 		if list_type == 'watchlist': data = [i for i in data if i['type'] == key]
 		return [{'media_ids': {'tmdb': i[key]['ids'].get('tmdb', ''), 'imdb': i[key]['ids'].get('imdb', ''), 'tvdb': i[key]['ids'].get('tvdb', '')}, 'title': i[key]['title'],
 				'collected_at': i.get(collected_at), 'released': i[key].get(r_key) if i[key].get(r_key) else ('2050-01-01' if media_type in ('movie', 'movies') else standby_date)}
@@ -394,7 +430,7 @@ def trakt_fetch_collection_watchlist(list_type, media_type):
 	collected_at = 'listed_at' if list_type == 'watchlist' else 'collected_at' if media_type in ('movie', 'movies') else 'last_collected_at'
 	string = 'trakt_%s_%s' % (list_type, string_insert)
 	path = 'sync/%s/%s?extended=full'
-	params = {'path': path, 'path_insert': (list_type, media_type), 'with_auth': True, 'pagination': False}
+	params = {'path': path, 'path_insert': (list_type, media_type), 'with_auth': True, 'pagination': True}
 	return cache_trakt_object(_process, string, params)
 
 def add_to_list(user, slug, data):

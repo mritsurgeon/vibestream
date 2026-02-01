@@ -177,6 +177,9 @@ def extras_enabled_menus():
 	if setting in ('', None, 'noop', []): return []
 	return [int(i) for i in setting.split(',')]
 
+def extras_view_mode():
+	return int(get_setting('fenlight.extras.view_mode', '0')) # 0: Simple, 1: Advanced
+
 def recommend_service():
 	return int(get_setting('fenlight.recommend_service', '0'))
 

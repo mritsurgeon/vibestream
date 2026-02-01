@@ -2,8 +2,10 @@
 import json
 from threading import Thread
 from apis.trakt_api import make_trakt_slug
-from caches.settings_cache import get_setting
+from caches.settings_cache import get_setting, set_setting
 from modules import kodi_utils as ku, settings as st, watched_status as ws
+from modules.quality_manager import QualityManager
+from modules.health_manager import health_manager
 # logger = ku.logger
 
 set_property, clear_property, get_visibility, hide_busy_dialog, xbmc_actor = ku.set_property, ku.clear_property, ku.get_visibility, ku.hide_busy_dialog, ku.xbmc_actor
@@ -20,10 +22,11 @@ class FenLightPlayer(xbmc_player):
 	def __init__ (self):
 		xbmc_player.__init__(self)
 
-	def run(self, url=None, obj=None, num_episodes=None):
+	def run(self, url=None, obj=None, num_episodes=None, resolve_start=None):
 		hide_busy_dialog()
 		self.clear_playback_properties()
 		self.num_episodes = num_episodes  # Store num_episodes
+		self.resolve_start = resolve_start
 		if not url: return self.run_error()
 		try: return self.play_video(url, obj, num_episodes)
 		except: return self.run_error()
@@ -64,6 +67,11 @@ class FenLightPlayer(xbmc_player):
 
 	def playback_close_dialogs(self):
 		self.sources_object.playback_successful = True
+		if self.resolve_start:
+			latency = time.time() - self.resolve_start
+			provider = self.playing_item.get('scrape_provider', 'unknown')
+			if provider == 'external': provider = self.playing_item.get('debrid', 'external').replace('.me', '')
+			health_manager.record_event(provider.lower(), 1, latency)
 		self.kill_dialog()
 		sleep(200)
 		close_all_dialog()
@@ -84,10 +92,25 @@ class FenLightPlayer(xbmc_player):
 				total_check_time += 0.10
 			hide_busy_dialog()
 			sleep(1000)
+			buffer_count = 0
+			start_time = self.getTime()
 			while self.isPlayingVideo():
 				try:
 					try: self.total_time, self.curr_time = self.getTotalTime(), self.getTime()
 					except: sleep(250); continue
+					
+					# Auto-Fallback Watchdog
+					if get_visibility("Player.Caching") and not get_visibility("Player.Paused"):
+						buffer_count += 1
+					else:
+						buffer_count = 0
+					
+					# 15 seconds of buffering -> Switch
+					if buffer_count > 15 and (self.curr_time - start_time > 10): 
+						notification('Buffering Detected. Switching Source...', 3000)
+						self.retry_next_source()
+						break
+
 					if not ensure_dialog_dead:
 						ensure_dialog_dead = True
 						self.playback_close_dialogs()
@@ -114,6 +137,33 @@ class FenLightPlayer(xbmc_player):
 			self.sources_object.playback_successful = False
 			self.sources_object.cancel_all_playback = True
 			return self.kill_dialog()
+
+	def retry_next_source(self):
+		self.stop()
+		qm = QualityManager()
+		qm.step_down() # Downgrade quality preference
+		
+		# Re-filter RAW sources with new preset
+		all_sources = self.sources_object.sources
+		candidates = qm.filter_sources(all_sources)
+		
+		# Find next valid source
+		# Simple logic: Pick top of candidates that isn't the one we just played
+		next_source = None
+		current_link = self.playing_item.get('link', '')
+		
+		for source in candidates:
+			if source.get('link') == current_link: continue
+			# Check logic to skip already failed? (Ideal)
+			next_source = source
+			break
+			
+		if next_source:
+			# Note: sources.py handles the resolution loop. We calling sources_object.play_file([next_source]).
+			self.sources_object.background = True
+			Thread(target=self.sources_object.play_file, args=([next_source],)).start()
+		else:
+			notification('No fallback sources available.')
 
 	def make_listing(self):
 		listitem = make_listitem()

@@ -5,6 +5,7 @@ from modules import kodi_utils, settings
 from modules.metadata import tvshow_meta
 from modules.utils import manual_function_import, get_datetime, make_thread_list_enumerate, make_thread_list_multi_arg, get_current_timestamp, paginate_list
 from modules.watched_status import get_database, watched_info_tvshow, get_watched_status_tvshow, get_progress_status_tvshow
+from modules.recommendations import recommendations_manager
 # logger = kodi_utils.logger
 
 string, external, add_items, add_dir = str, kodi_utils.external, kodi_utils.add_items, kodi_utils.add_dir
@@ -109,6 +110,13 @@ class TVShows:
 			elif self.action == 'tmdb_tv_discover':
 				url = self.params_get('url')
 				data = function(url, page_no)
+				self.list = [i['id'] for i in data['results']]
+				if data['total_pages'] > page_no: self.new_page = {'url': url, 'new_page': string(data['page'] + 1)}
+			elif self.action == 'recommendations_discovery':
+				url = recommendations_manager.get_discovery_params('tvshow')
+				if not url: return
+				from apis.tmdb_api import tmdb_tv_discover as discovery_function
+				data = discovery_function(url, page_no)
 				self.list = [i['id'] for i in data['results']]
 				if data['total_pages'] > page_no: self.new_page = {'url': url, 'new_page': string(data['page'] + 1)}
 			elif self.action == 'imdb_more_like_this':

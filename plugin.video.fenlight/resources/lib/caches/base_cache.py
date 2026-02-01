@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
+import json
 import sqlite3 as database
 from modules import kodi_utils
 # logger = kodi_utils.logger
@@ -283,10 +284,10 @@ def clear_icons():
         dbcon.close()
         
         # Add a delay before reloading the skin
-        xbmc.sleep(500)
+        sleep(500)
         
         # Reload the skin to refresh textures
-        xbmc.executebuiltin('ReloadSkin()')
+        execute_builtin('ReloadSkin()')
         
         cleared = True
     except Exception as e:
@@ -310,16 +311,18 @@ class BaseCache(object):
 		self.table = table
 		self.dbfile = dbfile
 
-	def get(self, string):
+	def get(self, string, ignore_expiry=False, delete_if_expired=True):
 		result = None
 		try:
 			current_time = get_timestamp()
 			dbcon = connect_database(self.dbfile)
 			cache_data = dbcon.execute(BASE_GET % self.table, (string,)).fetchone()
 			if cache_data:
-				if cache_data[0] > current_time:
-					result = eval(cache_data[1])
-				else: self.delete(string)
+				if ignore_expiry or cache_data[0] > current_time:
+					try: result = json.loads(cache_data[1])
+					except: self.delete(string)
+				else:
+					if delete_if_expired: self.delete(string)
 		except: pass
 		return result
 
@@ -327,7 +330,7 @@ class BaseCache(object):
 		try:
 			dbcon = connect_database(self.dbfile)
 			expires = get_timestamp(expiration)
-			dbcon.execute(BASE_SET % self.table, (string, repr(data), int(expires)))
+			dbcon.execute(BASE_SET % self.table, (string, json.dumps(data), int(expires)))
 		except: return None
 
 	def delete(self, string):

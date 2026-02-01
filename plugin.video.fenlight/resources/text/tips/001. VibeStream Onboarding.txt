@@ -1,0 +1,15 @@
+Welcome to VibeStream!
+
+This addon is designed for high-performance streaming with a focus on simplicity and quality.
+
+[B]Key Features:[/B]
+1. [B]Auto-Fallback Playback[/B]: If a stream buffers, VibeStream will automatically find a smaller/more stable source.
+2. [B]Quality Presets[/B]: Choose your internet profile in Tools -> Setup Wizard to filter sources automatically.
+3. [B]Trakt Personal Keys[/B]: Using your own API keys prevents Trakt "Rate Limit" errors during peak hours.
+
+[B]Troubleshooting:[/B]
+- If you experience buffering, try lowering your Quality Preset in Settings.
+- If scraping is slow, ensure you have Real-Debrid authorized.
+- Check the official Kodi Wiki for general app issues.
+
+Happy Streaming!

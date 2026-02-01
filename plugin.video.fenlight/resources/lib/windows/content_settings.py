@@ -33,28 +33,28 @@ content_settings = '\
 \n                   </item>\
 \n                    <item>\
 \n                        <visible>Container(2000).HasFocus(10)</visible>\
-\n                        <property name="setting_label">Autostart FenLight When Kodi Starts</property>\
-\n                        <property name="setting_type">boolean</property>\
-\n                        <property name="setting_value">$INFO[Window(10000).Property(fenlight.auto_start_fenlight)]</property>\
-\n                        <property name="setting_description">Enable this and Fen Light+ will autostart after running its services upon Kodi start</property>\
-\n                        <onclick>RunPlugin(plugin://plugin.video.fenlight/?mode=settings_manager.set_boolean&amp;setting_id=auto_start_fenlight)</onclick>\
+\n                        <property name="setting_label">Autostart VibeStream When Kodi Starts</property>\
+                        <property name="setting_type">boolean</property>\
+                        <property name="setting_value">$INFO[Window(10000).Property(fenlight.auto_start_fenlight)]</property>\
+                        <property name="setting_description">Enable this and VibeStream will autostart after running its services upon Kodi start</property>\
+                        <onclick>RunPlugin(plugin://plugin.video.fenlight/?mode=settings_manager.set_boolean&amp;setting_id=auto_start_fenlight)</onclick>\
 \n                    </item>\
 \n                    <item>\
 \n                        <visible>Container(2000).HasFocus(10)</visible>\
 \n                        <property name="setting_label">Assign Addon Background Image</property>\
 \n                        <property name="setting_type">action</property>\
 \n                        <property name="setting_value">$INFO[Window(10000).Property(fenlight.default_addon_fanart)]</property>\
-\n                        <property name="setting_description">Choose any custom background you would like to use within Fen Light</property>\
+\n                        <property name="setting_description">Choose any custom background you would like to use within VibeStream</property>\
 \n                        <onclick>RunPlugin(plugin://plugin.video.fenlight/?mode=settings_manager.set_path&amp;setting_id=default_addon_fanart)</onclick>\
 \n                    </item>\
 \n                    <item>\
 \n                        <visible>Container(2000).HasFocus(10)</visible>\
 \n                        <visible>!String.EndsWith(Window(10000).Property(fenlight.default_addon_fanart),fenlight_plus_fanart.png)</visible>\
 \n                        <property name="setting_label">    - Restore Default Background Image</property>\
-\n                        <property name="setting_type">action</property>\
-\n                        <property name="setting_value">...</property>\
-\n                        <property name="setting_description">Restore default Fen Light+ background</property>\
-\n                        <onclick>RunPlugin(plugin://plugin.video.fenlight/?mode=settings_manager.restore_setting_default&amp;setting_id=default_addon_fanart)</onclick>\
+                        <property name="setting_type">action</property>\
+                        <property name="setting_value">...</property>\
+                        <property name="setting_description">Restore default VibeStream background</property>\
+                        <onclick>RunPlugin(plugin://plugin.video.fenlight/?mode=settings_manager.restore_setting_default&amp;setting_id=default_addon_fanart)</onclick>\
 \n                    </item>\
 \n                    <item>\
 \n                        <visible>Container(2000).HasFocus(10)</visible>\
@@ -208,6 +208,14 @@ content_settings = '\
 \n                        <property name="setting_value">$INFO[Window(10000).Property(fenlight.extras.enable_scrollbars)]</property>\
 \n                        <property name="setting_description">Choose this and the individual lists within the Extras window will each utilize a scrollbar when needed</property>\
 \n                        <onclick>RunPlugin(plugin://plugin.video.fenlight/?mode=settings_manager.set_boolean&amp;setting_id=extras.enable_scrollbars)</onclick>\
+\n                    </item>\
+\n                    <item>\
+\n                        <visible>Container(2000).HasFocus(20)</visible>\
+\n                        <property name="setting_label">Extras View Mode</property>\
+\n                        <property name="setting_type">action</property>\
+\n                        <property name="setting_value">$INFO[Window(10000).Property(fenlight.extras.view_mode_name)]</property>\
+\n                        <property name="setting_description">Choose the mode for the Extras window. "Simple" shows only the most important info, while "Advanced" shows all available metadata</property>\
+\n                        <onclick>RunPlugin(plugin://plugin.video.fenlight/?mode=settings_manager.set_from_list&amp;setting_id=extras.view_mode)</onclick>\
 \n                    </item>\
 \n            <!-- Special Open Actions -->\
 \n                  <item>\

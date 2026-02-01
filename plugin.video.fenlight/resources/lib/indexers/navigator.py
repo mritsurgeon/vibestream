@@ -36,11 +36,13 @@ class Navigator:
 	def __init__(self, params):
 		self.params = params
 		self.params_get = self.params.get
-		self.category_name = self.params_get('name', 'Fen Light')
+		self.category_name = self.params_get('name', 'VibeStream')
 		self.list_name = self.params_get('action', 'RootList')
 		self.is_home = home()
 
 	def main(self):
+		from modules.setup_wizard import first_run_check
+		first_run_check()
 		if self.params_get('full_list', 'false') == 'true': browse_list = get_main_lists(self.list_name)[0]
 		else: browse_list = currently_used_list(self.list_name)
 		for count, item in enumerate(browse_list):

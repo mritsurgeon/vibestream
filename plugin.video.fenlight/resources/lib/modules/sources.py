@@ -10,8 +10,12 @@ from scrapers import external, folders
 from modules import debrid, kodi_utils, settings, metadata, watched_status
 from modules.player import FenLightPlayer
 from modules.source_utils import get_cache_expiry, make_alias_dict
-from modules.utils import clean_file_name, string_to_float, safe_string, remove_accents, get_datetime, append_module_to_syspath, manual_function_import, manual_module_import
-# logger = kodi_utils.logger
+from modules.scraping_adapters.cocoscrapers import CocoScrapersAdapter
+from caches.source_cache import get_cached_sources, set_cached_sources
+from modules.quality_manager import QualityManager
+from modules.utils import change_image_resolution, adjust_premiered_date, get_datetime, make_thread_list_enumerate, batch_replace, append_module_to_syspath, manual_function_import, manual_module_import
+from modules.health_manager import health_manager
+logger = kodi_utils.logger
 
 get_icon, notification, sleep, xbmc_monitor = kodi_utils.get_icon, kodi_utils.notification, kodi_utils.sleep, kodi_utils.xbmc_monitor
 select_dialog, confirm_dialog, close_all_dialog = kodi_utils.select_dialog, kodi_utils.confirm_dialog, kodi_utils.close_all_dialog
@@ -126,20 +130,38 @@ class Sources():
 			if not self.ext_folder or not self.ext_name: return self.disable_external('Error Importing External Module')
 
 	def get_sources(self):
-		if not self.progress_dialog and not self.background: self._make_progress_dialog()
-		results = []
-		if self.prescrape and any(x in self.active_internal_scrapers for x in default_internal_scrapers):
-			if self.prepare_internal_scrapers():
-				results = self.collect_prescrape_results()
-				if results: results = self.process_results(results)
-		if not results:
+		qm = QualityManager()
+		
+		# 1. Try Raw Cache
+		raw_results = get_cached_sources(self.media_type, self.tmdb_id, self.season, self.episode)
+		
+		if not raw_results:
+			# 2. Scrape if no cache
+			if not self.progress_dialog and not self.background: self._make_progress_dialog()
+			
+			if self.prescrape and any(x in self.active_internal_scrapers for x in default_internal_scrapers):
+				if self.prepare_internal_scrapers():
+					self.collect_prescrape_results() # populates prescrape_sources
+			
+			# Main Scrape
 			self.prescrape = False
 			self.prepare_internal_scrapers()
 			if self.active_external: self.activate_external_providers()
 			elif not self.active_internal_scrapers: self._kill_progress_dialog()
-			self.orig_results = self.collect_results()
-			if not self.orig_results and not self.active_external: self._kill_progress_dialog()
-			results = self.process_results(self.orig_results)
+			
+			raw_results = self.collect_results() # returns self.sources
+			
+			if not raw_results and not self.active_external: self._kill_progress_dialog()
+			
+			# Cache Raw Results
+			if raw_results: set_cached_sources(self.media_type, self.tmdb_id, raw_results, self.season, self.episode)
+
+		# 3. Apply Quality Preset Filter
+		filtered_results = qm.filter_sources(raw_results)
+		
+		# 4. Standard Processing (Sort, Dedupe, etc.)
+		results = self.process_results(filtered_results)
+		
 		if not results: return self._process_post_results()
 		if self.autoscrape: return results
 		else: return self.play_source(results)
@@ -160,7 +182,15 @@ class Sources():
 				else: debrid_service, debrid_token = '', ''
 				self.external_args = (self.meta, self.external_providers, self.debrid_enabled, debrid_service, debrid_token, self.internal_scraper_names,
 										self.prescrape_sources, self.progress_dialog, self.disabled_ext_ignored)
-				self.activate_providers('external', external, False)
+				
+				# CocoScrapers Integration
+				coco_adapter = CocoScrapersAdapter()
+				if coco_adapter.health_check()[0]:
+					# Use CocoScrapers
+					self.sources.extend(coco_adapter.search(self.search_info))
+				else:
+					# Fallback to Legacy
+					self.activate_providers('external', external, False)
 			if self.background: [i.join() for i in self.threads]
 		elif self.active_internal_scrapers: self.scrapers_dialog()
 		return self.sources
@@ -196,6 +226,7 @@ class Sources():
 			results = self.filter_audio(results)
 			for file_type in filter_keys: results = self.special_filter(results, file_type)
 		results = self.sort_preferred_autoplay(results)
+		results = self.sort_preferred_autoplay(results)
 		results = self.sort_first(results)
 		return results
 
@@ -204,7 +235,12 @@ class Sources():
 			provider = item['scrape_provider']
 			if provider == 'external': account_type = item['debrid'].lower()
 			else: account_type = provider.lower()
-			item['provider_rank'] = self._get_provider_rank(account_type)
+			
+			# Calculate Health Penalty
+			health_score = health_manager.get_health_score(account_type)
+			health_penalty = (1.0 - health_score) * 20
+			
+			item['provider_rank'] = self._get_provider_rank(account_type) + health_penalty
 			item['quality_rank'] = self._get_quality_rank(item.get('quality', 'SD'))
 		results.sort(key=self.sort_function)
 		results = self._sort_uncached_results(results)
@@ -648,14 +684,20 @@ class Sources():
 					player = FenLightPlayer()
 					try:
 						if self.progress_dialog.iscanceled() or monitor.abortRequested(): break
+						resolve_start = time.time()
 						url = self.resolve_sources(item)
 						if url:
 							resolve_percent = 0
 							self.progress_dialog.busy_spinner('false')
 							self.progress_dialog.update_resolver(percent=resolve_percent)
 							sleep(200)
-							player.run(url, self, num_episodes=self.num_episodes)
-						else: continue
+							player.run(url, self, num_episodes=self.num_episodes, resolve_start=resolve_start)
+						else:
+							# Record Failure
+							provider = item.get('scrape_provider', 'unknown')
+							if provider == 'external': provider = item.get('debrid', 'external').replace('.me', '')
+							health_manager.record_event(provider.lower(), 0)
+							continue
 						if self.cancel_all_playback: break
 						if self.playback_successful: break
 						if count == len(items):
@@ -780,7 +822,7 @@ class Sources():
 			elif item.get('scrape_provider', None) in default_internal_scrapers:
 				url = self.resolve_internal(item['scrape_provider'], item['id'], item['url_dl'], item.get('direct_debrid_link', False))
 			else: url = item['url']
-		except: pass
+		except Exception as e: logger('resolve_sources error', str(e))
 		return url
 
 	def resolve_cached(self, debrid_provider, item_url, _hash, title, season, episode, pack):

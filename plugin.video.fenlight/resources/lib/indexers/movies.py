@@ -5,6 +5,7 @@ from modules import kodi_utils, settings
 from modules.metadata import movie_meta, movieset_meta
 from modules.utils import manual_function_import, get_datetime, make_thread_list_enumerate, make_thread_list_multi_arg, get_current_timestamp, paginate_list, jsondate_to_datetime
 from modules.watched_status import get_database, watched_info_movie, get_watched_status_movie, get_bookmarks_movie, get_progress_status_movie
+from modules.recommendations import recommendations_manager
 # logger = kodi_utils.logger
 
 make_listitem, build_url, nextpage_landscape = kodi_utils.make_listitem, kodi_utils.build_url, kodi_utils.nextpage_landscape
@@ -98,6 +99,14 @@ class Movies:
 			elif self.action == 'tmdb_movies_discover':
 				url = self.params_get('url')
 				data = function(url, page_no)
+				self.list = [i['id'] for i in data['results']]
+				if data['total_pages'] > page_no: self.new_page = {'url': url, 'new_page': string(data['page'] + 1)}
+			elif self.action == 'recommendations_discovery':
+				url = recommendations_manager.get_discovery_params('movie')
+				if not url: return
+				# Using tmdb_movies_discover function which is already in the module scope or importable
+				from apis.tmdb_api import tmdb_movies_discover as discovery_function
+				data = discovery_function(url, page_no)
 				self.list = [i['id'] for i in data['results']]
 				if data['total_pages'] > page_no: self.new_page = {'url': url, 'new_page': string(data['page'] + 1)}
 			elif self.action  == 'tmdb_movies_sets':

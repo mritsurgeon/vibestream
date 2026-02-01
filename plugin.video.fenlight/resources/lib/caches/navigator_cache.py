@@ -55,6 +55,7 @@ movie_list = [
 {'name': 'Decades', 'mode': 'navigator.decades', 'menu_type': 'movie', 'random_support': 'true', 'iconImage': 'calendar_decades'},
 {'name': 'Certifications', 'mode': 'navigator.certifications', 'menu_type': 'movie', 'random_support': 'true', 'iconImage': 'certifications'},
 {'name': 'Because You Watched...', 'iconImage': 'because_you_watched', 'mode': 'navigator.because_you_watched', 'menu_type': 'movie'},
+{'name': 'New For You (Recommendations)', 'mode': 'build_movie_list', 'action': 'recommendations_discovery', 'iconImage': 'discover'},
 {'name': 'Watched', 'mode': 'build_movie_list', 'action': 'watched_movies', 'iconImage': 'watched_1'},
 {'name': 'Recently Watched', 'mode': 'build_movie_list', 'action': 'recent_watched_movies', 'iconImage': 'watched_recent'},
 {'name': 'In Progress', 'mode': 'build_movie_list', 'action': 'in_progress_movies', 'iconImage': 'player'}
@@ -82,6 +83,7 @@ tvshow_list = [
 {'name': 'Decades', 'mode': 'navigator.decades', 'menu_type': 'tvshow', 'random_support': 'true', 'iconImage': 'calendar_decades'},
 {'name': 'Certifications', 'mode': 'navigator.certifications', 'menu_type': 'tvshow', 'random_support': 'true', 'iconImage': 'certifications'},
 {'name': 'Because You Watched...', 'mode': 'navigator.because_you_watched', 'menu_type': 'tvshow', 'iconImage': 'because_you_watched'},
+{'name': 'New For You (Recommendations)', 'mode': 'build_tvshow_list', 'action': 'recommendations_discovery', 'iconImage': 'discover'},
 {'name': 'Watched', 'mode': 'build_tvshow_list', 'action': 'watched_tvshows', 'iconImage': 'watched_1'},
 {'name': 'In Progress', 'mode': 'build_tvshow_list', 'action': 'in_progress_tvshows', 'iconImage': 'in_progress_tvshow'},
 {'name': 'Recently Watched Episodes', 'mode': 'build_recently_watched_episode', 'iconImage': 'watched_recent'},

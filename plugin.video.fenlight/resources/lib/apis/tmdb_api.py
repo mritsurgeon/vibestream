@@ -745,7 +745,7 @@ def get_list_items(params):
 	return response
 	
 def new_tmdb_list(keep_open = False, params = '', default_text = ''):
-	list_title = kodi_utils.kodi_dialog().input('', defaultt = default_text)
+	list_title = ok_dialog().input('', defaultt = default_text)
 	if not list_title:
 		notification('Cancelled', 3000)
 		return

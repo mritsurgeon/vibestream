@@ -1,5 +1,5 @@
-# -*- coding: utf-8 -*-
 from threading import Thread
+import json
 from caches.base_cache import connect_database
 from modules.kodi_utils import sleep, confirm_dialog, close_all_dialog
 # from modules.kodi_utils import logger
@@ -25,14 +25,16 @@ class TraktCache:
 		try:
 			dbcon = connect_database('trakt_db')
 			cache_data = dbcon.execute(TC_BASE_GET, (string,)).fetchone()
-			if cache_data: result = eval(cache_data[0])
+			if cache_data:
+				try: result = json.loads(cache_data[0])
+				except: self.delete(string)
 		except: pass
 		return result
 
 	def set(self, string, data):
 		try:
 			dbcon = connect_database('trakt_db')
-			dbcon.execute(TC_BASE_SET, (string, repr(data)))
+			dbcon.execute(TC_BASE_SET, (string, json.dumps(data)))
 		except: return None
 
 	def delete(self, string):
@@ -50,7 +52,7 @@ class TraktWatched():
 
 	def set_tvshow_status(self, insert_dict):
 		dbcon = connect_database('trakt_db')
-		dbcon.execute('INSERT OR REPLACE INTO trakt_data (id, data) VALUES (?, ?)', ('trakt_tvshow_status', repr(insert_dict),))
+		dbcon.execute('INSERT OR REPLACE INTO trakt_data (id, data) VALUES (?, ?)', ('trakt_tvshow_status', json.dumps(insert_dict),))
 
 	def set_bulk_movie_watched(self, insert_list):
 		self._delete(WATCHED_DELETE, ('movie',))
@@ -91,7 +93,9 @@ def reset_activity(latest_activities):
 	try:
 		dbcon = connect_database('trakt_db')
 		data = dbcon.execute(TC_BASE_GET, (string,)).fetchone()
-		if data: cached_data = eval(data[0])
+		if data:
+			try: cached_data = json.loads(data[0])
+			except: cached_data = default_activities()
 		else: cached_data = default_activities()
 		dbcon.execute(DELETE, (string,))
 		trakt_cache.set(string, latest_activities)

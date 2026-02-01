@@ -165,6 +165,23 @@ class WidgetRefresher:
 		if self.offset: self.next_refresh = _time + (self.offset*60)
 		else: self.next_refresh = None
 
+class CacheHygiene:
+	def run(self):
+		logger('Fen Light', 'CacheHygiene Service Starting')
+		from modules.cache_manager import CacheManager
+		monitor = xbmc.Monitor()
+		wait_for_abort = monitor.waitForAbort
+		cache_manager = CacheManager()
+		# Run check on startup
+		cache_manager.check_health()
+		
+		# Then loop every 4 hours
+		while not monitor.abortRequested():
+			wait_for_abort(14400) # 4 hours
+			cache_manager.check_health()
+			
+		return logger('Fen Light', 'CacheHygiene Service Finished')
+
 class AutoStart:
 	def run(self):
 		logger('Fen Light', 'AutoStart Service Starting')
@@ -187,6 +204,7 @@ class FenLightMonitor(xbmc.Monitor):
 		Thread(target=TraktMonitor().run).start()
 		Thread(target=UpdateCheck().run).start()
 		Thread(target=WidgetRefresher().run).start()
+		Thread(target=CacheHygiene().run).start()
 		AutoStart().run()
 
 	def onNotification(self, sender, method, data):

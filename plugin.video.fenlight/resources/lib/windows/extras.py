@@ -20,6 +20,7 @@ container_update, activate_window, clear_property = kodi_utils.container_update,
 default_all_episodes, extras_enabled_menus, tmdb_api_key = settings.default_all_episodes, settings.extras_enabled_menus, settings.tmdb_api_key
 enable_extra_ratings, nextep_method, watched_indicators = settings.extras_enable_extra_ratings, settings.nextep_method, settings.watched_indicators
 extras_enable_scrollbars, omdb_api_key, date_offset, mpaa_region = settings.extras_enable_scrollbars, settings.omdb_api_key, settings.date_offset, settings.mpaa_region
+extras_view_mode = settings.extras_view_mode
 options_menu_choice, extras_menu_choice = dialogs.options_menu_choice, dialogs.extras_menu_choice
 trakt_manager_choice, random_choice, playback_choice, favorites_choice = dialogs.trakt_manager_choice, dialogs.random_choice, dialogs.playback_choice, dialogs.favorites_choice
 get_next_episodes, get_watched_status_movie, watched_info_movie = watched_status.get_next_episodes, watched_status.get_watched_status_movie, watched_status.watched_info_movie
@@ -57,9 +58,14 @@ class Extras(BaseDialog):
 		self.control_id = None
 		self.set_starting_constants(kwargs)
 		self.set_properties()
-		self.tasks = (self.set_artwork, self.set_infoline1, self.set_infoline2, self.make_ratings, self.make_cast, self.make_recommended,
-					self.make_more_like_this, self.make_reviews, self.make_comments, self.make_in_lists, self.make_trivia, self.make_blunders, self.make_parentsguide,
-					self.make_videos, self.make_year, self.make_genres, self.make_network, self.make_collection)
+		self.mode = extras_view_mode()
+		self.mode_config = {
+			0: ('set_artwork', 'set_infoline1', 'set_infoline2', 'make_ratings', 'make_cast', 'make_recommended', 'make_videos'),
+			1: ('set_artwork', 'set_infoline1', 'set_infoline2', 'make_ratings', 'make_cast', 'make_recommended',
+				'make_more_like_this', 'make_reviews', 'make_comments', 'make_in_lists', 'make_trivia', 'make_blunders', 'make_parentsguide',
+				'make_videos', 'make_year', 'make_genres', 'make_network', 'make_collection')
+		}
+		self.tasks = [getattr(self, i) for i in self.mode_config.get(self.mode, self.mode_config[0])]
 
 	def onInit(self):
 		self.set_home_property('window_loaded', 'true')
@@ -712,6 +718,7 @@ class Extras(BaseDialog):
 		self.setProperty('media_type', self.media_type), self.setProperty('title', self.title), self.setProperty('year', self.year), self.setProperty('plot', self.plot)
 		self.setProperty('genre', ', '.join(self.genre)), self.setProperty('network', ', '.join(self.network)), self.setProperty('enable_scrollbars', self.enable_scrollbars)
 		self.setProperty('display_extra_ratings', 'true' if self.display_extra_ratings else 'false')
+		self.setProperty('extras_mode_label', 'Simple' if extras_view_mode() == 0 else 'Advanced')
 
 	def make_status_infoline(self):
 		status_str = self.status
