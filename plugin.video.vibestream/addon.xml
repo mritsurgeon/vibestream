@@ -1,0 +1,24 @@
+<addon id="plugin.video.vibestream" name="VibeStream" provider-name="mritsurgeon" version="1.1.0-beta1">
+    <requires>
+        <import addon="xbmc.python" version="3.0.0"/>
+        <import addon="script.module.requests" version="2.19.1"/>
+        <import addon="script.module.cocoscrapers" version="1.0.0"/>
+    </requires>
+    <extension point="xbmc.python.pluginsource" library="resources/lib/vibestream.py">
+        <provides>video</provides>
+    </extension>
+    <extension point="xbmc.service" library="resources/lib/service.py"/>
+    <extension point="xbmc.python.module" library="resources/lib/"/>
+    <extension point="xbmc.addon.metadata">
+        <reuselanguageinvoker>true</reuselanguageinvoker>
+        <summary lang="en">The ultimate streaming experience for Easynews and Debrid.</summary>
+        <description lang="en">VibeStream is a high-performance Kodi addon for streaming from Debrid services and Easynews. Optimized for speed and quality with intelligent auto-fallback.</description>
+        <platform>all</platform>
+		<disclaimer lang="en">The author of this addon does not host any of the content which is found and has no affiliation with any of the content providers.</disclaimer>
+        <assets>
+            <icon>icon.png</icon>
+            <fanart>fanart.png</fanart>
+        </assets>
+        <news>VibeStream 1.1.0-beta1 - UI Overhaul Release. Netflix-style search results, strict quality/size filtering, and brand migration.</news>
+    </extension>
+</addon>

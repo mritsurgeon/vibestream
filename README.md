@@ -71,20 +71,35 @@ As [Roman_V_M notes](https://forum.kodi.tv/showthread.php?tid=350884), automated
 
 ## Troubleshooting
 
-### Not seeing the latest update (e.g. 1.0.102) in Kodi
+### Not seeing the latest update (e.g. 1.0.104) in Kodi
 
-The repository uses **GitHub Pages** to serve `addons.xml`. If Kodi still shows an older version:
+The repo serves `addons.xml` from **raw.githubusercontent.com**. If Kodi still shows an older version, it is usually using a **cached** copy of the repository. Do this **in order**:
 
-1. **Enable GitHub Pages** (one-time, on the repo):
-   - Open **https://github.com/mritsurgeon/vibestream**
-   - Go to **Settings** → **Pages**
-   - Under **Build and deployment**, set **Source** to **Deploy from a branch**
-   - Choose branch **main** and folder **/ (root)**, then **Save**
-   - Wait 1–2 minutes; the site will be at `https://mritsurgeon.github.io/vibestream`
+1. **Force the repository to refresh** (so Kodi re-fetches `addons.xml` and `addons.xml.md5`):
+   - **Settings** → **Add-ons** → **My add-ons** → **Add-on repository**
+   - Open **VibeStream Repository**
+   - Choose **Check for updates** (or **Update** if available)
+   - Wait for it to finish; this reloads the repo index.
 
-2. **In Kodi**, force a refresh:
-   - **Settings** → **Add-ons** → **Check for updates** (or open **VibeStream Repository** and it will re-fetch)
-   - Or: **Settings** → **Add-ons** → **My add-ons** → **Video add-ons** → **VibeStream** → **Update** (if available)
+2. **Then check VibeStream**:
+   - **Settings** → **Add-ons** → **My add-ons** → **Video add-ons** → **VibeStream**
+   - If an update is available, **Update** will appear; run it.
+
+3. **If you still don’t see the new version**:
+   - **Settings** → **Add-ons** → **Manage dependencies** (or **Install from repository** → **VibeStream Repository** → open it so the repo refreshes).
+   - Restart Kodi and repeat steps 1–2.
+
+4. **Nuclear option** (clears repo/addon cache):
+   - Exit Kodi.
+   - Delete cached repo zips so the next update fetches the latest:
+     - **Windows**: `%APPDATA%\Kodi\addons\packages\`
+     - **Android**: `/sdcard/Android/data/org.xbmc.kodi/files/.kodi/addons/packages/`
+     - Remove any `plugin.video.fenlight-*.zip` (and optionally `repository.vibestream-*.zip`).
+   - Restart Kodi, then **Check for updates** on **VibeStream Repository**, then update VibeStream.
+
+5. If it still doesn’t update, **reinstall the repository** from zip (see Installation), then install/update VibeStream from the repo again.
+
+(Optional) **One-time repo setup** — if you use GitHub Pages for the zip URL, enable it under repo **Settings** → **Pages** (Source: Deploy from branch **main**). The repository addon itself fetches from **raw.githubusercontent.com**, so 1.0.104 is already available without Pages.
 
 3. **Clear Kodi’s addon package cache** (so Kodi re-downloads the latest zip instead of using a cached old one):
    - As per [Kodi add-on development](https://johanzietsman.com/kodi-add-on-development/): *“Kodi caches the packages locally after the first download. Simply uninstalling an add-on does not remove the cached package.”*
