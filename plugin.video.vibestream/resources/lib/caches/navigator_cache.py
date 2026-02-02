@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 from caches.base_cache import connect_database
 from modules.kodi_utils import get_property, set_property, clear_property
 # from modules.kodi_utils import logger
@@ -94,7 +95,7 @@ class NavigatorCache:
 				self.rebuild_database()
 				return self.get_main_lists(list_name)
 			try: edited_contents = self.get_list(list_name, 'edited')
-			except: edited_contents = None
+			except Exception: edited_contents = None
 		else: edited_contents = self.get_memory_cache(list_name, 'edited')
 		return default_contents, edited_contents
 
@@ -104,13 +105,13 @@ class NavigatorCache:
 			dbcon = connect_database('navigator_db')
 			row = dbcon.execute(GET_LIST, (list_name, list_type)).fetchone()
 			if row is not None and len(row) >= 1 and row[0] is not None:
-				contents = eval(row[0])
-		except: pass
+				contents = json.loads(row[0])
+		except Exception: pass
 		return contents
 
 	def set_list(self, list_name, list_type, list_contents):
 		dbcon = connect_database('navigator_db')
-		dbcon.execute(SET_LIST, (list_name, list_type, repr(list_contents)))
+		dbcon.execute(SET_LIST, (list_name, list_type, json.dumps(list_contents)))
 		self.set_memory_cache(list_name, list_type, list_contents)
 
 	def delete_list(self, list_name, list_type):
@@ -120,11 +121,11 @@ class NavigatorCache:
 		dbcon.execute('VACUUM')
 	
 	def get_memory_cache(self, list_name, list_type):
-		try: return eval(get_property(self._get_list_prop(list_type) % list_name))
-		except: return None
+		try: return json.loads(get_property(self._get_list_prop(list_type) % list_name))
+		except Exception: return None
 	
 	def set_memory_cache(self, list_name, list_type, list_contents):
-		set_property(self._get_list_prop(list_type) % list_name, repr(list_contents))
+		set_property(self._get_list_prop(list_type) % list_name, json.dumps(list_contents))
 
 	def delete_memory_cache(self, list_name, list_type):
 		clear_property(self._get_list_prop(list_type) % list_name)
@@ -133,16 +134,16 @@ class NavigatorCache:
 		try:
 			dbcon = connect_database('navigator_db')
 			folders = dbcon.execute(GET_FOLDERS, ('shortcut_folder',)).fetchall()
-			folders = sorted([(str(i[0]), eval(i[1])) for i in folders if i is not None and len(i) >= 2 and i[1] is not None], key=lambda s: s[0].lower())
-		except: folders = []
+			folders = sorted([(str(i[0]), json.loads(i[1])) for i in folders if i is not None and len(i) >= 2 and i[1] is not None], key=lambda s: s[0].lower())
+		except Exception: folders = []
 		return folders
 
 	def get_shortcut_folder_contents(self, list_name):
 		try:
 			dbcon = connect_database('navigator_db')
 			row = dbcon.execute(GET_FOLDER_CONTENTS, (list_name, 'shortcut_folder')).fetchone()
-			contents = eval(row[0]) if row is not None and len(row) >= 1 and row[0] is not None else []
-		except: contents = []
+			contents = json.loads(row[0]) if row is not None and len(row) >= 1 and row[0] is not None else []
+		except Exception: contents = []
 		return contents
 
 	def currently_used_list(self, list_name):

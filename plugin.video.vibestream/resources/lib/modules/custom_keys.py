@@ -23,5 +23,5 @@ def more_like_this():
 
 def get_params(param_name):
 	try: params = dict(parse_qsl(get_infolabel(list_item_str % param_name).split(plugin_str)[1], keep_blank_values=True))
-	except: params = None
+	except Exception: params = None
 	return params

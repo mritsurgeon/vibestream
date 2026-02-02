@@ -41,7 +41,7 @@ class OffcloudAPI:
 			set_setting('oc.token', token)
 			set_setting('oc.enabled', 'true')
 			message = 'Success'
-		except: message = 'An Error Occurred'
+		except Exception: message = 'An Error Occurred'
 		self.ok_message(message)
 
 	def revoke(self):
@@ -85,7 +85,7 @@ class OffcloudAPI:
 		url = remove % request_id
 		response = session.get(url, params={'key': self.token}, timeout=timeout)
 		try: response = response.json()
-		except: response = {}
+		except Exception: response = {}
 		return response
 
 	def resolve_magnet(self, magnet_url, info_hash, store_to_cloud, title, season, episode):
@@ -109,7 +109,7 @@ class OffcloudAPI:
 			file_key = torrent_files[0]['url']
 			file_url = self.requote_uri(file_key)
 			return file_url
-		except:
+		except Exception:
 			if torrent_id: self.delete_torrent(torrent_id)
 			return None
 
@@ -135,7 +135,7 @@ class OffcloudAPI:
 		else: url += '&key=%s' % self.token
 		response = session.get(url, timeout=timeout)
 		try: return response.json()
-		except: return response
+		except Exception: return response
 
 	def _post(self, url, data):
 		url = base_url + url
@@ -144,7 +144,7 @@ class OffcloudAPI:
 		else: url += '&key=%s' % self.token
 		response = session.post(url, data=data, timeout=timeout)
 		try: return response.json()
-		except: return response
+		except Exception: return response
 
 	def requote_uri(self, url):
 		return requests.utils.requote_uri(url)
@@ -173,14 +173,14 @@ class OffcloudAPI:
 				dbcon.execute("""DELETE FROM maincache WHERE id=?""", ('oc_user_cloud',))
 				dbcon.execute("""DELETE FROM maincache WHERE id LIKE ?""", ('oc_user_cloud%',))
 				user_cloud_success = True
-			except: user_cloud_success = False
+			except Exception: user_cloud_success = False
 			# HASH CACHED STATUS
 			if clear_hashes:
 				try:
 					debrid_cache.clear_debrid_results('oc')
 					hash_cache_status_success = True
-				except: hash_cache_status_success = False
+				except Exception: hash_cache_status_success = False
 			else: hash_cache_status_success = True
-		except: return False
+		except Exception: return False
 		if False in (user_cloud_success, hash_cache_status_success): return False
 		return True

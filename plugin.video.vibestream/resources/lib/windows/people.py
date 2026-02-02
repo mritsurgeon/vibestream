@@ -40,18 +40,18 @@ class People(BaseDialog):
 		self.set_default_focus()
 		if self.starting_position:
 			try: self.set_returning_focus(*self.starting_position)
-			except: self.set_default_focus()
+			except Exception: self.set_default_focus()
 
 	def set_default_focus(self):
 		try: self.setFocusId(10)
-		except: self.close()
+		except Exception: self.close()
 
 	def set_returning_focus(self, window_id, focus, sleep_time=700):
 		try:
 			self.sleep(sleep_time)
 			self.setFocusId(window_id)
 			self.select_item(window_id, focus)
-		except: self.set_default_focus()
+		except Exception: self.set_default_focus()
 
 	def run(self):
 		self.doModal()
@@ -136,8 +136,8 @@ class People(BaseDialog):
 								break
 				if not self.person_id:
 					try: self.person_id = data[0]['id']
-					except: pass
-			except: self.person_id = self.actor_id
+					except Exception: pass
+			except Exception: self.person_id = self.actor_id
 		else: self.person_id = self.actor_id
 		if not self.person_id:
 			notification('No Results')
@@ -152,7 +152,7 @@ class People(BaseDialog):
 		else:
 			self.person_thumb = self.person_image = backup_cast_thumbnail
 		try: self.person_gender = gender_dict[person_info.get('gender')]
-		except: self.person_gender = ''
+		except Exception: self.person_gender = ''
 		place_of_birth = person_info.get('place_of_birth')
 		if place_of_birth: self.person_place_of_birth = place_of_birth
 		else: self.person_place_of_birth = ''
@@ -176,25 +176,25 @@ class People(BaseDialog):
 			self.movie_data = [i for i in acting_data if i['media_type'] == 'movie']
 			self.tvshow_data = [i for i in acting_data if i['media_type'] == 'tv']
 			self.director_data = [i for i in directing_data if i['job'].lower() == 'director']
-		except: self.movie_data, self.tvshow_data, self.director_data = [], [], []
+		except Exception: self.movie_data, self.tvshow_data, self.director_data = [], [], []
 
 	def make_more_from(self, media_type):
 		try:
 			if media_type == 'movie':
 				list_type, _id, data, date_key = media_type, more_from_movies_id, self.movie_data, 'release_date'
 				try: data = [i for i in data if not 99 in i['genre_ids'] and not i['character'].lower() in roles_exclude]
-				except: pass
+				except Exception: pass
 			elif media_type == 'tvshow':
 				list_type, _id, data, date_key = media_type, more_from_tvshows_id, self.tvshow_data, 'first_air_date'
 				try: data = [i for i in data if not any(x in genres_exclude for x in i['genre_ids']) and not i['character'].lower() in roles_exclude]
-				except: pass
+				except Exception: pass
 			else: list_type, _id, data, date_key = 'movie', more_from_director_id, self.director_data, 'release_date'
 			data = self.sort_items_by_release(data, date_key)
 			item_list = list(self.make_tmdb_listitems(data, list_type))
 			self.setProperty('more_from_%s.number' % media_type, count_insert % len(item_list))
 			self.item_action_dict[_id] = 'tmdb_id'
 			self.add_items(_id, item_list)
-		except: pass
+		except Exception: pass
 
 	def make_trivia(self):
 		if not self.person_imdb_id: return
@@ -204,14 +204,14 @@ class People(BaseDialog):
 					listitem = self.make_listitem()
 					listitem.setProperties({'text': item, 'content_list': 'all_trivia'})
 					yield listitem
-				except: pass
+				except Exception: pass
 		try:
 			self.all_trivia = imdb_people_trivia(self.person_imdb_id)
 			item_list = list(builder())
 			self.setProperty('imdb_trivia.number', count_insert % len(item_list))
 			self.item_action_dict[trivia_id] = 'content_list'
 			self.add_items(trivia_id, item_list)
-		except: pass
+		except Exception: pass
 
 	def make_tmdb_listitems(self, data, media_type):
 		used_ids = []
@@ -230,11 +230,11 @@ class People(BaseDialog):
 				if year in (None, ''): year = 'N/A'
 				else:
 					try: year = year.split('-')[0]
-					except: pass
+					except Exception: pass
 				listitem.setProperties({'name': item[name_key], 'release_date': year, 'vote_average': '%.1f' % item['vote_average'], 'thumbnail': thumbnail, 'tmdb_id': str(tmdb_id)})
 				append(tmdb_id)
 				yield listitem
-			except: pass
+			except Exception: pass
 
 	def sort_items_by_release(self, data, key):
 		blank = [i for i in data if not i.get(key, None)]

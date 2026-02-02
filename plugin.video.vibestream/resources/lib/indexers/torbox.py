@@ -28,7 +28,7 @@ def tb_cloud():
 				listitem.addContextMenuItems(cm)
 				listitem.setArt({'icon': default_tb_icon, 'poster': default_tb_icon, 'thumb': default_tb_icon, 'fanart': fanart, 'banner': default_tb_icon})
 				yield (url, listitem, True)
-			except: pass
+			except Exception: pass
 	torrents_folders, usenets_folders = TorBox.user_cloud(), TorBox.user_cloud_usenet()
 	folders_torrents = [{**i, 'media_type': 'torrent'} for i in torrents_folders['data'] if i['download_finished']]
 	folders_usenets = [{**i, 'media_type': 'usenet'} for i in usenets_folders['data'] if i['download_finished']]
@@ -60,7 +60,7 @@ def browse_tb_cloud(folder_id, media_type):
 				listitem.setArt({'icon': default_tb_icon, 'poster': default_tb_icon, 'thumb': default_tb_icon, 'fanart': fanart, 'banner': default_tb_icon})
 				listitem.setInfo('video', {})
 				yield (url, listitem, False)
-			except: pass
+			except Exception: pass
 	if media_type == 'torrent': files = TorBox.user_cloud_info(folder_id)
 	else: files = TorBox.user_cloud_info_usenet(folder_id)
 	video_files = [{**i, 'media_type': media_type} for i in files['data']['files'] if i['short_name'].lower().endswith(tuple(extensions))]
@@ -101,5 +101,5 @@ def tb_account_info():
 		append('[B]Downloaded[/B]: {:,}'.format(account_info['total_downloaded']))
 		hide_busy_dialog()
 		return show_text('TorBox'.upper(), '\n\n'.join(body), font_size='large')
-	except: hide_busy_dialog()
+	except Exception: hide_busy_dialog()
 

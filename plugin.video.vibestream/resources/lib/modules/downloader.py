@@ -44,7 +44,7 @@ def runner(params):
 			debrid_files, debrid_function = sources.debridPacks(provider, params['name'], params['magnet_url'], params['info_hash'], download=True)
 			pack_choices = [dict(params, **{'pack_files':item}) for item in debrid_files]
 			icon = icons[provider]
-		except: return notification('No URL found for Download. Pick another Source.')
+		except Exception: return notification('No URL found for Download. Pick another Source.')
 		default_icon = get_icon(icon)
 		chosen_list = select_pack_item(pack_choices, default_icon)
 		if not chosen_list: return
@@ -156,7 +156,7 @@ class Downloader:
 		if self.action == 'image': return
 		active_downloads = self.get_active_downloads()
 		try: active_downloads.remove(self.final_name)
-		except: pass
+		except Exception: pass
 		if active_downloads: set_property('vibestream.active_downloads', json.dumps(active_downloads))
 		else: self.clear_active_downloads()
 
@@ -182,7 +182,7 @@ class Downloader:
 					if 'torbox' in url:
 						from apis.torbox_api import TorBoxAPI
 						url = TorBoxAPI().add_headers_to_url(url)
-				except: pass
+				except Exception: pass
 			elif self.action == 'meta.pack':
 				if self.provider == 'Real-Debrid':
 					from apis.real_debrid_api import RealDebridAPI as debrid_function
@@ -222,9 +222,9 @@ class Downloader:
 					from indexers.easynews import resolve_easynews
 					url = resolve_easynews(self.params)
 		try: headers = dict(parse_qsl(url.rsplit('|', 1)[1]))
-		except: headers = dict('')
+		except Exception: headers = dict('')
 		try: url = url.split('|')[0]
-		except: pass
+		except Exception: pass
 		self.url = url
 		self.headers = headers
 
@@ -233,7 +233,7 @@ class Downloader:
 		if self.media_type == 'thumb_url': self.down_folder = os.path.join(self.down_folder, '.thumbs')
 		for level in levels:
 			try: make_directory(os.path.abspath(os.path.join(self.down_folder, level)))
-			except: pass
+			except Exception: pass
 
 	def get_destination_folder(self):
 		if self.action == 'image':
@@ -266,7 +266,7 @@ class Downloader:
 				final_name = os.path.splitext(urlparse(name_url).path)[0].split('/')[-1]
 			else:
 				try: final_name = self.name.translate(None, r'\/:*?"<>|').strip('.')
-				except: final_name = os.path.splitext(urlparse(name_url).path)[0].split('/')[-1]
+				except Exception: final_name = os.path.splitext(urlparse(name_url).path)[0].split('/')[-1]
 		self.final_name = safe_string(remove_accents(final_name))
 
 	def get_extension(self):
@@ -285,9 +285,9 @@ class Downloader:
 		self.resp = self.get_response()
 		if not self.resp: return False
 		try: self.content = int(self.resp.headers['Content-Length'])
-		except: self.content = 0
+		except Exception: self.content = 0
 		try: self.resumable = 'bytes' in self.resp.headers['Accept-Ranges'].lower()
-		except: self.resumable = False
+		except Exception: self.resumable = False
 		if self.content < 1: return False
 		self.size = 1024 * 1024
 		self.mb = self.content / (1024 * 1024)
@@ -372,7 +372,7 @@ class Downloader:
 			req = Request(self.url, headers=headers)
 			resp = urlopen(req, context=ctx, timeout=30)
 			return resp
-		except: return None
+		except Exception: return None
 
 	def finish_download(self, status):
 		if self.action == 'image':
@@ -403,7 +403,7 @@ def viewer(params):
 				info_tag = listitem.getVideoInfoTag()
 				info_tag.setPlot(' ')
 				yield (url, listitem, info[1])
-			except: pass
+			except Exception: pass
 	handle = int(sys.argv[1])
 	folder_path = download_directory(params['folder_type'])
 	dirs, files = list_dirs(folder_path)

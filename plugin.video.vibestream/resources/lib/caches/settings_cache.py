@@ -21,16 +21,16 @@ class SettingsCache:
 	def get(self, setting_id):
 		try:
 			dbcon = connect_database('settings_db')
-			setting_id = setting_id.replace('vibestream.', '').replace('vibestream.', '')
+			setting_id = setting_id.replace('vibestream.', '')
 			row = dbcon.execute(BASE_GET, (setting_id,)).fetchone()
 			setting_value = row[0] if row is not None else None
 			self.set_memory_cache(setting_id, setting_value)
-		except: setting_value = None
+		except Exception: setting_value = None
 		return setting_value
 
 	def remove_setting(self, setting_id):
 		dbcon = connect_database('settings_db')
-		setting_id = setting_id.replace('vibestream.', '').replace('vibestream.', '')
+		setting_id = setting_id.replace('vibestream.', '')
 		dbcon.execute(BASE_DELETE, (setting_id,))
 
 	def get_many(self, settings_list):
@@ -38,13 +38,13 @@ class SettingsCache:
 			dbcon = connect_database('settings_db')
 			results = dict(dbcon.execute(GET_MANY % (', '.join('?' for _ in settings_list)), settings_list).fetchall())
 			return results
-		except: results = {}
+		except Exception: results = {}
 		return results
 
 	def get_all(self):
 		dbcon = connect_database('settings_db')
 		try: all_settings = dict(dbcon.execute(GET_ALL).fetchall())
-		except: all_settings = {}
+		except Exception: all_settings = {}
 		return all_settings
 
 	def set(self, setting_id, setting_value=None):
@@ -73,7 +73,6 @@ class SettingsCache:
 
 	def set_memory_cache(self, setting_id, setting_value):
 		set_property('vibestream.%s' % setting_id, setting_value)
-		set_property('vibestream.%s' % setting_id, setting_value)
 
 	def delete_memory_cache(self, setting_id):
 		clear_property('vibestream.%s' % setting_id)
@@ -89,7 +88,7 @@ class SettingsCache:
 			dbcon = connect_database('settings_db')
 			dbcon.execute('VACUUM')
 			return True
-		except: return False
+		except Exception: return False
 
 settings_cache = SettingsCache()
 
@@ -101,10 +100,11 @@ def get_setting(setting_id, fallback=''):
 	value = get_property(setting_id)
 	if value: return value
 	# Try cross-prefix memory lookup if the above failed
-	if 'vibestream.' in setting_id:
-		value = get_property(setting_id.replace('vibestream.', 'vibestream.'))
-	elif 'vibestream.' in setting_id:
-		value = get_property(setting_id.replace('vibestream.', 'vibestream.'))
+	# Optional migration / cross-compatibility helper (empty for now or logic fix)
+	# Original code had bug: replacing 'vibestream.' with 'vibestream.'
+	# We can just check if it was missing the prefix
+	if not setting_id.startswith('vibestream.'):
+		value = get_property('vibestream.%s' % setting_id)
 	if value: return value
 	# Fallback to DB
 	return settings_cache.get(setting_id) or fallback
@@ -124,7 +124,7 @@ def sync_settings(params={}):
 		obsoletesettings_ids = [k for k, v in currentsettings.items() if not k in defaultsettings_ids]
 		if obsoletesettings_ids:
 			for item in obsoletesettings_ids: settings_cache.remove_setting(item)
-	except: pass
+	except Exception: pass
 	if currentsettings:
 		for k, v  in currentsettings.items(): settings_cache.set_memory_cache(k, v)
 	for item in default_settings:
@@ -145,7 +145,7 @@ def set_default(setting_ids):
 	if not confirm_dialog(text='Are You Sure?', ok_label='Yes', cancel_label='No', default_control=11): return
 	for setting_id in setting_ids:
 		try: set_setting(setting_id, default_setting_values(setting_id)['setting_default'])
-		except: pass
+		except Exception: pass
 
 def set_boolean(params):
 	setting = params['setting_id']

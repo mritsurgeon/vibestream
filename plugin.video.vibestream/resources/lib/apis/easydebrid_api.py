@@ -70,7 +70,7 @@ class EasyDebridAPI:
 				torrent_files.sort(key=lambda k: k['size'], reverse=True)
 			file_url = torrent_files[0]['url']
 			return self.add_headers_to_url(file_url)
-		except: return None
+		except Exception: return None
 
 	def display_magnet_pack(self, magnet_url, info_hash):
 		try:
@@ -79,7 +79,7 @@ class EasyDebridAPI:
 			torrent_files = [{'link': item['url'], 'filename': item['filename'], 'size': item['size']} \
 							for item in torrent['files'] if item['filename'].lower().endswith(tuple(extensions))]
 			return torrent_files or None
-		except: return None
+		except Exception: return None
 
 	def add_headers_to_url(self, url):
 		return url + '|' + urlencode(self.headers())
@@ -102,7 +102,7 @@ class EasyDebridAPI:
 			set_setting('ed.token', api_key)
 			set_setting('ed.enabled', 'true')
 			message = 'Success'
-		except: message = 'Failed'
+		except Exception: message = 'Failed'
 		ok_dialog(text=message)
 
 	def revoke(self):
@@ -121,15 +121,15 @@ class EasyDebridAPI:
 				dbcon.execute("""DELETE FROM maincache WHERE id=?""", ('ed_user_cloud',))
 				dbcon.execute("""DELETE FROM maincache WHERE id LIKE ?""", ('ed_user_cloud%',))
 				user_cloud_success = True
-			except: user_cloud_success = False
+			except Exception: user_cloud_success = False
 			# HASH CACHED STATUS
 			if clear_hashes:
 				try:
 					debrid_cache.clear_debrid_results('ed')
 					hash_cache_status_success = True
-				except: hash_cache_status_success = False
+				except Exception: hash_cache_status_success = False
 			else: hash_cache_status_success = True
-		except: return False
+		except Exception: return False
 		if False in (user_cloud_success, hash_cache_status_success): return False
 		return True
 

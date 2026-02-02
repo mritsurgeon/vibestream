@@ -34,7 +34,7 @@ The repo follows [Kodi add-on repository](https://kodi.wiki/view/Add-on_reposito
 
 - **Root**: `addons.xml` (index of add-ons and versions), `addons.xml.md5` (checksum for update checks).
 - **Repository add-on**: Installed from zip; its `addon.xml` points `<info>` / `<checksum>` / `<datadir>` at the hosted URLs (e.g. GitHub Pages).
-- **Plugin zips**: Under `packages/plugin.video.fenlight/` as `plugin.video.fenlight-${version}.zip`; Kodi downloads these when installing or updating.
+- **Plugin zips**: Under `packages/plugin.video.vibestream/` as `plugin.video.vibestream-${version}.zip`; Kodi downloads these when installing or updating.
 - **Caching**: Kodi caches downloaded packages; clearing the `addons/packages/` folder (see Troubleshooting) forces it to re-download the latest version.
 
 See also: [Kodi Add-on development](https://kodi.wiki/view/Add-on_development), [rigacci.org Kodi addon notes](https://www.rigacci.org/wiki/doku.php/doc/appunti/software/kodi_addon).
@@ -48,7 +48,7 @@ Ways to test and develop the addon without affecting your main Kodi install, bas
 The addon includes unit tests that mock Kodi APIs so you can run them on your machine:
 
 ```bash
-cd plugin.video.fenlight/resources/lib
+cd plugin.video.vibestream/resources/lib
 python3 -m unittest discover -s tests -v
 ```
 
@@ -94,7 +94,7 @@ The repo serves `addons.xml` from **raw.githubusercontent.com**. If Kodi still s
    - Delete cached repo zips so the next update fetches the latest:
      - **Windows**: `%APPDATA%\Kodi\addons\packages\`
      - **Android**: `/sdcard/Android/data/org.xbmc.kodi/files/.kodi/addons/packages/`
-     - Remove any `plugin.video.fenlight-*.zip` (and optionally `repository.vibestream-*.zip`).
+     - Remove any `plugin.video.vibestream-*.zip` (and optionally `repository.vibestream-*.zip`).
    - Restart Kodi, then **Check for updates** on **VibeStream Repository**, then update VibeStream.
 
 5. If it still doesn’t update, **reinstall the repository** from zip (see Installation), then install/update VibeStream from the repo again.
@@ -104,7 +104,7 @@ The repo serves `addons.xml` from **raw.githubusercontent.com**. If Kodi still s
 3. **Clear Kodi’s addon package cache** (so Kodi re-downloads the latest zip instead of using a cached old one):
    - As per [Kodi add-on development](https://johanzietsman.com/kodi-add-on-development/): *“Kodi caches the packages locally after the first download. Simply uninstalling an add-on does not remove the cached package.”*
    - Delete cached zips so the next update fetches 1.0.102:
-     - **Windows**: `%APPDATA%\Kodi\addons\packages\` — delete any `plugin.video.fenlight*.zip` (or the whole `packages` folder).
+     - **Windows**: `%APPDATA%\Kodi\addons\packages\` — delete any `plugin.video.vibestream*.zip` (or the whole `packages` folder).
      - **Linux**: `~/.kodi/addons/packages/` (or `/var/lib/kodi/.kodi/addons/packages/` for system-wide).
      - **macOS**: `~/Library/Application Support/Kodi/addons/packages/`
    - Restart Kodi, then **Check for updates** or open **VibeStream Repository** again.

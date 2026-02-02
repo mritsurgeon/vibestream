@@ -53,13 +53,13 @@ def pm_cloud(folder_id=None, folder_name=None):
 				info_tag = listitem.getVideoInfoTag()
 				info_tag.setPlot(' ')
 				yield (url, listitem, is_folder)
-			except: pass
+			except Exception: pass
 	try:
 		cloud_files = Premiumize.user_cloud(folder_id)['content']
 		cloud_files = [i for i in cloud_files if ('link' in i and i['link'].lower().endswith(tuple(extensions))) or i['type'] == 'folder']
 		cloud_files.sort(key=lambda k: k['name'])
 		cloud_files.sort(key=lambda k: k['type'], reverse=True)
-	except: cloud_files = []
+	except Exception: cloud_files = []
 	handle = int(sys.argv[1])
 	add_items(handle, list(_builder()))
 	set_content(handle, 'files')
@@ -76,7 +76,7 @@ def pm_transfers():
 				if status == 'finished': progress = 100
 				else:
 					try: progress = re.findall(r'\.{0,1}(\d+)', str(progress))[0][:2]
-					except: progress = ''
+					except Exception: progress = ''
 				if file_type == 'folder':
 					is_folder = True if status == 'finished' else False
 					display = '%02d | %s%% | [B]FOLDER[/B] | [I]%s [/I]' % (count, str(progress), name)
@@ -99,9 +99,9 @@ def pm_transfers():
 				info_tag = listitem.getVideoInfoTag()
 				info_tag.setPlot(' ')
 				yield (url, listitem, is_folder)
-			except: pass
+			except Exception: pass
 	try: transfer_files = Premiumize.transfers_list()['transfers']
-	except: transfer_files = []
+	except Exception: transfer_files = []
 	handle = int(sys.argv[1])
 	add_items(handle, list(_builder()))
 	set_content(handle, 'files')
@@ -147,7 +147,7 @@ def pm_account_info():
 		append('[B]Fair Use (Percentage Used):[/B] %s%%' % percentage_used)
 		hide_busy_dialog()
 		return show_text('PREMIUMIZE', '\n\n'.join(body), font_size='large')
-	except: hide_busy_dialog()
+	except Exception: hide_busy_dialog()
 
 
 def active_days():
@@ -155,5 +155,5 @@ def active_days():
 		account_info = Premiumize.account_info()
 		expires = datetime.fromtimestamp(account_info['premium_until'])
 		days_remaining = (expires - datetime.today()).days
-	except: days_remaining = 0
+	except Exception: days_remaining = 0
 	return days_remaining

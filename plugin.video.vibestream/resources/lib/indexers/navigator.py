@@ -371,7 +371,7 @@ class Navigator:
 				cm_items = [('[B]Remove from history[/B]', 'RunPlugin(%s)' % build_url({'mode': 'search.remove', 'setting_id':setting_id, 'key_id': key_id})),
 							('[B]Clear All History[/B]', 'RunPlugin(%s)' % build_url({'mode': 'search.clear_all', 'setting_id':setting_id, 'refresh': 'true'}))]
 				self.add(url_params, key_id, 'search_history', cm_items=cm_items)
-			except: pass
+			except Exception: pass
 		self.category_name = self.params_get('name') or 'History'
 		self.end_directory()
 
@@ -379,7 +379,7 @@ class Navigator:
 		from apis.tmdb_api import tmdb_keywords_by_query
 		media_type, key_id = self.params_get('media_type'), self.params_get('key_id') or self.params_get('query')
 		try: page_no = int(self.params_get('new_page', '1'))
-		except: page_no = self.params_get('new_page')
+		except Exception: page_no = self.params_get('new_page')
 		mode = 'build_movie_list' if media_type == 'movie' else 'build_tvshow_list'
 		action = 'tmdb_movie_keyword_results' if media_type == 'movie' else 'tmdb_tv_keyword_results'
 		data = tmdb_keywords_by_query(key_id, page_no)

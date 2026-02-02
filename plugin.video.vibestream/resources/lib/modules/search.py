@@ -58,7 +58,7 @@ def add_to_search(search_name, search_list):
 		result.insert(0, search_name)
 		result = result[:50]
 		main_cache.set(search_list, result, expiration=8760)
-	except: return
+	except Exception: return
 
 def remove_from_search(params):
 	try:
@@ -67,7 +67,7 @@ def remove_from_search(params):
 		main_cache.set(params['setting_id'], result, expiration=8760)
 		notification('Success', 2500)
 		kodi_refresh()
-	except: return
+	except Exception: return
 
 def clear_search():
 	try:
@@ -76,7 +76,7 @@ def clear_search():
 		setting_id = select_dialog([item[1] for item in clear_history_list], **kwargs)
 		if setting_id == None: return
 		clear_all(setting_id)
-	except: return
+	except Exception: return
 
 def clear_all(setting_id, refresh='false'):
 	main_cache.set(setting_id, '', expiration=365)

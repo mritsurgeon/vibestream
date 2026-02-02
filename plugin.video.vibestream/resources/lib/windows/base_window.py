@@ -74,11 +74,11 @@ def window_manager(obj):
 				from indexers.people import person_data_dialog
 				person_data_dialog(params)
 			else: close()
-		except: close()
+		except Exception: close()
 
 	def get_stack():
 		try: window_stack = json.loads(get_property('vibestream.window_stack'))
-		except: window_stack = []
+		except Exception: window_stack = []
 		return window_stack
 
 	def add_to_stack(params):
@@ -105,7 +105,7 @@ def window_manager(obj):
 				Thread(target=monitor).start()
 				runner(previous_params)
 		else: close()
-	except: close()
+	except Exception: close()
 	hide_busy_dialog()
 
 def window_player(obj):
@@ -127,7 +127,7 @@ def window_player(obj):
 			else:
 				from indexers.people import person_data_dialog
 				person_data_dialog(params)
-		except: close()
+		except Exception: close()
 	try:
 		window_player_url = obj.window_player_url
 		if 'plugin.video.youtube' in window_player_url:
@@ -144,7 +144,7 @@ def window_player(obj):
 		sleep(1000)
 		Thread(target=monitor).start()
 		runner(current_params)
-	except: obj.close()
+	except Exception: obj.close()
 	hide_busy_dialog()
 
 class BaseDialog(window_xml_dialog):
@@ -259,7 +259,7 @@ class BaseDialog(window_xml_dialog):
 
 	def clear_modals(self):
 		try: del self.player
-		except: pass
+		except Exception: pass
 
 	def notification(self, text, duration=3000):
 		return notification(text, duration)
@@ -289,7 +289,7 @@ class FontUtils:
 		try:
 			skin_folder = mdParse(translate_path('special://skin/addon.xml')).getElementsByTagName('extension')[0].getElementsByTagName('res')[0].getAttribute('folder')
 			if not skin_folder: skin_folder = [i for i in list_dirs(translate_path('special://skin'))[0] if i in folder_options][0]
-		except: pass
+		except Exception: pass
 		return skin_folder
 
 	def skin_change_check(self):
@@ -316,20 +316,20 @@ class FontUtils:
 		try:
 			all_fonts = mdParse(skin_font_xml).getElementsByTagName('fontset')
 			try: fontset = [i for i in all_fonts if i.getAttribute('id').lower() == self.current_font.lower()][0]
-			except: fontset = all_fonts[0]
+			except Exception: fontset = all_fonts[0]
 			for item in fontset.getElementsByTagName('font'):
 				try: name = item.getElementsByTagName('name')[0].firstChild.data
-				except: continue
+				except Exception: continue
 				try: size = int(item.getElementsByTagName('size')[0].firstChild.data)
-				except: continue
+				except Exception: continue
 				try: style = item.getElementsByTagName('style')[0].firstChild.data.lower()
-				except: style = ''
+				except Exception: style = ''
 				name_compare = name.lower()
 				bold = any('bold' in item for item in (name_compare, style))
 				extra_styles = any(item in style for item in extras_keys)
 				if not extra_styles: extra_styles = any(item in name_compare for item in extras_keys)
 				results_append({'name': name, 'size': size, 'bold': bold, 'extra_styles': extra_styles})
-		except: pass
+		except Exception: pass
 		return results
 
 	def replace_font(self, window, replacement_values):
@@ -337,7 +337,7 @@ class FontUtils:
 		with open_file(file) as f: content = f.read()
 		for item in replacement_values:
 			try: content = re.sub(r'<font>(.*?)</font> <\!-- %s -->' % item[0], '<font>%s</font> <!-- %s -->' % (item[1], item[0]), content)
-			except: pass
+			except Exception: pass
 		with open_file(file, 'w') as f: f.write(content)
 
 	def default_font_info(self):

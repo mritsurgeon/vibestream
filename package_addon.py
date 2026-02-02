@@ -26,7 +26,7 @@ def create_package(addon_dir):
     
     excludes = [".git", "__pycache__", ".DS_Store", "brain", ".gemini", ".idea", ".vscode"]
     # Legacy Fen Light art no longer used (VibeStream uses vibestream_icon/fanart only)
-    exclude_files = {"fenlight_plus_fanart.png", "fenlight_fanart2.png", "fenlight_plus_icon.png", "fenlight_classic.jpg", "flpfa.jpg"}
+    exclude_files = {"vibestream_plus_fanart.png", "vibestream_fanart2.png", "vibestream_plus_icon.png", "vibestream_classic.jpg", "flpfa.jpg"}
 
     with zipfile.ZipFile(full_output_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
         for root, dirs, files in os.walk(addon_dir):

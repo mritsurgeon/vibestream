@@ -44,21 +44,21 @@ class TVShows:
 		self.paginate_start = int(self.params_get('paginate_start', '0'))
 		self.append = self.items.append
 		try: self.is_anime = '_anime_' in self.action
-		except: self.is_anime = False
+		except Exception: self.is_anime = False
 	
 	def fetch_list(self):
 		handle = int(sys.argv[1])
 		try:
 			is_random = self.params_get('random', 'false') == 'true'
 			try: page_no = int(self.params_get('new_page', '1'))
-			except: page_no = self.params_get('new_page')
+			except Exception: page_no = self.params_get('new_page')
 			if page_no == 1 and not self.is_external:
 				folderpath = folder_path()
 				if not any([x in folderpath for x in internal_nav_check]): set_property('vibestream.exit_params', folderpath)
 			if self.action in personal: var_module, import_function = personal[self.action]
 			else: var_module, import_function = 'apis.%s_api' % self.action.split('_')[0], self.action
 			try: function = manual_function_import(var_module, import_function)
-			except: pass
+			except Exception: pass
 			if self.action in main:
 				data = function(page_no)
 				self.list = [i['id'] for i in data['results']]
@@ -79,7 +79,7 @@ class TVShows:
 				self.id_type = 'trakt_dict'
 				data = function(page_no)
 				try: self.list = [i['show']['ids'] for i in data]
-				except: self.list = [i['ids'] for i in data]
+				except Exception: self.list = [i['ids'] for i in data]
 				if not is_random and self.action != 'trakt_recommendations': self.new_page = {'new_page': string(page_no + 1)}
 			elif self.action in trakt_special:
 				self.id_type = 'trakt_dict'
@@ -97,7 +97,7 @@ class TVShows:
 				if total_pages > 2: self.total_pages = total_pages
 				try:
 					if total_pages > page_no: self.new_page = {'new_page': string(page_no + 1), 'paginate_start': self.paginate_start}
-				except: pass
+				except Exception: pass
 			elif self.action == 'trakt_recommendations':
 				self.id_type = 'trakt_dict'
 				data = function('shows')
@@ -106,7 +106,7 @@ class TVShows:
 				if total_pages > 2: self.total_pages = total_pages
 				try:
 					if total_pages > page_no: self.new_page = {'new_page': string(page_no + 1), 'paginate_start': self.paginate_start}
-				except: pass
+				except Exception: pass
 			elif self.action == 'tmdb_tv_discover':
 				url = self.params_get('url')
 				data = function(url, page_no)
@@ -128,7 +128,7 @@ class TVShows:
 			if self.new_page and not self.widget_hide_next_page:
 						self.new_page.update({'mode': 'build_tvshow_list', 'action': self.action, 'category_name': self.category_name})
 						add_dir(self.new_page, 'Next Page (%s) >>' % self.new_page['new_page'], handle, 'nextpage', nextpage_landscape)
-		except: pass
+		except Exception: pass
 		set_content(handle, content_type)
 		set_category(handle, self.category_name)
 		end_directory(handle, cacheToDisc=False if self.is_external else True)
@@ -218,7 +218,7 @@ class TVShows:
 			info_tag.setCast([xbmc_actor(name=item['name'], role=item['role'], thumbnail=item['thumbnail']) for item in meta_get('cast', [])])
 			set_properties({'vibestream.extras_params': extras_params, 'vibestream.options_params': options_params, 'vibestream.more_like_this_params': more_like_this_params})
 			self.append(((url_params, listitem, self.is_folder), _position))
-		except: pass
+		except Exception: pass
 
 	def worker(self):
 		self.current_date, self.current_time = get_datetime(), get_current_timestamp()

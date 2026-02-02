@@ -94,7 +94,7 @@ def widget_refresh_timer_choice(params):
 
 def external_scraper_choice(params):
 	try: results = jsonrpc_get_addons('xbmc.python.module')
-	except: return
+	except Exception: return
 	list_items = [{'line1': i['name'], 'icon': i['thumbnail']} for i in results]
 	kwargs = {'items': json.dumps(list_items)}
 	choice = select_dialog(results, **kwargs)
@@ -105,14 +105,14 @@ def external_scraper_choice(params):
 		main_folder_name = module_id.split('.')[-1]
 		manual_module_import('%s.sources_%s' % (main_folder_name, main_folder_name))
 		success = True
-	except: success = False
+	except Exception: success = False
 	if success:
 		try:
 			set_setting('external_scraper.module', module_id)
 			set_setting('external_scraper.name', module_name)
 			set_setting('provider.external', 'true')
 			ok_dialog(text='Success.[CR][B]%s[/B] set as External Scraper' % module_name)
-		except: ok_dialog(text='Error')
+		except Exception: ok_dialog(text='Error')
 	else:
 		ok_dialog(text='The [B]%s[/B] Module is not compatible.[CR]Please choose a different Module...' % module_name.upper())
 		return external_scraper_choice(params)
@@ -121,7 +121,7 @@ def audio_filters_choice(params={}):
 	icon = get_icon('audio')
 	list_items = [{'line1': item[0], 'line2': item[1], 'icon': icon} for item in audio_filter_choices]
 	try: preselect = [audio_filter_choices.index(item) for item in audio_filter_choices if item[1] in audio_filters()]
-	except: preselect = []
+	except Exception: preselect = []
 	kwargs = {'items': json.dumps(list_items), 'heading': 'Choose Audio Properties to Exclude', 'multi_choice': 'true', 'multi_line': 'true', 'preselect': preselect}
 	selection = select_dialog([i[1] for i in audio_filter_choices], **kwargs)
 	if selection == None: return
@@ -148,7 +148,7 @@ def keywords_choice(params):
 		if media_type == 'movie': function, key = tmdb_movie_keywords, 'keywords'
 		else: function, key = tmdb_tv_keywords, 'results'
 		try: keywords = function(tmdb_id)[key]
-		except: keywords = []
+		except Exception: keywords = []
 		hide_busy_dialog()
 	if not keywords:
 		notification('No Results', 2500)
@@ -167,7 +167,7 @@ def random_choice(params):
 	if return_choice == 'true': return choice
 	if choice == None: return
 	from modules.episode_tools import EpisodeTools
-	exec('EpisodeTools(meta).%s()' % choice)
+	getattr(EpisodeTools(meta), choice)()
 
 def trakt_manager_choice(params):
 	if not trakt_user_active(): return notification('No Active Trakt Account', 3500)
@@ -373,7 +373,7 @@ def playback_choice(params):
 	episode_id = params.get('episode_id', None)
 	meta = params.get('meta')
 	try: meta = json.loads(meta)
-	except: pass
+	except Exception: pass
 	if not isinstance(meta, dict):
 		function = metadata.movie_meta if media_type == 'movie' else metadata.tvshow_meta
 		meta = function('tmdb_id', meta, tmdb_api_key(), mpaa_region(), get_datetime())
@@ -499,7 +499,7 @@ def set_quality_choice(params):
 	dl = ['Include SD', 'Include 720p', 'Include 1080p', 'Include 4K']
 	fl = ['SD', '720p', '1080p', '4K']
 	try: preselect = [fl.index(i) for i in get_setting('vibestream.%s' % quality_setting).split(', ')]
-	except: preselect = []
+	except Exception: preselect = []
 	list_items = [{'line1': item, 'icon': icon} for item in dl]
 	kwargs = {'items': json.dumps(list_items), 'multi_choice': 'true', 'preselect': preselect}
 	choice = select_dialog(fl, **kwargs)
@@ -519,7 +519,7 @@ def extras_buttons_choice(params):
 				try:
 					button_action = get_setting('vibestream.%s' % setting_id)
 					button_label = extras_button_label_values[_type][button_action]
-				except:
+				except Exception:
 					set_setting(setting_id.replace('vibestream.', ''), default_setting_values(setting_id.replace('vibestream.', ''))['setting_default'])
 					button_action = get_setting('vibestream.%s' % setting_id)
 					button_label = extras_button_label_values[_type][button_action]
@@ -573,7 +573,7 @@ def extras_lists_choice(params={}):
 	list_items = [{'line1': i[0]} for i in choices]
 	current_settings = extras_enabled_menus()
 	try: preselect = [choices.index(i) for i in choices if i[1] in current_settings]
-	except: preselect = []
+	except Exception: preselect = []
 	kwargs = {'items': json.dumps(list_items), 'heading': 'Enable Content for Extras Lists', 'multi_choice': 'true', 'preselect': preselect}
 	selection = select_dialog(choices, **kwargs)
 	if selection  == []: return set_setting('extras.enabled', 'noop')
@@ -588,7 +588,7 @@ def set_language_filter_choice(params):
 	if include_none == 'false': lang_choices.pop('None')
 	dl, fl = list(lang_choices.keys()), list(lang_choices.values())
 	try: preselect = [fl.index(i) for i in get_setting('vibestream.%s' % filter_setting_id).split(', ')]
-	except: preselect = []
+	except Exception: preselect = []
 	list_items = [{'line1': item} for item in dl]
 	kwargs = {'items': json.dumps(list_items), 'multi_choice': multi_choice, 'preselect': preselect}
 	choice = select_dialog(fl, **kwargs)
@@ -842,17 +842,17 @@ def media_extra_info_choice(params):
 				append('[B]Last Aired:[/B] %s - [B]S%.2dE%.2d[/B] - %s' \
 					% (adjust_premiered_date(last_ep['air_date'], date_offset())[0].strftime('%d %B %Y'),
 						last_ep['season_number'], last_ep['episode_number'], last_ep['name']))
-			except: pass
+			except Exception: pass
 			try:
 				next_ep = extra_info['next_episode_to_air']
 				append('[B]Next Aired:[/B] %s - [B]S%.2dE%.2d[/B] - %s' \
 					% (adjust_premiered_date(next_ep['air_date'], date_offset())[0].strftime('%d %B %Y'),
 						next_ep['season_number'], next_ep['episode_number'], next_ep['name']))
-			except: pass
+			except Exception: pass
 			append('[B]Seasons:[/B] %s' % meta['total_seasons'])
 			append('[B]Episodes:[/B] %s' % meta['total_aired_eps'])
 			append('[B]Homepage:[/B] %s' % extra_info['homepage'])
-	except: return notification('Error', 2000)
+	except Exception: return notification('Error', 2000)
 	return '[CR][CR]'.join(listings)
 
 def discover_choice(params):

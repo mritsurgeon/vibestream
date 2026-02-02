@@ -49,7 +49,7 @@ class Images():
 					listitem.setProperties({'thumb': actor_poster, 'path': actor_url, 'name': name, 'actor_name': name, 'actor_id': actor_id,
 											'fav_enabled': 'true', 'action': json.dumps(url_params)})
 					yield listitem
-				except: pass
+				except Exception: pass
 		action = self.params['action']
 		page_no = self.params['page_no']
 		function = tmdb_popular_people if action == 'popular' else tmdb_trending_people_day if action == 'day' else tmdb_trending_people_week
@@ -75,11 +75,11 @@ class Images():
 					listitem.setProperties({'thumb': actor_poster, 'name': name + known_for, 'actor_name': name, 'actor_id': actor_id,
 											'fav_enabled': 'true', 'action': json.dumps(url_params)})
 					yield listitem
-				except: pass
+				except Exception: pass
 		page_no = self.params['page_no']
 		key_id = self.params.get('key_id') or self.params.get('query')
 		try: data = tmdb_people_info(key_id, page_no)
-		except: return
+		except Exception: return
 		results = data['results']
 		if len(results) == 1:
 			self.direct_search_result = True
@@ -102,7 +102,7 @@ class Images():
 					listitem = make_listitem()
 					listitem.setProperties({'thumb': actor_poster, 'name': name, 'actor_name': name, 'actor_id': actor_id, 'action': json.dumps(url_params), 'in_favorites': 'true'})
 					yield listitem
-				except: pass
+				except Exception: pass
 		image_info = get_favorites('people', 'dummy_arg')
 		self.list_items = list(builder())
 		self.next_page_params = {}
@@ -115,7 +115,7 @@ class Images():
 					listitem = make_listitem()
 					listitem.setProperties({'thumb': item[2], 'path': item[0], 'name': item[1], 'action': image_action})
 					yield listitem
-				except: pass
+				except Exception: pass
 		rootname = self.params['rootname']
 		all_images = []
 		results = tmdb_media_images(self.params['media_type'], self.params['tmdb_id'])
@@ -125,7 +125,7 @@ class Images():
 			for item in ((posters, '%s _Poster_%03d'), (fanarts, '%s _Fanart_%03d'), (landscapes, '%s _Landscape_%03d'), (clearlogos, '%s _Clearlogo_%03d')):
 				if item[0]: all_images.extend([(tmdb_image_base % ('original', i['file_path']), item[1] % (rootname, count), tmdb_image_base % ('w300', i['file_path'])) \
 												for count, i in enumerate(item[0], 1)])
-		except: pass
+		except Exception: pass
 		image_action = json.dumps({'mode': 'imageviewer', 'all_images': all_images})
 		self.list_items = list(builder())
 		self.next_page_params = {}
@@ -137,7 +137,7 @@ class Images():
 					listitem = make_listitem()
 					listitem.setProperties({'thumb': item[2], 'path': item[0], 'name': item[1], 'action': image_action})
 					yield listitem
-				except: pass
+				except Exception: pass
 		all_images = []
 		actor_name, actor_id = self.params['actor_name'], self.params['actor_id']
 		try:
@@ -146,7 +146,7 @@ class Images():
 			image_info.sort(key=lambda x: x['file_path'])
 			all_images = [(tmdb_image_base % ('original', i['file_path']), '%s_%03d' % (actor_name, count),
 						tmdb_image_base % ('w185', i['file_path'])) for count, i in enumerate(image_info, 1)]
-		except: pass
+		except Exception: pass
 		image_action = json.dumps({'mode': 'imageviewer', 'all_images': all_images})
 		self.list_items = list(builder())
 		self.next_page_params = {}
@@ -164,10 +164,10 @@ class Images():
 					listitem = make_listitem()
 					listitem.setProperties({'thumb': thumb_url, 'path': image_url, 'name': name, 'action': image_action})
 					yield listitem
-				except: pass
+				except Exception: pass
 		actor_name, actor_id = self.params['actor_name'], self.params['actor_id']
 		try: results = tmdb_people_full_info(actor_id)['tagged_images']
-		except: return
+		except Exception: return
 		image_info = results['results']
 		image_info.sort(key=lambda x: x['file_path'])
 		all_images = [(tmdb_image_base % ('original', i['file_path']), (i['media']['title']) if 'title' in i['media'] else i['media']['name']) for i in image_info]
@@ -182,7 +182,7 @@ class Images():
 					listitem = make_listitem()
 					listitem.setProperties({'thumb': item['thumbnail'], 'path': item['down_url'], 'name': item['name'], 'action': image_action})
 					yield listitem
-				except: pass
+				except Exception: pass
 		EasyNews = import_easynews()
 		key_id, page_no = self.params['key_id'], self.params['page_no']
 		results = EasyNews.search_images(key_id, page_no)
@@ -201,10 +201,10 @@ class Images():
 					listitem = make_listitem()
 					image_url = os.path.join(folder_path, item)
 					try: thumb_url = os.path.join(thumbs_path, item)
-					except: thumb_url = image_url
+					except Exception: thumb_url = image_url
 					listitem.setProperties({'thumb': thumb_url, 'path': image_url, 'name': item, 'action': image_action, 'delete': 'true'})
 					yield listitem
-				except: pass
+				except Exception: pass
 		if not folder_path: folder_path = self.params.get('folder_path')
 		image_info = list_dirs(folder_path)[1]
 		image_info.sort()

@@ -53,7 +53,7 @@ def person_direct_search(key_id):
 	try:
 		key_id = unquote(key_id)
 		data = tmdb_people_info(key_id)['results']
-	except: data = []
+	except Exception: data = []
 	handle = int(sys.argv[1])
 	add_items(handle, list(_builder()))
 	set_content(handle, 'movies')

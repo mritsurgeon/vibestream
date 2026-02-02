@@ -40,21 +40,21 @@ class TraktCache:
 			cache_data = dbcon.execute(TC_BASE_GET, (string,)).fetchone()
 			if cache_data is not None and len(cache_data) >= 1 and cache_data[0] is not None:
 				try: result = json.loads(cache_data[0])
-				except: self.delete(string)
-		except: pass
+				except Exception: self.delete(string)
+		except Exception: pass
 		return result
 
 	def set(self, string, data):
 		try:
 			dbcon = connect_database('trakt_db')
 			dbcon.execute(TC_BASE_SET, (string, json.dumps(data)))
-		except: return None
+		except Exception: return None
 
 	def delete(self, string):
 		try:
 			dbcon = connect_database('trakt_db')
 			dbcon.execute(TC_BASE_DELETE, (string,))
-		except: pass
+		except Exception: pass
 
 trakt_cache = TraktCache()
 
@@ -114,11 +114,11 @@ def reset_activity(latest_activities):
 		data = dbcon.execute(TC_BASE_GET, (string,)).fetchone()
 		if data is not None and len(data) >= 1 and data[0] is not None:
 			try: cached_data = json.loads(data[0])
-			except: cached_data = default_activities()
+			except Exception: cached_data = default_activities()
 		else: cached_data = default_activities()
 		dbcon.execute(DELETE, (string,))
 		trakt_cache.set(string, latest_activities)
-	except: cached_data = default_activities()
+	except Exception: cached_data = default_activities()
 	return cached_data
 
 def clear_daily_cache():
@@ -132,7 +132,7 @@ def clear_trakt_hidden_data(list_type):
 	try:
 		dbcon = connect_database('trakt_db')
 		dbcon.execute(DELETE, (string,))
-	except: pass
+	except Exception: pass
 
 def clear_trakt_collection_watchlist_data(list_type, media_type):
 	if media_type == 'movies': media_type = 'movie'
@@ -141,39 +141,39 @@ def clear_trakt_collection_watchlist_data(list_type, media_type):
 	try:
 		dbcon = connect_database('trakt_db')
 		dbcon.execute(DELETE, (string,))
-	except: pass
+	except Exception: pass
 
 def clear_trakt_calendar():
 	try:
 		dbcon = connect_database('trakt_db')
 		dbcon.execute(DELETE_LIKE % 'trakt_get_my_calendar_%')
-	except: return
+	except Exception: return
 
 def clear_trakt_list_contents_data(list_type):
 	string = 'trakt_list_contents_' + list_type + '_%'
 	try:
 		dbcon = connect_database('trakt_db')
 		dbcon.execute(DELETE_LIKE % string)
-	except: pass
+	except Exception: pass
 
 def clear_trakt_list_data(list_type):
 	string = 'trakt_%s' % list_type
 	try:
 		dbcon = connect_database('trakt_db')
 		dbcon.execute(DELETE, (string,))
-	except: pass
+	except Exception: pass
 
 def clear_trakt_recommendations():
 	try:
 		dbcon = connect_database('trakt_db')
 		dbcon.execute(DELETE_LIKE % 'trakt_recommendations_%')
-	except: return
+	except Exception: return
 
 def clear_trakt_favorites():
 	try:
 		dbcon = connect_database('trakt_db')
 		dbcon.execute(DELETE_LIKE % 'trakt_favorites_%')
-	except: return
+	except Exception: return
 
 def clear_all_trakt_cache_data(silent=False, refresh=True):
 	try:
@@ -184,7 +184,7 @@ def clear_all_trakt_cache_data(silent=False, refresh=True):
 		lists_with_media = main_cache_dbcon.execute(DELETE_LISTS_WITH_MEDIA % "'trakt_lists_with_media_%'").fetchall()
 		for item in lists_with_media:
 			try: main_cache.delete(item[0])
-			except: pass
+			except Exception: pass
 		main_cache.clean_database()
 		dbcon = connect_database('trakt_db')
 		for table in ('trakt_data', 'progress', 'watched', 'watched_status'): dbcon.execute(BASE_DELETE % table)
@@ -193,7 +193,7 @@ def clear_all_trakt_cache_data(silent=False, refresh=True):
 			from apis.trakt_api import trakt_sync_activities
 			Thread(target=trakt_sync_activities).start()
 		return True
-	except: return False
+	except Exception: return False
 
 def default_activities():
 	return {

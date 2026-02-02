@@ -33,7 +33,7 @@ class PremiumizeAPI:
 		response = self._post(url, data)
 		user_code = response['user_code']
 		try: copy2clip(user_code)
-		except: pass
+		except Exception: pass
 		content = 'Authorize Debrid Services[CR]Navigate to: [B]%s[/B][CR]Enter the following code: [B]%s[/B]' % (response.get('verification_uri'), user_code)
 		progressDialog = progress_dialog('Premiumize Authorize', get_icon('pm_qrcode'))
 		progressDialog.update(content, 0)
@@ -55,11 +55,11 @@ class PremiumizeAPI:
 				progressDialog.close()
 				self.token = str(response['access_token'])
 				set_setting('pm.token', self.token)
-			except:
+			except Exception:
 				 ok_dialog(text='Error')
 				 break
 		try: progressDialog.close()
-		except: pass
+		except Exception: pass
 		if self.token:
 			account_info = self.account_info()
 			set_setting('pm.account_id', str(account_info['customer_id']))
@@ -92,7 +92,7 @@ class PremiumizeAPI:
 		url = 'transfer/directdl'
 		response = self._post(url, data)
 		try: return self.add_headers_to_url(response['content'][0]['link'])
-		except: return None
+		except Exception: return None
 
 	def resolve_magnet(self, magnet_url, info_hash, store_to_cloud, title, season, episode):
 		try:
@@ -121,7 +121,7 @@ class PremiumizeAPI:
 			if file_url:
 				if store_to_cloud: Thread(target=self.create_transfer, args=(magnet_url,)).start()
 				return self.add_headers_to_url(file_url)
-		except: return None
+		except Exception: return None
 
 	def display_magnet_pack(self, magnet_url, info_hash):
 		from modules.source_utils import supported_video_extensions
@@ -134,10 +134,10 @@ class PremiumizeAPI:
 			for item in result.get('content'):
 				if any(item.get('path').lower().endswith(x) for x in extensions) and not item.get('link', '') == '':
 					try: path = item['path'].split('/')[-1]
-					except: path = item['path']
+					except Exception: path = item['path']
 					append({'link': item['link'], 'filename': path, 'size': item['size']})
 			return end_results
-		except: return None
+		except Exception: return None
 
 	def user_cloud(self, folder_id=None):
 		if folder_id:
@@ -204,7 +204,7 @@ class PremiumizeAPI:
 		url = base_url + url
 		response = requests.get(url, data=data, headers=headers, timeout=timeout).text
 		try: return json.loads(response)
-		except: return response
+		except Exception: return response
 
 	def _post(self, url, data={}):
 		if self.token in ('empty_setting', '') and not 'token' in url: return None
@@ -212,7 +212,7 @@ class PremiumizeAPI:
 		if not 'token' in url: url = base_url + url
 		response = requests.post(url, data=data, headers=headers, timeout=timeout).text
 		try: return json.loads(response)
-		except: return response
+		except Exception: return response
 
 	def clear_cache(self, clear_hashes=True):
 		try:
@@ -225,25 +225,25 @@ class PremiumizeAPI:
 				try:
 					user_cloud_cache = dbcon.execute("""SELECT id FROM maincache WHERE id LIKE ?""", ('pm_user_cloud%',)).fetchall()
 					user_cloud_cache = [i[0] for i in user_cloud_cache]
-				except:
+				except Exception:
 					user_cloud_success = True
 				if not user_cloud_success:
 					for i in user_cloud_cache:
 						dbcon.execute("""DELETE FROM maincache WHERE id=?""", (i,))
 					user_cloud_success = True
-			except: user_cloud_success = False
+			except Exception: user_cloud_success = False
 			# DOWNLOAD LINKS
 			try:
 				dbcon.execute("""DELETE FROM maincache WHERE id=?""", ('pm_transfers_list',))
 				download_links_success = True
-			except: download_links_success = False
+			except Exception: download_links_success = False
 			# HASH CACHED STATUS
 			if clear_hashes:
 				try:
 					debrid_cache.clear_debrid_results('pm')
 					hash_cache_status_success = True
-				except: hash_cache_status_success = False
+				except Exception: hash_cache_status_success = False
 			else: hash_cache_status_success = True
-		except: return False
+		except Exception: return False
 		if False in (user_cloud_success, download_links_success, hash_cache_status_success): return False
 		return True

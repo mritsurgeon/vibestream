@@ -61,7 +61,7 @@ class EasyNewsAPI:
 		string = 'EASYNEWS_IMAGE_SEARCH_%s' % urlencode(self.params)
 		results = cache_object(self._process_search, string, url, json=False, expiration=expiration)
 		try: results['results'] = results['results'][page_no -1]
-		except: pass
+		except Exception: pass
 		return results
 
 	def account(self):
@@ -74,7 +74,7 @@ class EasyNewsAPI:
 			account_html = self._get(self.account_link)
 			account_info = parseDOM(account_html, 'form', attrs={'id': 'accountForm'})
 			account_info = parseDOM(account_info, 'td')[0:11][1::3]
-		except: pass
+		except Exception: pass
 		return account_info
 
 	def usage_info(self):
@@ -84,7 +84,7 @@ class EasyNewsAPI:
 			usage_info = parseDOM(usage_html, 'div', attrs={'class': 'table-responsive'})
 			usage_info = parseDOM(usage_info, 'td')[0:11][1::3]
 			usage_info[1] = re.sub(r'[</].+?>', '', usage_info[1])
-		except: pass
+		except Exception: pass
 		return usage_info
 
 	def process_image_files(self, files):
@@ -208,18 +208,18 @@ class EasyNewsAPI:
 	def _get(self, url, params={}):
 		headers = {'Authorization': self.auth}
 		try: response = session.get(url, params=params, headers=headers, timeout=timeout).text
-		except: return None
+		except Exception: return None
 		try: return json.loads(response)
-		except: return response
+		except Exception: return response
 
 	def _get_v3(self, url, params={}):
 		headers = {'Authorization': self.auth}
 		try: response = session.get(url, params=params, headers=headers, timeout=timeout).content
-		except: return None
+		except Exception: return None
 		response = re.compile(self.regex, re.DOTALL).findall(response)
 		response = response + '}'
 		try: return json.loads(response)
-		except: return response
+		except Exception: return response
 
 	def resolve_easynews(self, url_dl):
 		return self.base_resolver(url_dl)
@@ -228,7 +228,7 @@ class EasyNewsAPI:
 		try:
 			headers = {'Authorization': self.auth}
 			resolved_link = session.get(url_dl, headers=headers, stream=True, timeout=timeout).url
-		except: resolved_link = url_dl
+		except Exception: resolved_link = url_dl
 		return resolved_link
 
 	def resolver_v3(self, url_dl):
@@ -257,7 +257,7 @@ def clear_media_results_database():
 			dbcon.execute("DELETE FROM maincache WHERE id LIKE 'EASYNEWS_SEARCH_%'")
 			for i in easynews_results: clear_property(i)
 			process_result = True
-		except: process_result = False
+		except Exception: process_result = False
 	else: process_result = True
 	easynews_image_results = [str(i[0]) for i in dbcon.execute("SELECT id FROM maincache WHERE id LIKE 'EASYNEWS_IMAGE_SEARCH_%'").fetchall()]
 	if easynews_image_results:
@@ -265,7 +265,7 @@ def clear_media_results_database():
 			dbcon.execute("DELETE FROM maincache WHERE id LIKE 'EASYNEWS_IMAGE_SEARCH_%'")
 			for i in easynews_image_results: clear_property(i)
 			process_image_result = True
-		except: process_image_result = False
+		except Exception: process_image_result = False
 	else: process_image_result = True
 	return (process_result, process_image_result) == (True, True)
 

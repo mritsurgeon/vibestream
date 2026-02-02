@@ -36,7 +36,7 @@ class DownloadsManager(BaseDialog):
 					listitem.setProperty('percent', '0')
 					listitem.setProperty('status', 'queued')
 					yield listitem
-				except: pass
+				except Exception: pass
 		def builder():
 			for item in self.active_downloads:
 				try:
@@ -46,7 +46,7 @@ class DownloadsManager(BaseDialog):
 					listitem.setProperty('percent', self.get_home_property(item))
 					listitem.setProperty('status', self.get_status(item))
 					yield listitem
-				except: pass
+				except Exception: pass
 		try:
 			self.active_downloads = json.loads(self.get_home_property('active_downloads') or '[]')
 			self.active_item_list = list(builder())
@@ -58,7 +58,7 @@ class DownloadsManager(BaseDialog):
 			self.add_items(self.window_id, self.item_list)
 			if first_run: self.setFocusId(self.window_id)
 			else: self.select_item(self.window_id, self.position)
-		except: pass
+		except Exception: pass
 
 	def get_status(self, item_id):
 		return self.get_home_property(status_property_string % item_id)

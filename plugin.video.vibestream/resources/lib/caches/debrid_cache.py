@@ -20,7 +20,7 @@ class DebridCache:
 			if cache_data:
 				if cache_data[0][3] > current_time: result = cache_data
 				else: self.remove_many(cache_data)
-		except: pass
+		except Exception: pass
 		return result
 
 	def set_many(self, hash_list, debrid):
@@ -30,7 +30,7 @@ class DebridCache:
 			insert_list = [(i[0], debrid, i[1], expires) for i in hash_list]
 			dbcon.executemany(SET_MANY, insert_list)
 			dbcon.close()
-		except: pass
+		except Exception: pass
 
 	def remove_many(self, old_cached_data):
 		try:
@@ -38,7 +38,7 @@ class DebridCache:
 			old_cached_data = [(str(i[0]),) for i in old_cached_data]
 			dbcon.executemany(REMOVE_MANY, old_cached_data)
 			dbcon.close()
-		except: pass
+		except Exception: pass
 
 	def clear_debrid_results(self, debrid):
 		try:
@@ -47,7 +47,7 @@ class DebridCache:
 			dbcon.execute('VACUUM')
 			dbcon.close()
 			return True
-		except: return False
+		except Exception: return False
 	
 	def clear_cache(self):
 		try:
@@ -56,7 +56,7 @@ class DebridCache:
 			dbcon.execute('VACUUM')
 			dbcon.close()
 			return True
-		except: return False
+		except Exception: return False
 
 	def clean_database(self):
 		try:
@@ -65,6 +65,6 @@ class DebridCache:
 			dbcon.execute('VACUUM')
 			dbcon.close()
 			return True
-		except: return False
+		except Exception: return False
 
 debrid_cache = DebridCache()

@@ -79,12 +79,12 @@ def get_imdb(params):
 				try:
 					_id = item.split('href="/title/')[1].split('/?ref_')[0]
 					if _id.replace('tt','').isnumeric(): yield (_id)
-				except: pass
+				except Exception: pass
 		try:
 			result = requests.get(url, timeout=timeout, headers=headers).text
 			result = result.split('<span>Storyline</span>')[0].split('<span>More like this</span>')[1]
 			items = str(result).split('poster-card__title--clickable" aria-label="')
-		except: items = []
+		except Exception: items = []
 		imdb_list = list(_process())
 		imdb_list = [i for n, i in enumerate(imdb_list) if i not in imdb_list[n + 1:]] # remove duplicates
 	if action in ('imdb_trivia', 'imdb_blunders'):
@@ -96,7 +96,7 @@ def get_imdb(params):
 					content = content.replace('<br/><br/>', '\n')
 					content = '[B]%s %02d.[/B][CR][CR]%s' % (_str, count, content)
 					yield content
-				except: pass
+				except Exception: pass
 		if action == 'imdb_trivia': _str = 'TRIVIA'
 		else: _str =  'BLUNDERS'
 		result = requests.get(url, timeout=timeout, headers=headers)
@@ -113,7 +113,7 @@ def get_imdb(params):
 					content = replace_html_codes(content)
 					content = '[B]%s %02d.[/B][CR][CR]%s' % (trivia_str, count, content)
 					yield content
-				except: pass
+				except Exception: pass
 		trivia_str = 'TRIVIA'
 		result = requests.get(url, timeout=timeout, headers=headers)
 		result = remove_accents(result.text)
@@ -128,25 +128,25 @@ def get_imdb(params):
 					try:
 						content = re.findall(r'plaidHtml":"(.*)","__typename":"Markdown', item)[0]
 						try: content = content.encode('ascii').decode('unicode-escape')
-						except: pass
+						except Exception: pass
 						content = replace_html_codes(content.replace('</a>', '').replace('<p> ', '').replace('<br />', '').replace('  ', ''))
-					except: continue
+					except Exception: continue
 					try: spoiler = re.findall(r'"spoiler":(.*),"reportingLink', item)[0]
-					except: spoiler = 'false'
+					except Exception: spoiler = 'false'
 					try: rating = re.findall(r'"authorRating":(.*),"submissionDate', item)[0]
-					except: rating = '-'
+					except Exception: rating = '-'
 					try:
 						title = re.findall(r'"summary":{"originalText":"(.*)","__typename":"ReviewSummary', item)[0]
 						title = replace_html_codes(title.replace('</a>', '').replace('<p> ', '').replace('<br />', '').replace('  ', ''))
-					except: title = '-----'
+					except Exception: title = '-----'
 					try: date = re.findall(r'"submissionDate":"(.*)","helpfulness', item)[0]
-					except: date = '-----'
+					except Exception: date = '-----'
 					try: review = '[B]%02d. [I]%s/10 - %s - %s[/I][/B][CR][CR]%s' % (count, rating, date, title, content)
-					except: continue
+					except Exception: continue
 					if spoiler == 'true': review = '[B][COLOR red][%s][/COLOR][CR][/B]' % spoiler_str + review
 					count += 1
 					yield review
-				except: pass
+				except Exception: pass
 		spoiler_str = 'CONTAINS SPOILERS'
 		result = requests.get(url, timeout=timeout, headers=headers)
 		result = remove_accents(result.text)
@@ -160,7 +160,7 @@ def get_imdb(params):
 			result = requests.get(url, timeout=timeout)
 			results = json.loads(re.sub(r'imdb\$(.+?)\(', '', result.text)[:-1])['d']
 			imdb_list = [i['id'] for i in results if i['id'].startswith('nm') and i['l'].lower() == name][0]
-		except: imdb_list = []
+		except Exception: imdb_list = []
 		if not imdb_list:
 			try:
 				result = requests.get(params['url_backup'], timeout=timeout)
@@ -168,7 +168,7 @@ def get_imdb(params):
 				result = result.replace('\n', ' ')
 				result = parseDOM(result, 'div', attrs={'class': 'lister-item-image'})[0]
 				imdb_list = re.search(r'href="/name/(.+?)"', result, re.DOTALL).group(1)
-			except: pass
+			except Exception: pass
 	elif action == 'imdb_parentsguide':
 		imdb_list = []
 		imdb_append = imdb_list.append
@@ -184,15 +184,15 @@ def get_imdb(params):
 				title_data = re.search(r'<span id="(.+?)">(.+?)</span>', item, re.DOTALL).group(0)
 				title = replace_html_codes(re.search(r'">(.+?)</span>', title_data, re.DOTALL).group(1))
 				item_dict['title'] = title
-			except: continue
+			except Exception: continue
 			try:
 				ranking = replace_html_codes(re.search(r'<div class="ipc-signpost__text" role="presentation">(.+?)</div>', item, re.DOTALL).group(1))
 				item_dict['ranking'] = ranking
-			except: item_dict['ranking'] = 'none'
+			except Exception: item_dict['ranking'] = 'none'
 			try:
 				listings = re.findall(r'<div class="ipc-html-content-inner-div" role="presentation">(.+?)</div>', item)
 				listings = [replace_html_codes(i) for i in listings]
-			except: listings = []
+			except Exception: listings = []
 			if listings:
 				item_dict['content'] = '\n\n'.join(['%02d. %s' % (count, i) for count, i in enumerate(listings, 1)])
 			elif item_dict['ranking'] == 'none': continue
@@ -209,7 +209,7 @@ def clear_imdb_cache(silent=False):
 		dbcon.execute("DELETE FROM maincache WHERE id LIKE ?", ('imdb_%',))
 		for i in imdb_results: clear_property(i)
 		return True
-	except: return False
+	except Exception: return False
 
 def refresh_imdb_meta_data(imdb_id):
 	from modules.kodi_utils import clear_property
@@ -223,4 +223,4 @@ def refresh_imdb_meta_data(imdb_id):
 		dbcon.execute("DELETE FROM maincache WHERE id LIKE ?", (insert1,))
 		dbcon.execute("DELETE FROM maincache WHERE id LIKE ?", (insert2,))
 		for i in imdb_results: clear_property(i)
-	except: pass
+	except Exception: pass

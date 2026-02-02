@@ -29,7 +29,7 @@ class VibeStreamPlayer(xbmc_player):
 		self.resolve_start = resolve_start
 		if not url: return self.run_error()
 		try: return self.play_video(url, obj, num_episodes)
-		except: return self.run_error()
+		except Exception: return self.run_error()
 
 	def play_video(self, url, obj, num_episodes=None):
 		self.set_constants(url, obj)
@@ -44,7 +44,7 @@ class VibeStreamPlayer(xbmc_player):
 				if self.cancel_all_playback: self.kill_dialog()
 				self.stop()
 			try: del self.kodi_monitor
-			except: pass
+			except Exception: pass
 
 	def check_playback_start(self):
 		resolve_percent = 0
@@ -60,7 +60,7 @@ class VibeStreamPlayer(xbmc_player):
 			elif self.isPlayingVideo():
 				try:
 					if self.getTotalTime() not in total_time_errors and get_visibility(video_fullscreen_check): self.playback_successful = True
-				except: pass
+				except Exception: pass
 			resolve_percent = round(resolve_percent + 26.0/100, 1)
 			self.sources_object.progress_dialog.update_resolver(percent=resolve_percent)
 			sleep(50)
@@ -99,7 +99,7 @@ class VibeStreamPlayer(xbmc_player):
 			while self.isPlayingVideo():
 				try:
 					try: self.total_time, self.curr_time = self.getTotalTime(), self.getTime()
-					except: sleep(250); continue
+					except Exception: sleep(250); continue
 					
 					# Auto-Fallback Watchdog
 					if get_visibility("Player.Caching") and not get_visibility("Player.Paused"):
@@ -129,12 +129,12 @@ class VibeStreamPlayer(xbmc_player):
 					if self.autoplay_nextep or self.autoscrape_nextep:
 						if not self.nextep_info_gathered: self.info_next_ep()
 						if round(self.total_time - self.curr_time) <= self.start_prep: self.run_next_ep(); break
-				except: pass
+				except Exception: pass
 			hide_busy_dialog()
 			if not self.media_marked: self.media_watched_marker()
 			self.clear_playback_properties()
 			self.clear_playing_item()
-		except:
+		except Exception:
 			hide_busy_dialog()
 			self.sources_object.playback_successful = False
 			self.sources_object.cancel_all_playback = True
@@ -227,11 +227,11 @@ class VibeStreamPlayer(xbmc_player):
 					progress_params = {'media_type': self.media_type, 'tmdb_id': self.tmdb_id, 'curr_time': self.curr_time, 'total_time': self.total_time,
 									'title': self.title, 'season': self.season, 'episode': self.episode, 'from_playback': 'true'}
 					Thread(target=self.run_media_progress, args=(set_bookmark, progress_params)).start()
-		except: pass
+		except Exception: pass
 
 	def run_media_progress(self, function, params):
 		try: function(params)
-		except: pass
+		except Exception: pass
 
 	def run_next_ep(self):
 		from modules.episode_tools import EpisodeTools
@@ -261,18 +261,18 @@ class VibeStreamPlayer(xbmc_player):
 					self.nextep_settings = {'num_episodes': self.num_episodes, 'use_window': use_window, 'window_time': window_time, 'default_action': default_action, 'play_type': play_type}
 				else:
 					self.nextep_settings = {'use_window': use_window, 'window_time': window_time, 'default_action': default_action, 'play_type': play_type}
-		except: pass
+		except Exception: pass
 
 	def final_chapter(self):
 		try:
 			final_chapter = float(get_infolabel('Player.Chapters').split(',')[-1])
 			if final_chapter >= 90: return final_chapter
-		except: pass
+		except Exception: pass
 		return None
 
 	def kill_dialog(self):
 		try: self.sources_object._kill_progress_dialog()
-		except: close_all_dialog()
+		except Exception: close_all_dialog()
 
 	def set_constants(self, url, obj):
 		self.url = url
@@ -292,7 +292,7 @@ class VibeStreamPlayer(xbmc_player):
 			if self.media_type == 'episode': trakt_ids['tvdb'] = self.tvdb_id
 			set_property('script.trakt.ids', json.dumps(trakt_ids))
 			if self.playing_filename: set_property('subs.player_filename', self.playing_filename)
-		except: pass
+		except Exception: pass
 
 	def clear_playback_properties(self):
 		clear_property('vibestream.window_stack')
@@ -308,7 +308,7 @@ class VibeStreamPlayer(xbmc_player):
 
 	def run_error(self):
 		try: self.sources_object.playback_successful = False
-		except: pass
+		except Exception: pass
 		self.clear_playback_properties()
 		notification('Playback Failed', 3500)
 		return False

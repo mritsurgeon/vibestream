@@ -68,9 +68,9 @@ class CustomFonts:
 			else: sleep = 10
 			wait_for_abort(sleep)
 		try: del monitor
-		except: pass
+		except Exception: pass
 		try: del player
-		except: pass
+		except Exception: pass
 		return logger('VibeStream', 'CustomFonts Service Finished')
 
 class TraktMonitor:
@@ -97,9 +97,9 @@ class TraktMonitor:
 			except Exception as e: logger('VibeStream', trakt_service_string % ('Failed', 'The following Error Occured: %s' % str(e)))
 			wait_for_abort(wait_time)
 		try: del monitor
-		except: pass
+		except Exception: pass
 		try: del player
-		except: pass
+		except Exception: pass
 		return logger('VibeStream', 'TraktMonitor Service Finished')
 
 class UpdateCheck:
@@ -120,9 +120,9 @@ class UpdateCheck:
 			break
 		window.setProperty(firstrun_update_prop, 'true')
 		try: del monitor
-		except: pass
+		except Exception: pass
 		try: del player
-		except: pass
+		except Exception: pass
 		return logger('VibeStream', 'UpdateCheck Service Finished')
 
 class WidgetRefresher:
@@ -152,11 +152,11 @@ class WidgetRefresher:
 					run_plugin({'mode': 'refresh_widgets', 'show_notification': self.get_setting('vibestream.widget_refresh_notification', 'false')}, block=True)
 					logger('VibeStream', 'WidgetRefresher Service - Widgets Refreshed')
 					self.set_next_refresh(time())
-			except: pass
+			except Exception: pass
 		try: del monitor
-		except: pass
+		except Exception: pass
 		try: del player
-		except: pass
+		except Exception: pass
 		return logger('VibeStream', 'WidgetRefresher Service Finished')
 
 	def condition_check(self):
@@ -166,7 +166,7 @@ class WidgetRefresher:
 		try:
 			window_stack = json.loads(self.window.getProperty('vibestream.window_stack'))
 			if window_stack or window_stack == []: return True
-		except: pass
+		except Exception: pass
 		return False
 
 	def set_next_refresh(self, _time):

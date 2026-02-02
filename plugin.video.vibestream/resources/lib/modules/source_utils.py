@@ -78,7 +78,7 @@ source_filters = (
 
 def get_aliases_titles(aliases):
 	try: result = [i['title'] for i in aliases]
-	except: result = []
+	except Exception: result = []
 	return result
 
 def make_alias_dict(meta, title):
@@ -99,7 +99,7 @@ def normalize(title):
 	try:
 		title = ''.join(c for c in unicodedata.normalize('NFKD', title) if unicodedata.category(c) != 'Mn')
 		return string(title)
-	except: return title
+	except Exception: return title
 
 def pack_enable_check(meta, season, episode):
 	try:
@@ -110,7 +110,7 @@ def pack_enable_check(meta, season, episode):
 		unaired_episodes = [adjust_premiered_date(i['premiered'], adjust_hours)[0] for i in episodes_data]
 		if None in unaired_episodes or any(i > current_date for i in unaired_episodes): return False, False
 		else: return True, False
-	except: pass
+	except Exception: pass
 	return False, False
 
 def clear_scrapers_cache(silent=False):
@@ -167,7 +167,7 @@ def find_season_in_release_title(release_title):
 			if match:
 				match = int(string(match.group(1)).lstrip('0'))
 				break
-		except: pass
+		except Exception: pass
 	return match
 
 def check_title(title, release_title, aliases, year, season, episode):
@@ -194,7 +194,7 @@ def check_title(title, release_title, aliases, year, season, episode):
 			if season == 'pack': hdlr = ''
 			else:
 				try: hdlr = seas_ep_filter(season, episode, release_title, return_match=True)
-				except: return False
+				except Exception: return False
 		else: hdlr = year
 		if hdlr:
 			release_title = release_title.split(hdlr.lower())[0]
@@ -206,13 +206,13 @@ def check_title(title, release_title, aliases, year, season, episode):
 			release_title = release_title.replace(year, '').replace('(', '').replace(')', '').replace('&', 'and').rstrip('.-').rstrip('.').rstrip('-').replace(':', '')
 			if not any(i in release_title for i in cleaned_titles): return False
 		return True
-	except: return True
+	except Exception: return True
 
 def strip_non_ascii_and_unprintable(text):
 	try:
 		result = ''.join(char for char in text if char in printable)
 		return result.encode('ascii', errors='ignore').decode('ascii', errors='ignore')
-	except: pass
+	except Exception: pass
 	return text
 
 def release_info_format(release_title):
@@ -221,7 +221,7 @@ def release_info_format(release_title):
 		release_title = release_title.lower().replace("'", "").lstrip('.').rstrip('.')
 		title = '.%s.' % re.sub(r'[^a-z0-9-~]+', '.', release_title).replace('.-.', '.').replace('-.', '.').replace('.-', '.').replace('--', '.')
 		return title
-	except:
+	except Exception:
 		return release_title.lower()
 
 def clean_title(title):
@@ -232,7 +232,7 @@ def clean_title(title):
 		title = re.sub(r'(&#[0-9]+)([^;^0-9]+)', '\\1;\\2', title)
 		title = title.replace('&quot;', '\"').replace('&amp;', '&')
 		title = re.sub(r'\n|([\[({].+?[})\]])|([:;–\-"\',!_.?~$@])|\s', '', title)
-	except: pass
+	except Exception: pass
 	return title
 
 def url_strip(url):
@@ -244,7 +244,7 @@ def url_strip(url):
 		if 'http' in title: return None
 		if title == '': return None
 		return title
-	except: return None
+	except Exception: return None
 
 def get_file_info(name_info=None, url=None, default_quality='SD'):
 	title = None
@@ -352,5 +352,5 @@ def get_cache_expiry(media_type, meta, season):
 				else: season_expiry = expiry_30days
 				show_expiry = expiry_10days
 			else: single_expiry, season_expiry, show_expiry = expiry_10days, expiry_30days, expiry_30days
-	except: single_expiry, season_expiry, show_expiry = expiry_3days, expiry_3days, expiry_10days
+	except Exception: single_expiry, season_expiry, show_expiry = expiry_3days, expiry_3days, expiry_10days
 	return single_expiry, season_expiry, show_expiry

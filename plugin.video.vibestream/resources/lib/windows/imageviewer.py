@@ -33,7 +33,7 @@ class ThumbImageViewer(BaseDialog):
 		try:
 			position = self.get_position(self.window_id)
 			chosen_listitem = self.get_listitem(self.window_id)
-		except: return
+		except Exception: return
 		if action in self.selection_actions:
 			if chosen_listitem.getProperty('next_page_item') == 'true': self.new_page()
 			else:
@@ -72,7 +72,7 @@ class ThumbImageViewer(BaseDialog):
 			if self.next_page_params.get('page_no', 'final_page') != 'final_page': self.make_next_page()
 			self.add_items(self.window_id, self.list_items)
 			self.setFocusId(self.window_id)
-		except: pass
+		except Exception: pass
 
 	def make_context_menu(self, enable_delete, enable_favorite):
 		choices = []
@@ -93,7 +93,7 @@ class ThumbImageViewer(BaseDialog):
 			self.list_items, self.next_page_params = self.ImagesInstance.run(self.next_page_params)
 			self.reset_window(self.window_id)
 			self.make_page()
-		except: self.close()
+		except Exception: self.close()
 
 	def previous_page(self):
 		try:
@@ -103,14 +103,14 @@ class ThumbImageViewer(BaseDialog):
 			self.list_items, self.next_page_params = self.ImagesInstance.run(self.next_page_params)
 			self.reset_window(self.window_id)
 			self.make_page()
-		except: self.close()
+		except Exception: self.close()
 
 	def make_next_page(self):
 		try:
 			listitem = self.make_listitem()
 			listitem.setProperties({'name': 'Next Page (%s) >>' % str(self.current_page + 1), 'thumb': nextpage, 'next_page_item': 'true'})
 			self.list_items.append(listitem)
-		except: pass
+		except Exception: pass
 
 	def reset_after_delete(self, choice, position):
 		self.ImagesInstance.delete_image(choice.getProperty('path'), choice.getProperty('thumb'))
@@ -161,7 +161,7 @@ class ImageViewer(BaseDialog):
 					listitem = self.make_listitem()
 					listitem.setProperties({'image': item[0], 'title': item[1]})
 					yield listitem
-				except: pass
+				except Exception: pass
 		self.item_list = list(builder())
 
 	def set_properties(self):

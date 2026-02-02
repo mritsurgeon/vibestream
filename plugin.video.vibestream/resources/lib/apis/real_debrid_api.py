@@ -46,7 +46,7 @@ class RealDebridAPI:
 		user_code = response['user_code']
 		direct_url = response['direct_verification_url']
 		try: copy2clip(user_code)
-		except: pass
+		except Exception: pass
 		t_o = 5
 		content = 'Scan the QR Code or navigate to: [B]https://real-debrid.com/device[/B][CR]Enter the following code: [B]%s[/B]' % user_code
 		tiny_url = requests.get('http://tinyurl.com/api-create.php', params={'url': direct_url}, timeout=t_o).text
@@ -61,7 +61,7 @@ class RealDebridAPI:
 		while not progressDialog.iscanceled() and time_passed < expires_in and not self.secret:
 			sleep(1000 * sleep_interval)
 			try: response = requests.get(poll_url, timeout=timeout).json()
-			except: continue
+			except Exception: continue
 			if 'error' in response:
 				time_passed = time.time() - start
 				progress = int(100 * time_passed/float(expires_in))
@@ -73,11 +73,11 @@ class RealDebridAPI:
 				self.secret = response['client_secret']
 				self.client_ID = response['client_id']
 				progressDialog.close()
-			except:
+			except Exception:
 				ok_dialog(text='Error')
 				break
 		try: progressDialog.close()
-		except: pass
+		except Exception: pass
 		if self.secret:
 			data = {'client_id': self.client_ID, 'client_secret': self.secret, 'code': device_code, 'grant_type': 'http://oauth.net/grant_type/device/1.0'}
 			url = '%stoken' % auth_url
@@ -101,7 +101,7 @@ class RealDebridAPI:
 			set_setting('rd.token', self.token)
 			set_setting('rd.refresh', self.refresh)
 			return True
-		except: return False
+		except Exception: return False
 
 	def revoke(self):
 		set_setting('rd.client_id', 'empty_setting')
@@ -170,7 +170,7 @@ class RealDebridAPI:
 		post_data = {'link': link}
 		response = self._post(url, post_data)
 		try: return response['download']
-		except: return None
+		except Exception: return None
 
 	def add_magnet(self, magnet):
 		post_data = {'magnet': magnet}
@@ -189,7 +189,7 @@ class RealDebridAPI:
 			torrent_keys = ','.join(torrent_keys)
 			self.add_torrent_select(torrent_id, torrent_keys)
 			return 'success'
-		except:
+		except Exception:
 			self.delete_torrent(torrent_id)
 			return 'failed'
 
@@ -267,7 +267,7 @@ class RealDebridAPI:
 				if not store_to_cloud: Thread(target=self.delete_torrent, args=(torrent_id,)).start()
 				return file_url
 			else: self.delete_torrent(torrent_id)
-		except:
+		except Exception:
 			if torrent_id: self.delete_torrent(torrent_id)
 			return None
 
@@ -296,7 +296,7 @@ class RealDebridAPI:
 			list_file_items = [{'link': i['link'], 'filename': i['path'].replace('/', ''), 'size': i['bytes']} for i in list_file_items]
 			self.delete_torrent(torrent_id)
 			return list_file_items
-		except:
+		except Exception:
 			if torrent_id: self.delete_torrent(torrent_id)
 			return None
 
@@ -326,7 +326,7 @@ class RealDebridAPI:
 			if self.refresh_token(): response = self._get(original_url)
 			else: return None
 		try: return response.json()
-		except: return response
+		except Exception: return response
 
 	def _post(self, url, post_data):
 		original_url = url
@@ -339,7 +339,7 @@ class RealDebridAPI:
 			if self.refresh_token(): response = self._post(original_url, post_data)
 			else: return None
 		try: return response.json()
-		except: return response
+		except Exception: return response
 
 	def clear_cache(self, clear_hashes=True):
 		try:
@@ -347,31 +347,32 @@ class RealDebridAPI:
 			from caches.base_cache import connect_database
 			dbcon = connect_database('maincache_db')
 			user_cloud_success = False
+			import json
 			# USER CLOUD
 			try:
 				try:
-					user_cloud_info_caches = [eval(i[0])['id'] for i in dbcon.execute("""SELECT data FROM maincache WHERE id LIKE ?""", ('rd_user_cloud_info_%',)).fetchall()]
-				except:
+					user_cloud_info_caches = [json.loads(i[0])['id'] for i in dbcon.execute("""SELECT data FROM maincache WHERE id LIKE ?""", ('rd_user_cloud_info_%',)).fetchall()]
+				except Exception:
 					user_cloud_success = True
 				if not user_cloud_success:
 					dbcon.execute("""DELETE FROM maincache WHERE id=?""", ('rd_user_cloud',))
 					for i in user_cloud_info_caches:
 						dbcon.execute("""DELETE FROM maincache WHERE id=?""", ('rd_user_cloud_info_%s' % i,))
 					user_cloud_success = True
-			except: user_cloud_success = False
+			except Exception: user_cloud_success = False
 			# DOWNLOAD LINKS
 			try:
 				dbcon.execute("""DELETE FROM maincache WHERE id=?""", ('rd_downloads',))
 				download_links_success = True
-			except: download_links_success = False
+			except Exception: download_links_success = False
 			# HASH CACHED STATUS
 			if clear_hashes:
 				try:
 					debrid_cache.clear_debrid_results('rd')
 					hash_cache_status_success = True
-				except: hash_cache_status_success = False
+				except Exception: hash_cache_status_success = False
 			else: hash_cache_status_success = True
-		except: return False
+		except Exception: return False
 		if False in (user_cloud_success, download_links_success, hash_cache_status_success): return False
 		return True
 

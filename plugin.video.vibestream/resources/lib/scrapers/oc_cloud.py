@@ -40,7 +40,7 @@ class source:
 									'extraInfo': details, 'url_dl': file_dl, 'id': file_dl, 'downloads': False, 'direct': True, 'source': self.scrape_provider,
 									'scrape_provider': self.scrape_provider, 'direct_debrid_link': True}
 						yield source_item
-					except: pass
+					except Exception: pass
 			self.sources = list(_process())
 		except Exception as e:
 			from modules.kodi_utils import logger
@@ -54,7 +54,7 @@ class source:
 			append = threads.append
 			results_append = self.scrape_results.append
 			try: my_cloud_files = Offcloud.user_cloud()
-			except: return self.sources
+			except Exception: return self.sources
 			for item in my_cloud_files:
 				if item['status'] != 'downloaded': continue
 				if item['isDirectory']: append(Thread(target=self._scrape_folders, args=(item['requestId'],)))
@@ -69,7 +69,7 @@ class source:
 					if match: results_append({'filename': normalized, 'url': Offcloud.build_url(item['server'], item['requestId'], item['fileName'])})
 			[i.start() for i in threads]
 			[i.join() for i in threads]
-		except: return
+		except Exception: return
 
 	def _scrape_folders(self, folder_info):
 		try:
@@ -85,6 +85,6 @@ class source:
 						if any(x in filename for x in self.year_query_list) and self.folder_query in filename: match = True
 					elif seas_ep_filter(self.season, self.episode, normalized): match = True
 					if match: results_append({'filename': normalized, 'url': item})
-				except: continue
-		except: return
+				except Exception: continue
+		except Exception: return
 

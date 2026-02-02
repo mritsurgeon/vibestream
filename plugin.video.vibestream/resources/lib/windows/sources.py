@@ -74,11 +74,11 @@ class SourcesResults(BaseDialog):
 
 	def get_provider_and_path(self, provider):
 		try: return provider, info_icons_dict[provider]
-		except: return 'folders', get_icon('provider_folder')
+		except Exception: return 'folders', get_icon('provider_folder')
 
 	def get_quality_and_path(self, quality):
 		try: return quality, info_quality_dict[quality]
-		except: return 'sd', get_icon('flag_sd')
+		except Exception: return 'sd', get_icon('flag_sd')
 
 	def filter_action(self, action):
 		if action == self.right_action or action in self.closing_actions:
@@ -186,7 +186,7 @@ class SourcesResults(BaseDialog):
 								'provider_icon': provider_icon, 'quality_icon': quality_icon, 'count': '%02d.' % count,
 								'size_label': get('size_label', 'N/A'), 'extraInfo': extraInfo, 'quality': upper(quality), 'hash': get('hash', 'N/A'), 'source': json.dumps(item)})	
 					yield listitem
-				except: pass
+				except Exception: pass
 		try:
 			highlight_type = self.info_highlights_dict['highlight_type']
 			if filtered_list: return list(builder(filtered_list))
@@ -196,7 +196,7 @@ class SourcesResults(BaseDialog):
 				prescrape_listitem.setProperty('perform_full_search', 'true')
 			self.total_results = string(len(self.item_list))
 			if self.prescrape: self.item_list.append(prescrape_listitem)
-		except: pass
+		except Exception: pass
 
 	def make_filter_items(self):
 		def builder(data):
@@ -381,7 +381,7 @@ class SourcesPlayback(BaseDialog):
 
 	def update_resolver(self, text='', percent=0):
 		try: self.setProperty('percent', string(percent))
-		except: pass
+		except Exception: pass
 		if text: self.set_text(2002, text)
 
 	def update_resumer(self):
@@ -410,7 +410,7 @@ class SourcesInfo(BaseDialog):
 		try:
 			provider = lower(self.item_get_property('provider'))
 			icon_path = info_icons_dict[provider]
-		except: provider, icon_path = 'folders', get_icon('provider_folder')
+		except Exception: provider, icon_path = 'folders', get_icon('provider_folder')
 		return provider, icon_path
 
 	def get_quality_and_path(self):

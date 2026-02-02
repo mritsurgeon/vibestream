@@ -13,14 +13,14 @@ class FavoritesCache:
 			dbcon = connect_database('favorites_db')
 			dbcon.execute(INSERT_FAV, (media_type, str(tmdb_id), title))
 			return True
-		except: return False
+		except Exception: return False
 
 	def delete_favourite(self, media_type, tmdb_id, title):
 		try:
 			dbcon = connect_database('favorites_db')
 			dbcon.execute(DELETE_FAV, (media_type, str(tmdb_id)))
 			return True
-		except: return False
+		except Exception: return False
 
 	def get_favorites(self, media_type):
 		dbcon = connect_database('favorites_db')

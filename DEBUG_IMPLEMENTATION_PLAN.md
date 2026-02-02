@@ -20,7 +20,7 @@ Based on codebase review, Kodi forum research, and web search for:
 ## 2. Fixes implemented
 
 ### 2.1 sqlite3 not defined
-- **File:** `plugin.video.fenlight/resources/lib/modules/cache_manager.py`
+- **File:** `plugin.video.vibestream/resources/lib/modules/cache_manager.py`
 - **Change:** In the `except` block use `database.OperationalError` instead of `sqlite3.OperationalError` (module is imported as `import sqlite3 as database`).
 
 ### 2.2 NoneType / subscript safety

@@ -47,7 +47,7 @@ def build_episode_list(params):
 				episode_id = item_get('episode_id') or None
 				thumb = item_get('thumb', None) or show_landscape or show_fanart
 				try: year = premiered.split('-')[0]
-				except: year = show_year or '2050'
+				except Exception: year = show_year or '2050'
 				if not item_get('duration'): item['duration'] = show_duration
 				if not episode_date or current_date < episode_date:
 					display, unaired = unaired_label % ep_name, True
@@ -96,7 +96,7 @@ def build_episode_list(params):
 								'season.poster': season_poster, 'tvshow.poster': show_poster, 'tvshow.clearlogo': show_clearlogo})
 				set_properties({'vibestream.extras_params': extras_params, 'vibestream.options_params': options_params, 'episode_type': episode_type})
 				yield (url_params, listitem, False)
-			except: pass
+			except Exception: pass
 	handle, is_external, is_home, category_name = int(sys.argv[1]), external(), home(), 'Episodes'
 	item_list = []
 	append = item_list.append
@@ -128,7 +128,7 @@ def build_episode_list(params):
 		try:
 			poster_path = next((i['poster_path'] for i in meta_get('season_data') if i['season_number'] == int(season)), None)
 			season_poster = tmdb_poster % poster_path if poster_path is not None else show_poster
-		except: season_poster = show_poster
+		except Exception: season_poster = show_poster
 		category_name = 'Season %s' % season
 	add_items(handle, list(_process()))
 	set_sort_method(handle, content_type)
@@ -142,7 +142,7 @@ def build_single_episode(list_type, params={}):
 		try:
 			cat_name = category_name_dict[list_type]
 			if isinstance(cat_name, dict): cat_name = cat_name[params.get('recently_aired')]
-		except: cat_name = 'Episodes'
+		except Exception: cat_name = 'Episodes'
 		return cat_name
 	def _process(_position, ep_data):
 		try:
@@ -188,11 +188,11 @@ def build_single_episode(list_type, params={}):
 			show_landscape = meta_get('landscape') or ''
 			thumb = item_get('thumb', None) or show_landscape or show_fanart
 			try: year = premiered.split('-')[0]
-			except: year = show_year or '2050'
+			except Exception: year = show_year or '2050'
 			try:
 				poster_path = next((i['poster_path'] for i in season_data if i['season_number'] == int(season)), None)
 				season_poster = tmdb_poster % poster_path if poster_path is not None else show_poster
-			except: season_poster = show_poster
+			except Exception: season_poster = show_poster
 			str_season_zfill2, str_episode_zfill2 = string(season).zfill(2), string(episode).zfill(2)
 			if display_format == 0: title_string = '%s: ' % title
 			else: title_string = ''
@@ -276,7 +276,7 @@ def build_single_episode(list_type, params={}):
 			set_properties({'vibestream.extras_params': extras_params, 'vibestream.options_params': options_params, 'episode_type': episode_type})
 			item_list_append({'list_items': (url_params, listitem, False), 'first_aired': premiered, 'name': '%s - %sx%s' % (title, str_season_zfill2, str_episode_zfill2),
 							'unaired': unaired, 'last_played': ep_data_get('last_played', resinsert), 'sort_order': _position, 'unwatched': ep_data_get('unwatched')})
-		except: pass
+		except Exception: pass
 	handle, is_external, is_home, category_name = int(sys.argv[1]), external(), home(), 'Episodes'
 	item_list, airing_today, unwatched, return_results = [], [], [], False
 	resinsert = ''
@@ -303,11 +303,11 @@ def build_single_episode(list_type, params={}):
 				try:
 					original_list = trakt_watchlist('watchlist', 'tvshow')
 					unwatched.extend([{'media_ids': i['media_ids'], 'season': 1, 'episode': 0, 'unwatched': True, 'title': i['title']} for i in original_list])
-				except: pass
+				except Exception: pass
 			if include_unwatched in (2, 3):
 				try: unwatched.extend([{'media_ids': {'tmdb': int(i['tmdb_id'])}, 'season': 1, 'episode': 0, 'unwatched': True, 'title': i['title']} \
 									for i in favorites_cache.get_favorites('tvshow') if not int(i['tmdb_id']) in [x['media_ids']['tmdb'] for x in data]])
-				except: pass
+				except Exception: pass
 			data += unwatched
 	elif list_type == 'episode.progress': data = get_in_progress_episodes()
 	elif list_type == 'episode.recently_watched': data = get_recently_watched('episode')
@@ -320,10 +320,10 @@ def build_single_episode(list_type, params={}):
 				duplicates = set()
 				data.sort(key=lambda i: i['sort_title'])
 				data = [i for i in data if not ((i['media_ids']['tmdb'], i['first_aired']) in duplicates or duplicates.add((i['media_ids']['tmdb'], i['first_aired'])))]
-			except: pass
+			except Exception: pass
 		else:
 			try: data = sorted(data, key=lambda i: (i['sort_title'], i.get('first_aired', '2100-12-31')), reverse=True)
-			except: data = sorted(data, key=lambda i: i['sort_title'], reverse=True)
+			except Exception: data = sorted(data, key=lambda i: i['sort_title'], reverse=True)
 	else: data, return_results = sorted(params, key=lambda i: i['custom_order']), True
 	list_type_compare = list_type.split('episode.')[1]
 	list_type_starts_with = list_type_compare.startswith
@@ -352,7 +352,7 @@ def build_single_episode(list_type, params={}):
 			if list_type_compare == 'trakt_calendar': reverse = calendar_sort_order() == 0
 			else: reverse = True
 			try: item_list = sorted(item_list, key=lambda i: i.get('first_aired', '2100-12-31'), reverse=reverse)
-			except:
+			except Exception:
 				item_list = [i for i in item_list if i.get('first_aired') not in (None, 'None', '')]
 				item_list = sorted(item_list, key=lambda i: i.get('first_aired'), reverse=reverse)
 			if list_type_compare == 'trakt_calendar':

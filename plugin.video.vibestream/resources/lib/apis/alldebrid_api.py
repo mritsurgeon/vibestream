@@ -33,7 +33,7 @@ class AllDebridAPI:
 		poll_url = response['check_url']
 		user_code = response['pin']
 		try: copy2clip(user_code)
-		except: pass
+		except Exception: pass
 		sleep_interval = 5
 		content = 'Authorize Debrid Services[CR]Navigate to: [B]%s[/B][CR]Enter the following code: [B]%s[/B]' % (response.get('base_url'), user_code)
 		progressDialog = progress_dialog('All Debrid Authorize', get_icon('ad_qrcode'))
@@ -54,11 +54,11 @@ class AllDebridAPI:
 				progressDialog.close()
 				self.token = str(response['apikey'])
 				set_setting('ad.token', self.token)
-			except:
+			except Exception:
 				ok_dialog(text='Error')
 				break
 		try: progressDialog.close()
-		except: pass
+		except Exception: pass
 		if self.token:
 			sleep(2000)
 			account_info = self._get('user')
@@ -95,7 +95,7 @@ class AllDebridAPI:
 		url_append = '&link=%s' % link
 		response = self._get(url, url_append)
 		try: return response['link']
-		except: return None
+		except Exception: return None
 
 	def create_transfer(self, magnet):
 		url = 'magnet/upload'
@@ -146,17 +146,17 @@ class AllDebridAPI:
 						episode_title = re.sub(r'[^A-Za-z0-9-]+', '.', title.replace('\'', '').replace('&', 'and').replace('%', '.percent')).lower()
 						try: media_id = [i['link'] for i in correct_files if not any(x in re.sub(episode_title, '', seas_ep_filter(season, episode, i['filename'], split=True)) \
 											for x in extras)][0]
-						except: media_id = None
+						except Exception: media_id = None
 				else: media_id = max(valid_results, key=lambda x: x.get('size')).get('link', None)
 			if not store_to_cloud: Thread(target=self.delete_transfer, args=(transfer_id,)).start()
 			if media_id:
 				file_url = self.unrestrict_link(media_id)
 				if not any(file_url.lower().endswith(x) for x in extensions): file_url = None
 			return file_url
-		except:
+		except Exception:
 			try:
 				if transfer_id: self.delete_transfer(transfer_id)
-			except: pass
+			except Exception: pass
 			return None
 	
 	def display_magnet_pack(self, magnet_url, info_hash):
@@ -185,10 +185,10 @@ class AllDebridAPI:
 					append({'link': item['link'], 'filename': item['filename'], 'size': item['size']})
 			self.delete_transfer(transfer_id)
 			return end_results
-		except:
+		except Exception:
 			try:
 				if transfer_id: self.delete_transfer(transfer_id)
-			except: pass
+			except Exception: pass
 			return None
 
 	def _get(self, url, url_append=''):
@@ -198,7 +198,7 @@ class AllDebridAPI:
 			url = base_url + url + '?agent=%s&apikey=%s' % (user_agent, self.token) + url_append
 			result = requests.get(url, timeout=timeout).json()
 			if result.get('status') == 'success' and 'data' in result: result = result['data']
-		except: pass
+		except Exception: pass
 		return result
 
 	def _post(self, url, data={}):
@@ -208,7 +208,7 @@ class AllDebridAPI:
 			url = base_url + url + '?agent=%s&apikey=%s' % (user_agent, self.token)
 			result = requests.post(url, data=data, timeout=timeout).json()
 			if result.get('status') == 'success' and 'data' in result: result = result['data']
-		except: pass
+		except Exception: pass
 		return result
 
 	def clear_cache(self, clear_hashes=True):
@@ -220,14 +220,14 @@ class AllDebridAPI:
 			try:
 				dbcon.execute("""DELETE FROM maincache WHERE id=?""", ('ad_user_cloud',))
 				user_cloud_success = True
-			except: user_cloud_success = False
+			except Exception: user_cloud_success = False
 			# HASH CACHED STATUS
 			if clear_hashes:
 				try:
 					debrid_cache.clear_debrid_results('ad')
 					hash_cache_status_success = True
-				except: hash_cache_status_success = False
+				except Exception: hash_cache_status_success = False
 			else: hash_cache_status_success = True
-		except: return False
+		except Exception: return False
 		if False in (user_cloud_success, hash_cache_status_success): return False
 		return True

@@ -23,7 +23,7 @@ sys.modules['xbmcaddon'] = type(sys)('xbmcaddon')
 sys.modules['xbmcaddon'].Addon = lambda addon_id: MockAddon()
 
 # Add addon lib so we can import modules
-addon_lib = os.path.join(os.path.dirname(__file__), 'plugin.video.fenlight', 'resources', 'lib')
+addon_lib = os.path.join(os.path.dirname(__file__), 'plugin.video.vibestream', 'resources', 'lib')
 if addon_lib not in sys.path:
     sys.path.insert(0, addon_lib)
 

@@ -41,7 +41,7 @@ class source:
 									'extraInfo': details, 'url_dl': file_dl, 'id': file_dl, 'downloads': False, 'direct': True, 'source': self.scrape_provider,
 									'scrape_provider': self.scrape_provider, 'direct_debrid_link': direct_debrid_link, 'delete_id': item.get('delete_id', None), 'dl_id': item.get('dl_id', None)}
 						yield source_item
-					except: pass
+					except Exception: pass
 			self.sources = list(_process())
 		except Exception as e:
 			from modules.kodi_utils import logger
@@ -54,7 +54,7 @@ class source:
 			try:
 				my_cloud_files = RealDebrid.user_cloud()
 				my_cloud_files = [i for i in my_cloud_files if i['status'] == 'downloaded']
-			except: return self.sources
+			except Exception: return self.sources
 			results_append = self.folder_results.append
 			year_query_list = self._year_query_list()
 			for item in my_cloud_files:
@@ -71,7 +71,7 @@ class source:
 			for i in self.folder_results: threads_append(Thread(target=self._scrape_folders, args=(i,)))
 			[i.start() for i in threads]
 			[i.join() for i in threads]
-		except: pass
+		except Exception: pass
 
 	def _scrape_folders(self, folder_info):
 		try:
@@ -82,7 +82,7 @@ class source:
 			scrape_results_append = self.scrape_results.append
 			for c, i in enumerate(contents):
 				try: i.update({'url_link': file_urls[c]})
-				except: pass
+				except Exception: pass
 			contents.sort(key=lambda k: k['path'])
 			for item in contents:
 				normalized = normalize(item['path'])
@@ -92,7 +92,7 @@ class source:
 					item['delete_id'] = FolderId
 					# === END CHANGE ===
 					scrape_results_append(item)
-		except: pass
+		except Exception: pass
 
 	def _scrape_downloads(self):
 		try:
@@ -109,7 +109,7 @@ class source:
 				elif not seas_ep_filter(self.season, self.episode, normalized): continue
 				item = self.make_downloads_item(item)
 				if item['path'].replace('/', '').lower() not in [d['path'].replace('/', '').lower() for d in self.scrape_results]: scrape_results_append(item)
-		except: pass
+		except Exception: pass
 
 	def make_downloads_item(self, item):
 		return {'url_link': item['download'], 'bytes': item['filesize'], 'path': item['filename'], 'direct_debrid_link': True, 'dl_id': item['id']}

@@ -11,14 +11,17 @@ def routing(sys):
 	mode = _get('mode', 'navigator.main')
 	if 'navigator.' in mode:
 		from indexers.navigator import Navigator
-		exec('Navigator(params).%s()' % mode.split('.')[1])
+		method = mode.split('.')[1]
+		getattr(Navigator(params), method)()
 		return mode
 	if 'menu_editor.' in mode:
 		from modules.menu_editor import MenuEditor
-		return exec('MenuEditor(params).%s()' % mode.split('.')[1])
+		method = mode.split('.')[1]
+		return getattr(MenuEditor(params), method)()
 	if 'easynews.' in mode:
 		from indexers import easynews
-		return exec('easynews.%s(params)' % mode.split('.')[1])
+		method = mode.split('.')[1]
+		return getattr(easynews, method)(params)
 	if 'playback.' in mode:
 		if mode == 'playback.media':
 			from modules.sources import Sources
@@ -28,16 +31,19 @@ def routing(sys):
 			return VibeStreamPlayer().run(_get('url', None), _get('obj', None))
 	if 'choice' in mode:
 		from indexers import dialogs
-		return exec('dialogs.%s(params)' % mode)
+		return getattr(dialogs, mode)(params)
 	if 'custom_key.' in mode:
 		from modules import custom_keys
-		return exec('custom_keys.%s()' % mode.split('custom_key.')[1])
+		method = mode.split('custom_key.')[1]
+		return getattr(custom_keys, method)()
 	if 'trakt.' in mode:
 		if '.list' in mode:
 			from indexers import trakt_lists
-			return exec('trakt_lists.%s(params)' % mode.split('.')[2])
+			method = mode.split('.')[2]
+			return getattr(trakt_lists, method)(params)
 		from apis import trakt_api
-		return exec('trakt_api.%s(params)' % mode.split('.')[1])
+		method = mode.split('.')[1]
+		return getattr(trakt_api, method)(params)
 	if 'build' in mode:
 		if mode == 'build_movie_list':
 			from indexers.movies import Movies
@@ -246,13 +252,16 @@ def routing(sys):
 			return show_text(_get('heading'), _get('text', None), _get('file', None), _get('meta'), {})
 	if 'settings_manager.' in mode:
 		from caches import settings_cache
-		return exec('settings_cache.%s(params)' % mode.split('.')[1])
+		method = mode.split('.')[1]
+		return getattr(settings_cache, method)(params)
 	if 'downloader.' in mode:
 		from modules import downloader
-		return exec('downloader.%s(params)' % mode.split('.')[1])
+		method = mode.split('.')[1]
+		return getattr(downloader, method)(params)
 	if 'updater' in mode:
 		from modules import updater
-		return exec('updater.%s()' % mode.split('.')[1])
+		method = mode.split('.')[1]
+		return getattr(updater, method)()
 	##EXTRA modes##
 	if 'tmdb.' in mode:
 		if mode == 'tmdb.clear_tmdb_list_cache':

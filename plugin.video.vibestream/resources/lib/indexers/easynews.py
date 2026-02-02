@@ -27,7 +27,7 @@ def search_easynews(params):
 	try:
 		files = EasyNews.search(search_name)
 		easynews_file_browser(files, handle)
-	except: pass
+	except Exception: pass
 	set_content(handle, 'files')
 	end_directory(handle, cacheToDisc=False)
 	set_view_mode('view.premium')
@@ -62,7 +62,7 @@ def easynews_file_browser(files, handle):
 				info_tag = listitem.getVideoInfoTag()
 				info_tag.setPlot(' ')
 				yield (url, listitem, False)
-			except: pass
+			except Exception: pass
 	add_items(handle, list(_builder()))
 
 def resolve_easynews(params):
@@ -90,12 +90,12 @@ def account_info(params):
 		append('[B]Data Remaining:[/B] %s' % usage_info[1].replace('Gigs', 'GB'))
 		hide_busy_dialog()
 		return show_text('EASYNEWS', '\n\n'.join(body), font_size='large')
-	except: hide_busy_dialog()
+	except Exception: hide_busy_dialog()
 
 def active_days():
 	try:
 		account_info = EasyNews.account_info()
 		expires = jsondate_to_datetime(account_info[2], '%Y-%m-%d')
 		days_remaining = (expires - datetime.today()).days
-	except: days_remaining = 0
+	except Exception: days_remaining = 0
 	return days_remaining

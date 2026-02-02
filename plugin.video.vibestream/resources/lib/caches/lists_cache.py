@@ -17,7 +17,7 @@ class ListsCache(BaseCache):
 			dbcon.execute(DELETE_ALL)
 			dbcon.execute('VACUUM')
 			return True
-		except: return False
+		except Exception: return False
 
 	def clean_database(self):
 		try:
@@ -25,7 +25,7 @@ class ListsCache(BaseCache):
 			dbcon.execute(CLEAN, (get_timestamp(),))
 			dbcon.execute('VACUUM')
 			return True
-		except: return False
+		except Exception: return False
 	
 	def delete_tmdb_list(self, list_id):
 		try:
@@ -38,7 +38,7 @@ class ListsCache(BaseCache):
 			# Delete from database
 			dbcon.execute("DELETE FROM lists WHERE id LIKE ?", (search_pattern,))
 			return True
-		except:
+		except Exception:
 			return False
 
 lists_cache = ListsCache()
@@ -51,7 +51,7 @@ def lists_cache_object(function, string, args, json=False, expiration=48):
 	try:
 		if json: result = function(*args).json()
 		else: result = function(*args)
-	except: result = None
+	except Exception: result = None
 	
 	if result is None:
 		return lists_cache.get(string, ignore_expiry=True)

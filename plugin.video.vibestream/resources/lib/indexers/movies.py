@@ -48,12 +48,12 @@ class Movies:
 		handle = int(sys.argv[1])
 		try:
 			try: page_no = int(self.params_get('new_page', '1'))
-			except: page_no = self.params_get('new_page')
+			except Exception: page_no = self.params_get('new_page')
 			if page_no == 1 and not self.is_external: set_property('vibestream.exit_params', folder_path())
 			if self.action in personal: var_module, import_function = personal[self.action]
 			else: var_module, import_function = 'apis.%s_api' % self.action.split('_')[0], self.action
 			try: function = manual_function_import(var_module, import_function)
-			except: pass
+			except Exception: pass
 			if self.action in main:
 				data = function(page_no)
 				self.list = [i['id'] for i in data['results']]
@@ -75,7 +75,7 @@ class Movies:
 				self.id_type = 'trakt_dict'
 				data = function(page_no)
 				try: self.list = [i['movie']['ids'] for i in data]
-				except: self.list = [i['ids'] for i in data]
+				except Exception: self.list = [i['ids'] for i in data]
 				if self.action not in ('trakt_movies_top10_boxoffice', 'trakt_recommendations'): self.new_page = {'new_page': string(page_no + 1)}
 			elif self.action in trakt_personal:
 				self.id_type = 'trakt_dict'
@@ -86,7 +86,7 @@ class Movies:
 				if total_pages > 2: self.total_pages = total_pages
 				try:
 					if total_pages > page_no: self.new_page = {'new_page': string(page_no + 1), 'paginate_start': self.paginate_start}
-				except: pass
+				except Exception: pass
 			elif self.action == 'trakt_recommendations':
 				self.id_type = 'trakt_dict'
 				data = function('movies')
@@ -95,7 +95,7 @@ class Movies:
 				if total_pages > 2: self.total_pages = total_pages
 				try:
 					if total_pages > page_no: self.new_page = {'new_page': string(page_no + 1), 'paginate_start': self.paginate_start}
-				except: pass
+				except Exception: pass
 			elif self.action == 'tmdb_movies_discover':
 				url = self.params_get('url')
 				data = function(url, page_no)
@@ -122,7 +122,7 @@ class Movies:
 			if self.new_page and not self.widget_hide_next_page:
 					self.new_page.update({'mode': 'build_movie_list', 'action': self.action, 'category_name': self.category_name})
 					add_dir(self.new_page, 'Next Page (%s) >>' % self.new_page['new_page'], handle, 'nextpage', nextpage_landscape)
-		except: pass
+		except Exception: pass
 		set_content(handle, content_type)
 		set_category(handle, self.category_name)
 		end_directory(handle, cacheToDisc=False if self.is_external else True)
@@ -231,7 +231,7 @@ class Movies:
 				props['vibestream.quality_note'] = 'CAM'
 			set_properties(props)
 			self.append(((url_params, listitem, False), _position))
-		except: pass
+		except Exception: pass
 
 	def worker(self):
 		self.current_date, self.current_time, self.watched_indicators = get_datetime(), get_current_timestamp(), watched_indicators()

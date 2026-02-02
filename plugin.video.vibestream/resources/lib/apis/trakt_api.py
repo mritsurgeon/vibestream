@@ -45,9 +45,9 @@ def call_trakt(path, params={}, data=None, is_delete=False, with_auth=True, meth
 		if with_auth:
 			try:
 				try: expires_at = float(get_setting('vibestream.trakt.expires'))
-				except: expires_at = 0.0
+				except Exception: expires_at = 0.0
 				if time.time() > expires_at: trakt_refresh_token()
-			except: pass
+			except Exception: pass
 			token = get_setting('vibestream.trakt.token')
 			if token: headers['Authorization'] = 'Bearer ' + token
 		try:
@@ -86,7 +86,7 @@ def call_trakt(path, params={}, data=None, is_delete=False, with_auth=True, meth
 			continue
 			
 		try: status_code = response.status_code
-		except: status_code = 0
+		except Exception: status_code = 0
 		
 		if status_code == 429:
 			retry_after = int(response.headers.get('Retry-After', 1))
@@ -113,11 +113,11 @@ def call_trakt(path, params={}, data=None, is_delete=False, with_auth=True, meth
 	
 	response.encoding = 'utf-8'
 	try: result = response.json()
-	except: return None
+	except Exception: return None
 	headers = response.headers
 	if method == 'sort_by_headers' and 'X-Sort-By' in headers and 'X-Sort-How' in headers:
 		try: result = sort_list(headers['X-Sort-By'], headers['X-Sort-How'], result)
-		except: pass
+		except Exception: pass
 	if pagination: return (result, headers.get('X-Pagination-Page-Count', 1)) # Default 1 to avoid crash
 	else: return result
 
@@ -204,7 +204,7 @@ def trakt_authenticate(dummy='', skip_sync=False):
 		try:
 			user = call_trakt('/users/me')
 			set_setting('trakt.user', str(user['username']))
-		except: pass
+		except Exception: pass
 		notification('Trakt Account Authorized', 3000)
 		if not skip_sync:
 			trakt_sync_activities(force_update=True)
@@ -536,7 +536,7 @@ def get_trakt_list_contents(list_type, user, slug, with_auth):
 				elif _type == 'episode':
 					data = {'media_ids': i['show']['ids'], 'title': i['show']['title'], 'type': _type, 'season': i[_type]['season'], 'episode': i[_type]['number'], 'custom_order': c}
 				results_append(data)
-			except: pass
+			except Exception: pass
 		return results
 	string = 'trakt_list_contents_%s_%s_%s' % (list_type, user, slug)
 	if user == 'Trakt Official': params = {'path': 'lists/%s/items', 'path_insert': slug, 'params': {'extended':'full'}, 'method': 'sort_by_headers'}
@@ -650,7 +650,7 @@ def trakt_like_a_list(params):
 		trakt_sync_activities()
 		if refresh: kodi_refresh()
 		return True
-	except:
+	except Exception:
 		notification('Error', 3000)
 		return False
 
@@ -664,7 +664,7 @@ def trakt_unlike_a_list(params):
 		trakt_sync_activities()
 		if refresh: kodi_refresh()
 		return True
-	except:
+	except Exception:
 		notification('Error', 3000)
 		return False
 
@@ -676,7 +676,7 @@ def get_trakt_movie_id(item):
 		try:
 			meta = movie_meta_external_id('imdb_id', item['imdb'], api_key)
 			tmdb_id = meta['id']
-		except: pass
+		except Exception: pass
 	return tmdb_id
 
 def get_trakt_tvshow_id(item):
@@ -687,13 +687,13 @@ def get_trakt_tvshow_id(item):
 		try: 
 			meta = tvshow_meta_external_id('imdb_id', item['imdb'], api_key)
 			tmdb_id = meta['id']
-		except: tmdb_id = None
+		except Exception: tmdb_id = None
 	if not tmdb_id:
 		if item['tvdb']:
 			try: 
 				meta = tvshow_meta_external_id('tvdb_id', item['tvdb'], api_key)
 				tmdb_id = meta['id']
-			except: tmdb_id = None
+			except Exception: tmdb_id = None
 	return tmdb_id
 
 def trakt_indicators_movies():
@@ -747,7 +747,7 @@ def trakt_comments(media_type, imdb_id):
 				(count, rating, item['user']['username'].upper(), js2date(item['created_at'], date_format, True).strftime('%d %B %Y'), replace_html_codes(item['comment']))
 				if item['spoiler']: comment = spoiler_template + comment
 				all_comments_append(comment)
-			except: pass
+			except Exception: pass
 		return all_comments
 	all_comments = []
 	all_comments_append = all_comments.append
@@ -786,7 +786,7 @@ def trakt_progress_tv(progress_info):
 						season = p_item['episode']['season']
 						if season > 0: yield ('episode', str(tmdb_id), season, p_item['episode']['number'], str(round(p_item['progress'], 1)),
 												0, p_item['paused_at'], p_item['id'], p_item['show']['title'])
-			except: pass
+			except Exception: pass
 	tmdb_list = []
 	tmdb_list_append = tmdb_list.append
 	progress_items = [i for i in progress_info if i['type'] == 'episode' and i['progress'] > 1]
@@ -803,14 +803,14 @@ def trakt_official_status(media_type):
 	if not addon_enabled('script.trakt'): return True
 	trakt_addon = addon('script.trakt')
 	try: authorization = trakt_addon.getSetting('authorization')
-	except: authorization = ''
+	except Exception: authorization = ''
 	if authorization == '': return True
 	try: exclude_http = trakt_addon.getSetting('ExcludeHTTP')
-	except: exclude_http = ''
+	except Exception: exclude_http = ''
 	if exclude_http in ('true', ''): return True
 	media_setting = 'scrobble_movie' if media_type in ('movie', 'movies') else 'scrobble_episode'
 	try: scrobble = trakt_addon.getSetting(media_setting)
-	except: scrobble = ''
+	except Exception: scrobble = ''
 	if scrobble in ('false', ''): return True
 	return False
 
@@ -863,7 +863,7 @@ def trakt_sync_activities(force_update=False):
 		return int(time.mktime(date_time.timetuple()))
 	def _compare(latest, cached):
 		try: result = _get_timestamp(js2date(latest, res_format)) > _get_timestamp(js2date(cached, res_format))
-		except: result = True
+		except Exception: result = True
 		return result
 	def _check_daily_expiry():
 		return int(time.time()) >= int(get_setting('vibestream.trakt.next_daily_clear', '0'))
@@ -873,7 +873,7 @@ def trakt_sync_activities(force_update=False):
 		set_setting('trakt.next_daily_clear', str(int(time.time()) + (24*3600)))
 	if not trakt_user_active and not force_update: return 'no account'
 	try: latest = trakt_get_activity()
-	except: return 'failed'
+	except Exception: return 'failed'
 	if latest is None: return 'failed'
 	cached = reset_activity(latest)
 	if cached is None: return 'failed'

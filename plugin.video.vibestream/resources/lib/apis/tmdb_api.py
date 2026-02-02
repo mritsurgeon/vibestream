@@ -33,13 +33,13 @@ def movie_details(tmdb_id, api_key):
 	try:
 		url = '%s/movie/%s?api_key=%s&language=en&append_to_response=%s&include_image_language=en' % (base_url, tmdb_id, api_key, movies_append)
 		return get_tmdb(url).json()
-	except: return None
+	except Exception: return None
 
 def tvshow_details(tmdb_id, api_key):
 	try:
 		url = '%s/tv/%s?api_key=%s&language=en&append_to_response=%s&include_image_language=en' % (base_url, tmdb_id, api_key, tvshows_append)
 		return get_tmdb(url).json()
-	except: return None
+	except Exception: return None
 
 def episode_groups_data(tmdb_id):
 	api_key = tmdb_api_key()
@@ -59,7 +59,7 @@ def movie_set_details(collection_id, api_key):
 	try:
 		url = '%s/collection/%s?api_key=%s&language=en' % (base_url, collection_id, api_key)
 		return get_tmdb(url).json()
-	except: return None
+	except Exception: return None
 
 def movie_external_id(external_source, external_id, api_key):
 	try:
@@ -69,7 +69,7 @@ def movie_external_id(external_source, external_id, api_key):
 		result = result['movie_results']
 		if result: return result[0]
 		else: return None
-	except: return None
+	except Exception: return None
 
 def tvshow_external_id(external_source, external_id, api_key):
 	try:
@@ -79,7 +79,7 @@ def tvshow_external_id(external_source, external_id, api_key):
 		result = result['tv_results']
 		if result: return result[0]
 		else: return None
-	except: return None
+	except Exception: return None
 
 def tmdb_movies_oscar_winners(page_no):
 	return oscar_winners[page_no-1]
@@ -132,7 +132,7 @@ def tmdb_movie_keyword_results_direct(query, page_no):
 		results = tmdb_movie_keyword_results(tmdb_keywords_by_query(query, page_no)['results'][0]['id'], page_no)
 		results['total_pages'] = 1
 		return results
-	except: return None
+	except Exception: return None
 
 def tmdb_tv_keyword_results_direct(query, page_no):
 	if tmdb_api_key() in empty_setting_check: return no_api_key()
@@ -140,7 +140,7 @@ def tmdb_tv_keyword_results_direct(query, page_no):
 		results = tmdb_tv_keyword_results(tmdb_keywords_by_query(query, page_no)['results'][0]['id'], page_no)
 		results['total_pages'] = 1
 		return results
-	except: return None
+	except Exception: return None
 
 def tmdb_company_id(query):
 	api_key = tmdb_api_key()
@@ -562,7 +562,7 @@ def tmdb_anime_search(query, page_no):
 		return data
 	def _anime_checker(count, item):
 		try: keywords = tmdb_tv_keywords(item['id'])
-		except: return
+		except Exception: return
 		if any([x['id'] == 210024 for x in keywords['results']]): anime_results_append((count, item))
 	api_key = tmdb_api_key()
 	if api_key in empty_setting_check: return no_api_key()
@@ -615,7 +615,7 @@ def season_episodes_details(tmdb_id, season_no):
 	try:
 		url = '%s/tv/%s/season/%s?api_key=%s&language=en&append_to_response=credits' % (base_url, tmdb_id, season_no, api_key)
 		return get_tmdb(url).json()
-	except: return None
+	except Exception: return None
 
 def get_dates(days, reverse=True):
 	current_date = get_current_date(return_str=False)
@@ -648,7 +648,7 @@ def get_reviews_data(media_type, tmdb_id):
 					else: rating = ''
 					content = template % (count, user, rating, item['content'])
 					reviews_list.append(content)
-				except: pass
+				except Exception: pass
 		return reviews_list
 	string, url = 'tmdb_%s_reviews_%s' % (media_type ,tmdb_id), [media_type, tmdb_id]
 	return cache_function(builder, string, url, json=False, expiration=EXPIRY_1_WEEK)
@@ -660,7 +660,7 @@ def get_data(url):
 
 def get_tmdb(url):
 	try: response = session.get(url, timeout=timeout)
-	except: response = None
+	except Exception: response = None
 	return response
 
 def auth():
@@ -676,7 +676,7 @@ def auth():
 	try: 
 		tiny_url = requests.get('http://tinyurl.com/api-create.php', params={'url': url}, timeout=t_o).text
 		qr_icon = 'https://qrcode.tec-it.com/API/QRCode?data=%s&backcolor=%%23ffffff&size=small&quietzone=1&errorcorrection=H' % requests.utils.quote(tiny_url)
-	except: pass
+	except Exception: pass
 	
 	content = 'Authorize TMDB Account[CR]Scan the QR code or navigate to: [B]%s[/B]' % tiny_url
 	progressDialog = progress_dialog('TMDB Authorize', qr_icon)

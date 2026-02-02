@@ -120,7 +120,7 @@ class Sources():
 			if group_details:
 				self.custom_season, self.custom_episode, self.episode_group_used = group_details['season'], group_details['episode'], True
 				self.episode_group_label = '[B]CUSTOM GROUP: S%02dE%02d[/B]' % (self.custom_season, self.custom_episode)
-		except: self.custom_season, self.custom_episode = None, None
+		except Exception: self.custom_season, self.custom_episode = None, None
 
 	def determine_scrapers_status(self):
 		self.active_internal_scrapers = active_internal_scrapers()
@@ -339,7 +339,7 @@ class Sources():
 			sort_first.sort(key=lambda k: (self._sort_folder_to_top(k['scrape_provider']), k['quality_rank']))
 			sort_last = [i for i in results if not i in sort_first]
 			results = sort_first + sort_last
-		except: pass
+		except Exception: pass
 		return results
 
 	def sort_preferred_autoplay(self, results):
@@ -353,7 +353,7 @@ class Sources():
 			preference_results = sorted([dict(item, **{'pref_includes': sum([preference_values[preferences.index(x)] for x in [i for i in preferences if i in item['extraInfo']]])}) \
 						for item in preference_results], key=lambda k: k['pref_includes'], reverse=True)
 			return preference_results + results
-		except: return results
+		except Exception: return results
 
 	def prepare_internal_scrapers(self):
 		if self.active_external and len(self.active_internal_scrapers) == 1: return
@@ -388,20 +388,20 @@ class Sources():
 			append_module_to_syspath('special://home/addons/%s/lib' % self.ext_folder)
 			self.ext_sources = manual_module_import('%s.sources_%s' % (self.ext_name, self.ext_name))
 			self.provider_defaults = [k.split('.')[1] for k, v in manual_function_import('%s.modules.control' % self.ext_name, 'getProviderDefaults')().items() if v == 'true']
-		except: return False
+		except Exception: return False
 		return True
 
 	def disable_external(self, line1=''):
 		if line1: notification(line1, 2000)
 		try: self.active_internal_scrapers.remove('external')
-		except: pass
+		except Exception: pass
 		self.active_external, self.external_providers = False, []
 
 	def internal_sources(self, prescrape=False):
 		active_sources = [i for i in self.active_internal_scrapers if i in internal_include_list]
 		try: sourceDict = [('internal', manual_function_import('scrapers.%s' % i, 'source'), i) for i in active_sources \
 												if not (prescrape and not check_prescrape_sources(i, self.media_type))]
-		except: sourceDict = []
+		except Exception: sourceDict = []
 		return sourceDict
 
 	def external_sources(self):
@@ -411,12 +411,12 @@ class Sources():
 			elif self.default_ext_only: active_sources = [i for i in self.provider_defaults if i in all_sources]
 			else: active_sources = [i for i in all_sources if json.loads(get_property('%s_settings' % self.ext_name)).get('provider.%s' % i, 'false') == 'true']
 			sourceDict = [(i, manual_function_import('%s.sources_%s.%s.%s' % (self.ext_name, self.ext_name, 'torrents', i), 'source')) for i in active_sources]
-		except: sourceDict = self.legacy_external_sources()
+		except Exception: sourceDict = self.legacy_external_sources()
 		return sourceDict
 
 	def legacy_external_sources(self):
 		try: sourceDict = manual_function_import(self.ext_name, 'sources')(specified_folders=['torrents'], ret_all=self.disabled_ext_ignored)
-		except: sourceDict = []
+		except Exception: sourceDict = []
 		return sourceDict
 
 	def folder_sources(self):
@@ -427,7 +427,7 @@ class Sources():
 				yield ('folders', (module, (item[1], scraper_name, item[2])), scraper_name)
 		sourceDict = list(import_info())
 		try: sourceDict = list(import_info())
-		except: sourceDict = []
+		except Exception: sourceDict = []
 		return sourceDict
 
 	def play_source(self, results):
@@ -456,14 +456,14 @@ class Sources():
 					sleep(self.sleep_time)
 					if len(remaining_providers) == 0: break
 					if percent >= 100: break
-				except:	return self._kill_progress_dialog()
+				except Exception:	return self._kill_progress_dialog()
 		if self.prescrape: scraper_list, _threads = self.prescrape_scrapers, self.prescrape_threads
 		else: scraper_list, _threads = self.providers, self.threads
 		self.internal_scrapers = self._get_active_scraper_names(scraper_list)
 		if not self.internal_scrapers: return
 		_scraperDialog()
 		try: del monitor
-		except: pass
+		except Exception: pass
 
 	def display_results(self, results):
 		window_format, window_number = results_format()
@@ -500,13 +500,13 @@ class Sources():
 				if self.auto_episode_group == 2:
 					from indexers.dialogs import episode_groups_choice
 					try: group_id = episode_groups_choice({'meta': self.meta, 'poster': self.meta['poster']})
-					except: group_id = None
+					except Exception: group_id = None
 				else:
 					try: group_id = metadata.episode_groups(self.tmdb_id)[0]['id']
-					except: group_id = None
+					except Exception: group_id = None
 				if group_id:
 					try: group_details = metadata.group_episode_data(metadata.group_details(group_id), None, self.season, self.episode)
-					except: group_details = None
+					except Exception: group_details = None
 					if group_details:
 						season, episode = group_details['season'], group_details['episode']
 						self.params.update({'custom_season': season, 'custom_episode': episode, 'episode_group_label': '[B]CUSTOM GROUP: S%02dE%02d[/B]' % (season, episode)})
@@ -569,13 +569,13 @@ class Sources():
 	def get_season(self):
 		season = self.meta.get('custom_season', None) or self.meta.get('season')
 		try: season = int(season)
-		except: season = None
+		except Exception: season = None
 		return season
 
 	def get_episode(self):
 		episode = self.meta.get('custom_episode', None) or self.meta.get('episode')
 		try: episode = int(episode)
-		except: episode = None
+		except Exception: episode = None
 		return episode
 
 	def get_ep_name(self):
@@ -583,7 +583,7 @@ class Sources():
 		if self.meta['media_type'] == 'episode':
 			ep_name = self.meta.get('ep_name')
 			try: ep_name = safe_string(remove_accents(ep_name))
-			except: ep_name = safe_string(ep_name)
+			except Exception: ep_name = safe_string(ep_name)
 		return ep_name
 
 	def _process_internal_results(self):
@@ -591,7 +591,7 @@ class Sources():
 			win_property = get_property(int_window_prop % i)
 			if win_property in ('checked', '', None): continue
 			try: sources = json.loads(win_property)
-			except: continue
+			except Exception: continue
 			set_property(int_window_prop % i, 'checked')
 			self._sources_quality_count(sources)
 	
@@ -631,7 +631,7 @@ class Sources():
 				self.meta.update({'season': episode_data['season'], 'episode': episode_data['episode'], 'premiered': episode_data['premiered'], 'episode_type': episode_type,
 								'ep_name': episode_data['title'], 'ep_thumb': ep_thumb, 'plot': episode_data['plot'], 'tvshow_plot': self.meta['plot'],
 								'custom_season': self.custom_season, 'custom_episode': self.custom_episode})
-			except: pass
+			except Exception: pass
 		self.meta.update({'media_type': self.media_type, 'background': self.background, 'custom_title': self.custom_title, 'custom_year': self.custom_year})
 
 	def make_search_info(self):
@@ -719,7 +719,7 @@ class Sources():
 
 	def _make_nextep_dialog(self, default_action='cancel'):
 		try: action = open_window(('windows.next_episode', 'NextEpisode'), 'next_episode.xml', meta=self.meta, default_action=default_action)
-		except: action = 'cancel'
+		except Exception: action = 'cancel'
 		return action
 
 	def _kill_progress_dialog(self):
@@ -727,11 +727,11 @@ class Sources():
 		try:
 			self.progress_dialog.close()
 			success += 1
-		except: pass
+		except Exception: pass
 		try:
 			self.progress_thread.join()
 			success += 1
-		except: pass
+		except Exception: pass
 		if not success == 2: close_all_dialog()
 		del self.progress_dialog
 		del self.progress_thread
@@ -743,7 +743,7 @@ class Sources():
 						'Offcloud': 'oc_browse', 'EasyDebrid': 'ed_browse', 'TorBox': 'tb_browse'}[debrid_provider]
 		debrid_function = self.debrid_importer(debrid_info)
 		try: debrid_files = debrid_function().display_magnet_pack(magnet_url, info_hash)
-		except: debrid_files = None
+		except Exception: debrid_files = None
 		hide_busy_dialog()
 		if not debrid_files: return notification('Error')
 		debrid_files.sort(key=lambda k: k['filename'].lower())
@@ -807,7 +807,7 @@ class Sources():
 					if count > 1:
 						sleep(200)
 						try: del player
-						except: pass
+						except Exception: pass
 					url, self.playback_successful, self.cancel_all_playback = None, None, False
 					self.playing_filename = item['name']
 					self.playing_item = item
@@ -834,13 +834,13 @@ class Sources():
 							self.cancel_all_playback = True
 							player.stop()
 							break
-					except: pass
-				except: pass
-		except: self._kill_progress_dialog()
+					except Exception: pass
+				except Exception: pass
+		except Exception: self._kill_progress_dialog()
 		if self.cancel_all_playback: return self._kill_progress_dialog()
 		if not self.playback_successful or not url: self.playback_failed_action()
 		try: del monitor
-		except: pass
+		except Exception: pass
 
 	def get_playback_percent(self):
 		if self.media_type == 'movie': percent = get_progress_status_movie(get_bookmarks_movie(), str(self.tmdb_id))
@@ -871,7 +871,7 @@ class Sources():
 				return self.autoplay_nextep_handler()
 			if self.autoplay_nextep: return self.autoplay_nextep_handler()
 			return self.random_continual_handler()
-		except: return False
+		except Exception: return False
 
 	def random_continual_handler(self):
 		notification('[B]Next Up:[/B] %s S%02dE%02d' % (self.meta.get('title'), self.meta.get('season'), self.meta.get('episode')), 6500, self.meta.get('poster'))
@@ -895,7 +895,7 @@ class Sources():
 						continue_nextep = True
 						break
 					sleep(100)
-				except: pass
+				except Exception: pass
 			if continue_nextep:
 				if self.num_episodes:
 					if int(self.num_episodes) > 1:
@@ -959,7 +959,7 @@ class Sources():
 		debrid_function = self.debrid_importer(debrid_provider)
 		store_to_cloud = store_resolved_to_cloud(debrid_provider, pack)
 		try: url = debrid_function().resolve_magnet(item_url, _hash, store_to_cloud, title, season, episode)
-		except: url = None
+		except Exception: url = None
 		return url
 
 	def resolve_internal(self, scrape_provider, item_id, url_dl, direct_debrid_link=False):
@@ -976,7 +976,7 @@ class Sources():
 				else:
 					if '_cloud' in scrape_provider: item_id = debrid_function().get_item_details(item_id)['link']
 					url = debrid_function().add_headers_to_url(item_id)
-		except: pass
+		except Exception: pass
 		return url
 
 	def _quality_length(self, items, quality):

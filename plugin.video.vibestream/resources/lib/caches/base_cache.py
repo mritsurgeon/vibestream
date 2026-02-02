@@ -117,8 +117,8 @@ def remove_old_databases():
 		for item in files:
 			if not item in current_dbs:
 				try: delete_file(databases_path + item)
-				except: pass
-	except: pass
+				except Exception: pass
+	except Exception: pass
 
 def check_databases_integrity():
 	def _process(database_name, tables):
@@ -126,11 +126,11 @@ def check_databases_integrity():
 		try:
 			dbcon = database.connect(database_location)
 			for db_table in tables: dbcon.execute(command_base % db_table)
-		except:
+		except Exception:
 			database_errors.append(database_name)
 			if path_exists(database_location):
 				try: dbcon.close()
-				except: pass
+				except Exception: pass
 				delete_file(database_location)
 	command_base = 'SELECT * FROM %s LIMIT 1'
 	database_errors = []
@@ -244,7 +244,7 @@ def clear_all_cache():
 			progressDialog.update(line % (cache_type[1]), int(float(count) / float(len(caches)) * 100))
 			clear_cache(cache_type[0], silent=True)
 			sleep(1000)
-		except: pass
+		except Exception: pass
 	progressDialog.close()
 	sleep(100)
 	ok_dialog(text='Success')
@@ -300,7 +300,7 @@ def refresh_cached_data(meta):
 	from caches.meta_cache import meta_cache
 	media_type, tmdb_id, imdb_id = meta['mediatype'], meta['tmdb_id'], meta['imdb_id']
 	try: meta_cache.delete(media_type, 'tmdb_id', tmdb_id, meta)
-	except: return notification('Error')
+	except Exception: return notification('Error')
 	from apis.imdb_api import refresh_imdb_meta_data
 	refresh_imdb_meta_data(imdb_id)
 	notification('Success')
@@ -322,10 +322,10 @@ class BaseCache(object):
 				if ignore_expiry or expires > current_time:
 					if data_raw is not None:
 						try: result = json.loads(data_raw)
-						except: self.delete(string)
+						except Exception: self.delete(string)
 				else:
 					if delete_if_expired: self.delete(string)
-		except: pass
+		except Exception: pass
 		return result
 
 	def set(self, string, data, expiration=720):
@@ -333,14 +333,14 @@ class BaseCache(object):
 			dbcon = connect_database(self.dbfile)
 			expires = get_timestamp(expiration)
 			dbcon.execute(BASE_SET % self.table, (string, json.dumps(data), int(expires)))
-		except: return None
+		except Exception: return None
 
 	def delete(self, string):
 		try:
 			dbcon = connect_database(self.dbfile)
 			dbcon.execute(BASE_DELETE % self.table, (string,))
 			self.delete_memory_cache(string)
-		except: pass
+		except Exception: pass
 
 	def delete_memory_cache(self, string):
 		clear_property(media_prop % string)

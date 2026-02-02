@@ -52,28 +52,28 @@ def movie_meta(id_type, media_id, api_key, mpaa_region, current_date, current_ti
 				logo_path = images.get('logos')[0].get('file_path')
 				if logo_path.endswith('png'): clearlogo = tmdb_image_url % ('original', logo_path)
 				else: clearlogo = tmdb_image_url % ('original', logo_path.replace(logo_path.split('.')[-1], 'png'))
-			except: clearlogo = ''
+			except Exception: clearlogo = ''
 			try:
 				landscape_path = images.get('backdrops')[0].get('file_path')
 				landscape = tmdb_image_url % ('w1280', landscape_path)
-			except: landscape = ''
+			except Exception: landscape = ''
 		else: clearlogo, landscape = '', ''
 		title, original_title = data_get('title'), data_get('original_title')
 		try: english_title = next(i['data']['title'] for i in data_get('translations')['translations'] if i['iso_639_1'] == 'en')
-		except: english_title = None
+		except Exception: english_title = None
 		try: year = str(data_get('release_date').split('-')[0])
-		except: year = ''
+		except Exception: year = ''
 		try: duration = int(data_get('runtime', '90') * 60)
-		except: duration = 0
+		except Exception: duration = 0
 		try: genre = [i['name'] for i in data_get('genres')]
-		except: genre == []
+		except Exception: genre == []
 		rootname = '%s (%s)' % (title, year)
 		companies = data_get('production_companies')
 		if companies:
 			if len(companies) == 1: studio = ([i['name'] for i in companies][0],)
 			else:
 				try: studio = (next(i['name'] for i in companies if i['logo_path'] not in empty_value_check) or next(i['name'] for i in companies),)
-				except: pass
+				except Exception: pass
 		production_countries = data_get('production_countries', None)
 		if production_countries:
 			country = [i['name'] for i in production_countries]
@@ -81,20 +81,20 @@ def movie_meta(id_type, media_id, api_key, mpaa_region, current_date, current_ti
 		release_dates = data_get('release_dates')
 		if release_dates:
 			try: mpaa = next(x['certification'] for i in release_dates['results'] for x in i['release_dates'] if i['iso_3166_1'] == mpaa_region and x['certification'] != '')
-			except: pass
+			except Exception: pass
 		credits = data_get('credits')
 		if credits:
 			all_cast = credits.get('cast', None)
 			if all_cast:
 				try: cast = [{'name': i['name'], 'role': i['character'], 'thumbnail': tmdb_image_url % ('h632', i['profile_path'])if i['profile_path'] else ''}\
 							for i in all_cast[:10]]
-				except: pass
+				except Exception: pass
 			crew = credits.get('crew', None)
 			if crew:
 				try: writer = [i['name'] for i in crew if i['job'] in writer_credits]
-				except: pass
+				except Exception: pass
 				try: director = [i['name'] for i in crew if i['job'] == 'Director']
-				except: pass
+				except Exception: pass
 		alternative_titles = data_get('alternative_titles', [])
 		if alternative_titles:
 			alternatives = alternative_titles['titles']
@@ -103,7 +103,7 @@ def movie_meta(id_type, media_id, api_key, mpaa_region, current_date, current_ti
 		spoken_languages = data_get('spoken_languages', [])
 		if spoken_languages:
 			try: spoken_language = spoken_languages[0]['english_name']
-			except: spoken_language = ''
+			except Exception: spoken_language = ''
 		videos = data_get('videos', None)
 		if videos:
 			try:
@@ -115,16 +115,16 @@ def movie_meta(id_type, media_id, api_key, mpaa_region, current_date, current_ti
 					next((youtube_url % i['key'] for i in all_trailers if 'trailer' in i['name'].lower()), None) or \
 					next((youtube_url % i['key'] for i in all_trailers), None) or ''
 				else: trailler = ''
-			except: pass
+			except Exception: pass
 		keywords = data_get('keywords', None)
 		status, homepage = data_get('status', 'N/A'), data_get('homepage', 'N/A')
 		belongs_to_collection = data_get('belongs_to_collection')
 		if belongs_to_collection: ei_collection_name, ei_collection_id = belongs_to_collection['name'], belongs_to_collection['id']
 		else: ei_collection_name, ei_collection_id = None, None
 		try: ei_budget = '${:,}'.format(data_get('budget'))
-		except: ei_budget = '$0'
+		except Exception: ei_budget = '$0'
 		try: ei_revenue = '${:,}'.format(data_get('revenue'))
-		except: ei_revenue = '$0'
+		except Exception: ei_revenue = '$0'
 		extra_info = {'status': status, 'budget': ei_budget, 'revenue': ei_revenue, 'homepage': homepage, 'collection_name': ei_collection_name, 'collection_id': ei_collection_id}
 		meta = {'tmdb_id': tmdb_id, 'imdb_id': imdb_id, 'rating': rating, 'tagline': tagline, 'votes': votes, 'premiered': premiered, 'imdbnumber': imdb_id, 'trailer': trailer,
 				'poster': poster, 'fanart': fanart, 'genre': genre, 'title': title, 'original_title': original_title, 'english_title': english_title, 'year': year, 'cast': cast,
@@ -132,7 +132,7 @@ def movie_meta(id_type, media_id, api_key, mpaa_region, current_date, current_ti
 				'director': director, 'alternative_titles': alternative_titles, 'plot': plot, 'studio': studio, 'extra_info': extra_info, 'mediatype': 'movie', 'tvdb_id': 'None',
 				'clearlogo': clearlogo, 'landscape': landscape, 'spoken_language': spoken_language, 'keywords': keywords}
 		metacache_set('movie', id_type, meta, movie_expiry(current_date, meta), current_time)
-	except: pass
+	except Exception: pass
 	return meta
 
 def tvshow_meta(id_type, media_id, api_key, mpaa_region, current_date, current_time=None):
@@ -176,28 +176,28 @@ def tvshow_meta(id_type, media_id, api_key, mpaa_region, current_date, current_t
 				logo_path = images.get('logos')[0].get('file_path')
 				if logo_path.endswith('png'): clearlogo = tmdb_image_url % ('original', logo_path)
 				else: clearlogo = tmdb_image_url % ('original', logo_path.replace(logo_path.split('.')[-1], 'png'))
-			except: clearlogo = ''
+			except Exception: clearlogo = ''
 			try:
 				landscape_path = images.get('backdrops')[0].get('file_path')
 				landscape = tmdb_image_url % ('w1280', landscape_path)
-			except: landscape = ''
+			except Exception: landscape = ''
 		else: clearlogo, landscape = '', ''
 		title, original_title = data_get('name'), data_get('original_name')
 		try: english_title = [i['data']['name'] for i in data_get('translations')['translations'] if i['iso_639_1'] == 'en'][0]
-		except: english_title = None
+		except Exception: english_title = None
 		try: year = str(data_get('first_air_date').split('-')[0]) or ''
-		except: year = ''
+		except Exception: year = ''
 		try: duration = min(data_get('episode_run_time'))*60
-		except: duration = 0
+		except Exception: duration = 0
 		try: genre = [i['name'] for i in data_get('genres')]
-		except: genre = []
+		except Exception: genre = []
 		rootname = '%s (%s)' % (title, year)
 		networks = data_get('networks', None)
 		if networks:
 			if len(networks) == 1: studio = ([i['name'] for i in networks][0],)
 			else:
 				try: studio = (next(i['name'] for i in networks if i['logo_path'] not in empty_value_check) or next(i['name'] for i in network),)
-				except: pass
+				except Exception: pass
 		production_countries = data_get('production_countries', None)
 		if production_countries:
 			country = [i['name'] for i in production_countries]
@@ -205,24 +205,24 @@ def tvshow_meta(id_type, media_id, api_key, mpaa_region, current_date, current_t
 		content_ratings = data_get('content_ratings', None)
 		if content_ratings:
 			try: mpaa = next(i['rating'] for i in content_ratings['results'] if i['iso_3166_1'] == mpaa_region)
-			except: pass
+			except Exception: pass
 		spoken_languages = data_get('spoken_languages', [])
 		if spoken_languages:
 			try: spoken_language = spoken_languages[0]['english_name']
-			except: spoken_language = ''
+			except Exception: spoken_language = ''
 		credits = data_get('credits')
 		if credits:
 			all_cast = credits.get('cast', None)
 			if all_cast:
 				try: cast = [{'name': i['name'], 'role': i['character'], 'thumbnail': tmdb_image_url % ('h632', i['profile_path']) if i['profile_path'] else ''} \
 							for i in all_cast[:10]]
-				except: pass
+				except Exception: pass
 			crew = credits.get('crew', None)
 			if crew:
 				try: writer = [i['name'] for i in crew if i['job'] in writer_credits]
-				except: pass
+				except Exception: pass
 				try: director = [i['name'] for i in crew if i['job'] == 'Director']
-				except: pass
+				except Exception: pass
 		alternative_titles = data_get('alternative_titles', [])
 		if alternative_titles:
 			alternatives = alternative_titles['results']
@@ -238,13 +238,13 @@ def tvshow_meta(id_type, media_id, api_key, mpaa_region, current_date, current_t
 					next((youtube_url % i['key'] for i in all_trailers if 'trailer' in i['name'].lower()), None) or \
 					next((youtube_url % i['key'] for i in all_trailers), None) or ''
 				else: trailler = ''
-			except: pass
+			except Exception: pass
 		keywords = data_get('keywords', None)
 		status, _type, homepage = data_get('status', 'N/A'), data_get('type', 'N/A'), data_get('homepage', 'N/A')
 		created_by = data_get('created_by', None)
 		if created_by:
 			try: ei_created_by = ', '.join([i['name'] for i in created_by])
-			except: ei_created_by = 'N/A'
+			except Exception: ei_created_by = 'N/A'
 		else: ei_created_by = 'N/A'
 		ei_next_ep, ei_last_ep = data_get('next_episode_to_air', None), data_get('last_episode_to_air', None)
 		if ei_last_ep and not status in finished_show_check:
@@ -259,7 +259,7 @@ def tvshow_meta(id_type, media_id, api_key, mpaa_region, current_date, current_t
 				'total_aired_eps': total_aired_eps, 'mediatype': 'tvshow', 'total_seasons': total_seasons, 'tvshowtitle': title, 'status': status, 'clearlogo': clearlogo,
 				'landscape': landscape, 'spoken_language': spoken_language, 'keywords': keywords}
 		metacache_set('tvshow', id_type, meta, tvshow_expiry(current_date, meta), current_time)
-	except: pass
+	except Exception: pass
 	return meta
 
 def movieset_meta(media_id, api_key, current_time=None):
@@ -285,7 +285,7 @@ def movieset_meta(media_id, api_key, current_time=None):
 		parts = data_get('parts')
 		meta = {'tmdb_id': tmdb_id, 'title': title, 'plot': plot, 'poster': poster, 'fanart': fanart, 'parts': parts, 'imdb_id': 'None', 'tvdb_id': 'None'}
 		metacache_set('movie_set', id_type, meta, EXPIRES_30_DAYS, current_time)
-	except: pass
+	except Exception: pass
 	return meta
 
 def episodes_meta(season, meta):
@@ -308,9 +308,9 @@ def episodes_meta(season, meta):
 						if 'finale' in season_type: episode_type = 'series_finale'
 						else: episode_type = 'season_finale'
 					else: episode_type = ''
-			except: episode_type = ''
+			except Exception: episode_type = ''
 			try: duration = ep_data_get('runtime')*60
-			except: duration = 30*60
+			except Exception: duration = 30*60
 			rating, votes, still_path = ep_data_get('vote_average'), ep_data_get('vote_count'), ep_data_get('still_path', None)
 			if still_path: thumb = tmdb_image_url % ('original', still_path)
 			else: thumb = None
@@ -318,13 +318,13 @@ def episodes_meta(season, meta):
 			if cast:
 				try: guest_stars = [{'name': i['name'], 'role': i['character'], 'thumbnail': tmdb_image_url % ('h632', i['profile_path']) if i['profile_path'] else ''}\
 									for i in cast[:20]]
-				except: pass
+				except Exception: pass
 			crew = ep_data_get('crew', None)
 			if crew:
 				try: writer = [i['name'] for i in crew if i['job'] in writer_credits]
-				except: pass
+				except Exception: pass
 				try: director = [i['name'] for i in crew if i['job'] == 'Director']
-				except: pass
+				except Exception: pass
 			yield {'writer': writer, 'director': director, 'mediatype': 'episode', 'episode_type': episode_type, 'episode_id': episode_id, 'title': title, 'plot': plot,
 					'duration': duration, 'premiered': premiered, 'season': season, 'episode': episode, 'rating': rating, 'votes': votes, 'thumb': thumb, 'guest_stars': guest_stars}
 	media_id, data = meta['tmdb_id'], None
@@ -341,8 +341,8 @@ def episodes_meta(season, meta):
 			details = season_episodes_details(media_id, season)['episodes']
 			total_episodes = len(details)
 			data = list(_process())
-		except: data, expiration = [], EXPIRES_4_DAYS
-	except: data, expiration = [], EXPIRES_4_DAYS
+		except Exception: data, expiration = [], EXPIRES_4_DAYS
+	except Exception: data, expiration = [], EXPIRES_4_DAYS
 	metacache_set_season(prop_string, data, expiration)
 	return data
 
@@ -350,7 +350,7 @@ def all_episodes_meta(meta, include_specials=False):
 	from threading import Thread
 	def _get_tmdb_episodes(season):
 		try: data.extend(episodes_meta(season, meta))
-		except: pass
+		except Exception: pass
 	try:
 		data = []
 		seasons = [i['season_number'] for i in meta['season_data']]
@@ -358,12 +358,12 @@ def all_episodes_meta(meta, include_specials=False):
 		threads = [Thread(target=_get_tmdb_episodes, args=(i,)) for i in seasons]
 		[i.start() for i in threads]
 		[i.join() for i in threads]
-	except: pass
+	except Exception: pass
 	return data
 
 def episode_groups(media_id):
 	try: groups = episode_groups_data(media_id)['results']
-	except: groups = None
+	except Exception: groups = None
 	return groups or None
 
 def group_details(group_id):
@@ -383,10 +383,10 @@ def is_anime_check(tmdb_id):
 	genre = meta['genre']
 	if not genre or 'Animation' in genre:
 		try: keywords = meta.get('keywords', None) or tmdb_api.tmdb_tv_keywords(tmdb_id)['results']
-		except: return False
+		except Exception: return False
 		if not keywords: return False
 		try: is_anime = next((i for i in keywords['results'] if i['id'] == 210024), None) is not None
-		except: is_anime = False
+		except Exception: is_anime = False
 		return is_anime
 	return False
 
@@ -404,7 +404,7 @@ def movie_expiry(current_date, meta):
 		elif difference <= 30: expiration = EXPIRES_14_DAYS
 		elif difference <= 180: expiration = EXPIRES_30_DAYS
 		else: expiration = EXPIRES_182_DAYS
-	except: return EXPIRES_30_DAYS
+	except Exception: return EXPIRES_30_DAYS
 	return max(expiration, EXPIRES_7_DAYS)
 
 def tvshow_expiry(current_date, meta):
@@ -414,5 +414,5 @@ def tvshow_expiry(current_date, meta):
 			data = subtract_dates(jsondate_to_datetime(meta['extra_info']['next_episode_to_air']['air_date'], date_format, remove_time=True), current_date) - EXPIRES_1_DAYS
 			if data <= 1: expiration = EXPIRES_1_DAYS
 			else: expiration = data*24
-	except: expiration = EXPIRES_4_DAYS
+	except Exception: expiration = EXPIRES_4_DAYS
 	return expiration

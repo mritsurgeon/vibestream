@@ -4,7 +4,7 @@ from os import path as osPath
 from urllib.parse import urlencode
 from modules import icons
 try: xbmc_actor = xbmc.Actor
-except: xbmc_actor = None
+except Exception: xbmc_actor = None
 xbmc_player, numeric_input, xbmc_monitor, translatePath = xbmc.Player, 1, xbmc.Monitor, xbmcvfs.translatePath
 ListItem, getSkinDir, log, getCurrentWindowId, Window = xbmcgui.ListItem, xbmc.getSkinDir, xbmc.log, xbmcgui.getCurrentWindowId, xbmcgui.Window
 File, exists, copy, delete, rmdir, rename = xbmcvfs.File, xbmcvfs.exists, xbmcvfs.copy, xbmcvfs.delete, xbmcvfs.rmdir, xbmcvfs.rename
@@ -122,7 +122,7 @@ def set_view_mode(view_type, content='files', is_external=None):
 			if hold < 3000: sleep(1)
 			else: return
 		execute_builtin('Container.SetViewMode(%s)' % view_id)
-	except: return
+	except Exception: return
 
 def remove_keys(dict_item, dict_removals):
 	for k in dict_removals: dict_item.pop(k, None)
@@ -301,7 +301,7 @@ def disable_enable_addon(addon_name='plugin.video.vibestream'):
 	try:
 		execute_JSON(json.dumps({'jsonrpc': '2.0', 'id': 1, 'method': 'Addons.SetAddonEnabled', 'params': {'addonid': addon_name, 'enabled': False}}))
 		execute_JSON(json.dumps({'jsonrpc': '2.0', 'id': 1, 'method': 'Addons.SetAddonEnabled', 'params': {'addonid': addon_name, 'enabled': True}}))
-	except: pass
+	except Exception: pass
 
 def update_local_addons():
 	execute_builtin('UpdateLocalAddons', True)
@@ -315,7 +315,7 @@ def update_kodi_addons_db(addon_name='plugin.video.vibestream'):
 		dbcon = database.connect(translate_path('special://database/Addons33.db'), timeout=40.0)
 		dbcon.execute("INSERT OR REPLACE INTO installed (addonID, enabled, lastUpdated) VALUES (?, ?, ?)", (addon_name, 1, date))
 		dbcon.close()
-	except: pass
+	except Exception: pass
 
 def get_jsonrpc(request):
 	import json
@@ -326,7 +326,7 @@ def get_jsonrpc(request):
 def jsonrpc_get_directory(directory, properties=['title', 'file', 'thumbnail']):
 	command = {'jsonrpc': '2.0', 'id': 1, 'method': 'Files.GetDirectory', 'params': {'directory': directory, 'media': 'files', 'properties': properties}}
 	try: results = [i for i in get_jsonrpc(command).get('files') if i['file'].startswith('plugin://') and i['filetype'] == 'directory']
-	except: results = None
+	except Exception: results = None
 	return results
 
 def jsonrpc_get_addons(_type, properties=['thumbnail', 'name']):
@@ -337,7 +337,7 @@ def jsonrpc_get_addons(_type, properties=['thumbnail', 'name']):
 def jsonrpc_get_system_setting(setting_id, setting_value=''):
 	command = {'jsonrpc': '2.0', 'id': 1, 'method': 'Settings.GetSettingValue', 'params': {'setting': setting_id}}
 	try: result = get_jsonrpc(command)['value']
-	except: result = setting_value
+	except Exception: result = setting_value
 	return result
 
 def open_settings():
@@ -349,7 +349,7 @@ def external_scraper_settings():
 		external = get_property('vibestream.external_scraper.module')
 		if external in ('empty_setting', ''): return
 		execute_builtin('Addon.OpenSettings(%s)' % external)
-	except: pass
+	except Exception: pass
 
 def progress_dialog(heading='', icon=None):
 	from threading import Thread
@@ -408,13 +408,13 @@ def volume_checker():
 		from modules.utils import string_alphanum_to_num
 		max_volume = min(int(get_property('vibestream.playback.volumecheck_percent') or '50'), 100)
 		if int(100 - (float(string_alphanum_to_num(get_infolabel('Player.Volume').split('.')[0]))/60)*100) > max_volume: execute_builtin('SetVolume(%d)' % max_volume)
-	except: pass
+	except Exception: pass
 
 def focus_index(index):
 	current_window = current_window_object()
 	focus_id = current_window.getFocusId()
 	try: current_window.getControl(focus_id).selectItem(index)
-	except: pass
+	except Exception: pass
 
 def get_all_icon_vars(include_values=False):
 	if include_values: return [(k, v) for k, v in vars(icons).items() if not k.startswith('__')]
@@ -459,10 +459,10 @@ def upload_logfile(params):
 			try:
 				from modules.utils import copy2clip
 				copy2clip('%s%s' % (url, user_code))
-			except: pass
+			except Exception: pass
 			ok_dialog(text='%s%s' % (url, user_code))
 		else: ok_dialog(text='Error. Log Upload Failed')
-	except: ok_dialog(text='Error. Log Upload Failed')
+	except Exception: ok_dialog(text='Error. Log Upload Failed')
 	hide_busy_dialog()
 
 def fetch_kodi_imagecache(image):
@@ -474,5 +474,5 @@ def fetch_kodi_imagecache(image):
 		dbcur.execute("SELECT cachedurl FROM texture WHERE url = ?", (image,))
 		row = dbcur.fetchone()
 		result = row[0] if row is not None else None
-	except: pass
+	except Exception: pass
 	return result

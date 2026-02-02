@@ -48,7 +48,7 @@ def search_trakt_lists(params):
 				info_tag.setPlot(' ')
 				listitem.addContextMenuItems(cm)
 				yield (url, listitem, True)
-			except: pass
+			except Exception: pass
 	handle, search_title = int(sys.argv[1]), ''
 	try:
 		mode = params.get('mode')
@@ -59,7 +59,7 @@ def search_trakt_lists(params):
 		if pages > page:
 			new_page = str(int(page) + 1)
 			add_dir({'mode': mode, 'key_id': search_title, 'new_page': new_page}, 'Next Page (%s) >>' % new_page, handle, 'nextpage', nextpage_landscape)
-	except: pass
+	except Exception: pass
 	set_content(handle, 'files')
 	set_category(handle, search_title.capitalize())
 	end_directory(handle)
@@ -95,7 +95,7 @@ def get_trakt_lists(params):
 				info_tag.setPlot(' ')
 				listitem.addContextMenuItems(cm)
 				yield (url, listitem, True)
-			except: pass
+			except Exception: pass
 	handle = int(sys.argv[1])
 	list_type, randomize_contents, shuffle = params['list_type'], params.get('random', 'false'), params.get('shuffle', 'false') == 'true'
 	returning_to_list = False
@@ -105,7 +105,7 @@ def get_trakt_lists(params):
 			returning_to_list = 'trakt.list.build_trakt_list' in folder_path()
 			if returning_to_list:
 				try: lists = json.loads(get_property('vibestream.trakt.lists.order'))
-				except: pass
+				except Exception: pass
 			else:
 				random.shuffle(lists)
 				set_property('vibestream.trakt.lists.order', json.dumps(lists))
@@ -114,7 +114,7 @@ def get_trakt_lists(params):
 			clear_property('vibestream.trakt.lists.order')
 			sort_method = 'label'
 		add_items(handle, list(_process()))
-	except: pass
+	except Exception: pass
 	set_content(handle, 'files')
 	set_category(handle, params.get('category_name', ''))
 	set_sort_method(handle, sort_method)
@@ -148,7 +148,7 @@ def get_trakt_trending_popular_lists(params):
 				info_tag = listitem.getVideoInfoTag()
 				info_tag.setPlot(' ')
 				yield (url, listitem, True)
-			except: pass
+			except Exception: pass
 	handle = int(sys.argv[1])
 	try:
 		page = params.get('new_page', '1')
@@ -158,7 +158,7 @@ def get_trakt_trending_popular_lists(params):
 		add_items(handle, list(_process()))
 		add_dir({'mode': 'trakt.list.get_trakt_trending_popular_lists', 'list_type': 'trending', 'new_page': new_page},
 				'Next Page (%s) >>' % new_page, handle, 'nextpage', nextpage_landscape)
-	except: pass
+	except Exception: pass
 	set_content(handle, 'files')
 	set_category(handle, params.get('category_name', 'Trakt Lists'))
 	end_directory(handle)
@@ -185,12 +185,12 @@ def get_trakt_lists_with_media(params):
 				info_tag = listitem.getVideoInfoTag()
 				info_tag.setPlot(' ')
 				yield (url, listitem, True)
-			except: pass
+			except Exception: pass
 	handle = int(sys.argv[1])
 	try:
 		lists = trakt_lists_with_media(params['media_type'], params['imdb_id'])
 		add_items(handle, list(_process()))
-	except: pass
+	except Exception: pass
 	set_content(handle, 'files')
 	set_category(handle, params.get('category_name', 'Trakt Lists'))
 	end_directory(handle)
@@ -248,7 +248,7 @@ def build_trakt_list(params):
 			new_params = {'mode': 'trakt.list.build_trakt_list', 'list_type': list_type, 'list_name': list_name,
 							'user': user, 'slug': slug, 'paginate_start': paginate_start, 'new_page': new_page}
 			add_dir(new_params, 'Next Page (%s) >>' % new_page, handle, 'nextpage', nextpage_landscape)
-	except: pass
+	except Exception: pass
 	set_content(handle, content)
 	set_category(handle, list_name)
 	end_directory(handle, cacheToDisc=False if is_external else True)

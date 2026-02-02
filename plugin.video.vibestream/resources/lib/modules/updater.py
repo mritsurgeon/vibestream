@@ -55,7 +55,7 @@ def get_versions():
 		online_version = result.text.replace('\n', '')
 		current_version = addon_version()
 		return current_version, online_version
-	except: return None, None
+	except Exception: return None, None
 
 def get_changes(online_version=None):
 	try:
@@ -68,7 +68,7 @@ def get_changes(online_version=None):
 		if result.status_code != 200: return notification(error_str, icon=downloads_icon)
 		changes = result.text
 		return show_text(changes_heading_str % online_version, text=changes, font_size='large')
-	except:
+	except Exception:
 		hide_busy_dialog()
 		return notification(error_str, icon=downloads_icon)
 

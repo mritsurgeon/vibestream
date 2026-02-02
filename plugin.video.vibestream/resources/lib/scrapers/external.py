@@ -59,11 +59,11 @@ class source:
 				'debrid_service': self.debrid_service, 'debrid_token': self.debrid_token}
 			else:
 				try: self.season_divider = [int(x['episode_count']) for x in self.meta['season_data'] if int(x['season_number']) == int(self.meta['season'])][0]
-				except: self.season_divider = 1
+				except Exception: self.season_divider = 1
 				self.show_divider = int(self.meta['total_aired_eps'])
 				self.data = {'imdb': info['imdb_id'], 'tvdb': info['tvdb_id'], 'tvshowtitle': self.title, 'aliases': aliases,'year': self.year,
 							'title': ep_name, 'season': str(self.season), 'episode': str(self.episode), 'debrid_service': self.debrid_service, 'debrid_token': self.debrid_token}
-		except: return []
+		except Exception: return []
 		return self.get_sources()
 
 	def get_sources(self):
@@ -83,7 +83,7 @@ class source:
 						if len_alive_threads == 0 or percent >= 100: break
 					elif percent >= 100: break
 					sleep(self.sleep_time)
-				except: pass
+				except Exception: pass
 			return
 		def _background():
 			sleep(1500)
@@ -128,7 +128,7 @@ class source:
 		for i in self.source_dict:
 			provider, module = i[0], i[1]
 			try: pack_arg = i[2]
-			except: pack_arg = ''
+			except Exception: pack_arg = ''
 			if pack_arg: provider_display = pack_display % (i[0], i[2])
 			else: provider_display = provider
 			threaded_object = Thread(target=self.get_episode_source, args=(provider, module, pack_arg), name=provider_display)
@@ -188,7 +188,7 @@ class source:
 								unique_hashes_add(provider['hash'])
 								yield provider
 						else: yield provider
-				except: yield provider
+				except Exception: yield provider
 		def _process_cache_check(provider, function):
 			cached = function(hash_list, cached_hashes)
 			if not self.background: self.process_quality_count_final([i for i in results if i['hash'] in cached])
@@ -206,7 +206,7 @@ class source:
 					sleep(self.sleep_time)
 					if len(remaining_debrids) == 0: break
 					if percent >= 100: break
-				except: pass
+				except Exception: pass
 		try:
 			if not self.background and self.all_internal_sources: self.process_quality_count_final(self.all_internal_sources)
 			final_results = []
@@ -218,7 +218,7 @@ class source:
 			if self.background: [i.join() for i in debrid_check_threads]
 			else: _debrid_check_dialog()
 			return final_results
-		except: return []
+		except Exception: return []
 
 	def process_sources(self, provider, sources):
 		try:
@@ -239,11 +239,11 @@ class source:
 							else: divider = self.show_divider
 							size = float(size) / divider
 						size_label = '%.2f GB' % size
-					except: pass
+					except Exception: pass
 					i.update({'provider': provider, 'display_name': display_name, 'external': True, 'scrape_provider': self.scrape_provider, 'extraInfo': extraInfo,
 							'quality': quality, 'size_label': size_label, 'size': round(size, 2)})
-				except: pass
-		except: pass
+				except Exception: pass
+		except Exception: pass
 		return sources
 
 	def process_quality_count(self, sources):
@@ -261,7 +261,7 @@ class source:
 			win_property = get_property(int_window_prop % i)
 			if win_property in ('checked', '', None): continue
 			try: internal_sources = json.loads(win_property)
-			except: continue
+			except Exception: continue
 			set_property(int_window_prop % i, 'checked')
 			self.all_internal_sources += internal_sources
 			self.processed_internal_scrapers_append(i)

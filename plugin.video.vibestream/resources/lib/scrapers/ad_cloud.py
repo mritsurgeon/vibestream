@@ -40,7 +40,7 @@ class source:
 									'extraInfo': details, 'url_dl': file_dl, 'id': file_dl, 'downloads': False, 'direct': True, 'source': self.scrape_provider,
 									'scrape_provider': self.scrape_provider}
 						yield source_item
-					except: pass
+					except Exception: pass
 			self.sources = list(_process())
 		except Exception as e:
 			from modules.kodi_utils import logger
@@ -53,7 +53,7 @@ class source:
 			try:
 				my_cloud_files = AllDebrid.user_cloud()['magnets']
 				my_cloud_files = [i for i in my_cloud_files if i['statusCode'] == 4]
-			except: return self.sources
+			except Exception: return self.sources
 			threads = []
 			results_append = self.folder_results.append
 			append = threads.append
@@ -70,7 +70,7 @@ class source:
 			for i in self.folder_results: append(Thread(target=self._scrape_folders, args=(i,)))
 			[i.start() for i in threads]
 			[i.join() for i in threads]
-		except: pass
+		except Exception: pass
 
 	def _scrape_folders(self, folder_info):
 		try:
@@ -81,7 +81,7 @@ class source:
 				normalized = normalize(item['filename'])
 				if self.media_type == 'episode' and not seas_ep_filter(self.season, self.episode, normalized): continue
 				append(item)
-		except: return
+		except Exception: return
 
 	def _year_query_list(self):
 		return (str(self.year), str(self.year+1), str(self.year-1))

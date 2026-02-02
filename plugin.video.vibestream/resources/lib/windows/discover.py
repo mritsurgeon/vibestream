@@ -39,7 +39,7 @@ class Discover(BaseDialog):
 				self.list_item = self.get_listitem(filter_list_id)
 				self.chosen_item = discover_items[self.list_item.getProperty('key')]
 				if self.selection_action():
-					exec('self.%s()' % self.chosen_item['action'])
+					getattr(self, self.chosen_item['action'])()
 					active_attributes = self.get_active_attributes()
 					if active_attributes:
 						self.make_url(active_attributes)
@@ -47,7 +47,7 @@ class Discover(BaseDialog):
 						self.set_attributes_status('true')
 					else: self.set_attributes_status('false')
 				self.chosen_item = None
-			except:
+			except Exception:
 				self.chosen_item = None
 				return
 		elif controlID in button_ids:
@@ -75,9 +75,9 @@ class Discover(BaseDialog):
 				listitem = self.make_listitem()
 				listitem.setProperty('label1', values['label'])
 				try: listitem.setProperty('label2', self.get_attribute(self, values['display_key']))
-				except: pass
+				except Exception: pass
 				try: listitem.setProperty('icon', get_icon(values['icon']))
-				except: listitem.setProperty('icon', get_icon('discover'))
+				except Exception: listitem.setProperty('icon', get_icon('discover'))
 				listitem.setProperty('key', key)
 				yield listitem
 		self.add_items(filter_list_id, list(builder()))
@@ -101,7 +101,7 @@ class Discover(BaseDialog):
 		keyword = kodi_dialog().input(self.chosen_item['label'])
 		if not keyword: return
 		try: result = tmdb_api.tmdb_keywords_by_query(keyword, 1)['results']
-		except: result = None
+		except Exception: result = None
 		if not result: return ok_dialog()
 		choice = self.multiselect_dialog(self.chosen_item['label'], [{'name': i['name']} for i in result], result)
 		if choice != None:
@@ -141,7 +141,7 @@ class Discover(BaseDialog):
 		search_name = kodi_dialog().input(self.chosen_item['label'])
 		if not search_name: return
 		try: result = tmdb_api.tmdb_people_info(search_name)['results']
-		except: result = None
+		except Exception: result = None
 		if not result: return ok_dialog()
 		actor_list = []
 		append = actor_list.append
@@ -234,7 +234,7 @@ class Discover(BaseDialog):
 		if status == 'true':
 			self.setProperty('list_label', self.label)
 			try: self.setProperty('url_label', self.url.split('=en&')[1])
-			except: pass
+			except Exception: pass
 
 	def set_starting_constants(self, kwargs):
 		self.chosen_item, self.list_item, self.media_type, self.active_attributes, self.label, self.url = None, None, kwargs['media_type'], [], '', ''

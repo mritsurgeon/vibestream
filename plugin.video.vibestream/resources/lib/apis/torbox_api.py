@@ -91,13 +91,13 @@ class TorBoxAPI:
 		torrent_id, file_id = file_id.split(',')
 		data = {'token': self.token, 'torrent_id': torrent_id, 'file_id': file_id}
 		try: return self._get(download, data=data)['data']
-		except: return None
+		except Exception: return None
 
 	def unrestrict_usenet(self, file_id):
 		usenet_id, file_id = file_id.split(',')
 		params = {'token': self.token, 'usenet_id': usenet_id, 'file_id': file_id, 'user_ip': True}
 		try: return self._get(download_usenet, params=params)['data']
-		except: return None
+		except Exception: return None
 
 	def add_magnet(self, magnet):
 		data = {'magnet': magnet, 'seed': 3, 'allow_zip': False}
@@ -138,7 +138,7 @@ class TorBoxAPI:
 			file_url = self.unrestrict_link(file_key)
 			if not store_to_cloud: Thread(target=self.delete_torrent, args=(torrent_id,)).start()
 			return file_url
-		except:
+		except Exception:
 			if torrent_id: self.delete_torrent(torrent_id)
 			return None
 
@@ -174,7 +174,7 @@ class TorBoxAPI:
 			set_setting('tb.token', api_key)
 			set_setting('tb.enabled', 'true')
 			message = 'Success'
-		except: message = 'An Error Occurred'
+		except Exception: message = 'An Error Occurred'
 		ok_dialog(text=message)
 
 	def revoke(self):
@@ -193,15 +193,15 @@ class TorBoxAPI:
 				dbcon.execute("""DELETE FROM maincache WHERE id=?""", ('tb_user_cloud',))
 				dbcon.execute("""DELETE FROM maincache WHERE id LIKE ?""", ('tb_user_cloud%',))
 				user_cloud_success = True
-			except: user_cloud_success = False
+			except Exception: user_cloud_success = False
 			# HASH CACHED STATUS
 			if clear_hashes:
 				try:
 					debrid_cache.clear_debrid_results('tb')
 					hash_cache_status_success = True
-				except: hash_cache_status_success = False
+				except Exception: hash_cache_status_success = False
 			else: hash_cache_status_success = True
-		except: return False
+		except Exception: return False
 		if False in (user_cloud_success, hash_cache_status_success): return False
 		return True
 

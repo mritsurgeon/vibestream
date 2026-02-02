@@ -33,10 +33,10 @@ def build_season_list(params):
 				poster = tmdb_poster % poster_path if poster_path is not None else show_poster
 				thumb = poster or show_landscape or show_fanart
 				try: year = air_date.split('-')[0]
-				except: year = show_year or '2050'
+				except Exception: year = show_year or '2050'
 				plot = overview or show_plot
 				try: premiered = adjust_premiered_date(air_date, adjust_hours)[1]
-				except: premiered = ''
+				except Exception: premiered = ''
 				unaired = aired_eps == 0
 				if unaired or season_special:
 					progress, playcount, total_watched, total_unwatched = 0, 0, 0, aired_eps
@@ -80,7 +80,7 @@ def build_season_list(params):
 								'icon': show_landscape, 'tvshow.poster': poster, 'tvshow.clearlogo': show_clearlogo})
 				listitem.addContextMenuItems(cm)
 				yield (url_params, listitem, True)
-			except: pass
+			except Exception: pass
 	try:
 		handle, is_external, is_home, category_name = int(sys.argv[1]), external(), home(), 'Season'
 		watched_indicators, adjust_hours, hide_watched = watched_indicators_info(), date_offset_info(), is_home and widget_hide_watched()

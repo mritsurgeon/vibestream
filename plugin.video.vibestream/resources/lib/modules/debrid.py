@@ -60,9 +60,9 @@ def PM_check(hash_list, cached_hashes):
 						if results[c] is True:
 							cached_append(h)
 							cached = 'True'
-					except: pass
+					except Exception: pass
 					process_append((h, cached))
-			except:
+			except Exception:
 				for i in unchecked_hashes: process_append((i, 'False'))
 			add_to_local_cache(process_list, 'pm')
 	return cached_hashes
@@ -83,7 +83,7 @@ def OC_check(hash_list, cached_hashes):
 						cached_append(h)
 						cached = 'True'
 					process_append((h, cached))
-			except:
+			except Exception:
 				for i in unchecked_hashes: process_append((i, 'False'))
 			add_to_local_cache(process_list, 'oc')
 	return cached_hashes
@@ -104,7 +104,7 @@ def ED_check(hash_list, cached_hashes):
 						cached_append(h)
 						cached = 'True'
 					process_append((h, cached))
-			except:
+			except Exception:
 				for i in unchecked_hashes: process_append((i, 'False'))
 			add_to_local_cache(process_list, 'ed')
 	return cached_hashes
@@ -125,7 +125,7 @@ def TB_check(hash_list, cached_hashes):
 						cached_append(h)
 						cached = 'True'
 					process_append((h, cached))
-			except:
+			except Exception:
 				for i in unchecked_hashes: process_append((i, 'False'))
 			add_to_local_cache(process_list, 'tb')
 	return cached_hashes

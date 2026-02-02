@@ -37,7 +37,7 @@ class source:
 									'extraInfo': details, 'url_dl': file_dl, 'id': file_dl, 'downloads': False, 'direct': True, 'source': self.scrape_provider,
 									'scrape_provider': self.scrape_provider}
 						yield source_item
-					except: pass
+					except Exception: pass
 			self.sources = list(_process())
 		except Exception as e:
 			from modules.kodi_utils import logger
@@ -50,7 +50,7 @@ class source:
 			cloud_files = Premiumize.user_cloud_all()['files']
 			cloud_files = [i for i in cloud_files if i['path'].lower().endswith(tuple(extensions))]
 			cloud_files.sort(key=lambda k: k['name'])
-		except: return self.sources
+		except Exception: return self.sources
 		append = self.scrape_results.append
 		year_query_list = self._year_query_list()
 		for item in cloud_files:

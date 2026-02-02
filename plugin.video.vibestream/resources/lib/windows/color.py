@@ -48,7 +48,7 @@ class SelectColor(BaseDialog):
 					listitem = self.make_listitem()
 					listitem.setProperty('highlight', item)
 					yield listitem
-				except: pass
+				except Exception: pass
 		self.item_list = list(builder())
 
 	def color_input(self):

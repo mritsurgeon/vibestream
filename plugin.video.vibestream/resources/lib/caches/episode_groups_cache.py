@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 from caches.base_cache import connect_database
 # from modules.kodi_utils import logger
 
@@ -12,12 +13,12 @@ class EpisodeGroupsCache:
 	def get(self, tmdb_id):
 		try:
 			row = connect_database('episode_groups_db').execute(GET, (string(tmdb_id),)).fetchone()
-			data = eval(row[0]) if row is not None else {}
-		except: data = {}
+			data = json.loads(row[0]) if row is not None else {}
+		except Exception: data = {}
 		return data
 
 	def set(self, tmdb_id, data):
-		connect_database('episode_groups_db').execute(SET, (string(tmdb_id), repr(data)))
+		connect_database('episode_groups_db').execute(SET, (string(tmdb_id), json.dumps(data)))
 
 	def delete(self, tmdb_id):
 		dbcon = connect_database('episode_groups_db')

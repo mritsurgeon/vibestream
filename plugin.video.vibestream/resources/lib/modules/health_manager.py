@@ -31,7 +31,7 @@ class HosterHealthManager:
                           (hoster_name, event_type, latency, int(time.time())))
             dbcon.commit()
             dbcon.close()
-        except: pass
+        except Exception: pass
 
     def get_health_score(self, hoster_name):
         """
@@ -60,7 +60,7 @@ class HosterHealthManager:
             # Basic penalty for frequent failures
             # We skip latency factor for now to keep it simple
             return success_rate
-        except:
+        except Exception:
             return 1.0
 
     def cleanup_old_events(self):
@@ -70,6 +70,6 @@ class HosterHealthManager:
             dbcon.execute("DELETE FROM hoster_events WHERE timestamp < ?", (cutoff,))
             dbcon.commit()
             dbcon.close()
-        except: pass
+        except Exception: pass
 
 health_manager = HosterHealthManager()

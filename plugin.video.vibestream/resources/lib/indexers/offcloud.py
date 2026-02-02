@@ -40,7 +40,7 @@ def oc_cloud():
 				listitem.addContextMenuItems(cm)
 				listitem.setArt({'icon': default_oc_icon, 'poster': default_oc_icon, 'thumb': default_oc_icon, 'fanart': fanart, 'banner': default_oc_icon})
 				yield (url, listitem, is_folder)
-			except: pass
+			except Exception: pass
 	cloud_folders = Offcloud.user_cloud()
 	folders = [i for i in cloud_folders if i['status'] == 'downloaded']
 	handle = int(sys.argv[1])
@@ -68,7 +68,7 @@ def browse_oc_cloud(folder_id):
 				listitem.setArt({'icon': default_oc_icon, 'poster': default_oc_icon, 'thumb': default_oc_icon, 'fanart': fanart, 'banner': default_oc_icon})
 				listitem.setInfo('video', {})
 				yield (url, listitem, False)
-			except: pass
+			except Exception: pass
 	torrent_files = Offcloud.user_cloud_info(folder_id)
 	video_files = [i for i in torrent_files if i.lower().endswith(tuple(extensions))]
 	handle = int(sys.argv[1])
@@ -103,5 +103,5 @@ def oc_account_info():
 		append('[B]Cloud Limit[/B]: {:,}'.format(account_info['limits']['cloud']))
 		hide_busy_dialog()
 		return show_text('OFFCLOUD', '\n\n'.join(body), font_size='large')
-	except: hide_busy_dialog()
+	except Exception: hide_busy_dialog()
 

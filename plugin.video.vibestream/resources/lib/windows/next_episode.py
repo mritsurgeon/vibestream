@@ -71,6 +71,6 @@ class NextEpisode(BaseDialog):
 					pause_timer = time.strftime('%M:%S', time.gmtime(max(end_time - current_time, 0)))
 					self.setProperty('pause_timer', pause_timer)
 					self.sleep(1000)
-				except: break
+				except Exception: break
 			if self.selected != 'cancel': self.player.pause()
 		self.close()

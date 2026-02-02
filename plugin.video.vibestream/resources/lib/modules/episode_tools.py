@@ -51,7 +51,7 @@ class EpisodeTools:
 			if play_type == 'autoscrape_nextep': url_params['prescrape'] = 'false'
 			if custom_title: url_params['custom_title'] = custom_title
 			if 'custom_year' in self.meta: url_params['custom_year'] = self.meta_get('custom_year')
-		except: url_params = 'error'
+		except Exception: url_params = 'error'
 		return url_params
 
 	def get_random_episode(self, continual=False, first_run=True):
@@ -66,7 +66,7 @@ class EpisodeTools:
 					episode_history = json.loads(get_property(window_prop))
 					if tmdb_key in episode_history: episode_list = episode_history[tmdb_key]
 					else: set_property(window_prop, '')
-				except: set_property(window_prop, '')
+				except Exception: set_property(window_prop, '')
 				episodes_data = [i for i in episodes_data if not i in episode_list]
 				if not episodes_data:
 					set_property(window_prop, '')
@@ -82,7 +82,7 @@ class EpisodeTools:
 			ep_name, plot = chosen_episode['title'], chosen_episode['plot']
 			ep_thumb = chosen_episode.get('thumb', None)
 			try: premiered = adjust_premiered_date(chosen_episode['premiered'], adjust_hours)[1]
-			except: premiered = chosen_episode['premiered']
+			except Exception: premiered = chosen_episode['premiered']
 			self.meta.update({'media_type': 'episode', 'rootname': display_name, 'season': season, 'ep_name': ep_name, 'ep_thumb': ep_thumb,
 							'episode': episode, 'premiered': premiered, 'plot': plot})
 			url_params = {'mode': 'playback.media', 'media_type': 'episode', 'tmdb_id': tmdb_id, 'tvshowtitle': self.meta_get('rootname'), 'season': season, 'episode': episode,
@@ -92,7 +92,7 @@ class EpisodeTools:
 			if not first_run:
 				url_params['background'] = 'true'
 				url_params['play_type'] = 'random_continual'
-		except: url_params = 'error'
+		except Exception: url_params = 'error'
 		return url_params
 
 	def play_random(self):
@@ -125,7 +125,7 @@ def build_next_episode_manager():
 			info_tag = listitem.getVideoInfoTag()
 			info_tag.setPlot(' ')
 			append({'listitem': (url, listitem, False), 'sort_title': title})
-		except: pass
+		except Exception: pass
 	handle = int(sys.argv[1])
 	list_items = []
 	append = list_items.append

@@ -50,7 +50,7 @@ class OMDbAPI:
 			response_test = dict(mdParse(result).getElementsByTagName('root')[0].attributes.items())
 			if not response_test.get('response', 'False') == 'True': return None
 			return dict(mdParse(result).getElementsByTagName('movie')[0].attributes.items())
-		except: return None
+		except Exception: return None
 
 	def process_rating(self, rating_name):
 		return self.result_get(rating_name, '').replace('N/A', '')

@@ -44,7 +44,7 @@ class source:
 									'extraInfo': details, 'url_dl': file_dl, 'id': file_dl, 'downloads': False, 'direct': True, 'source': self.scrape_provider,
 									'scrape_provider': self.scrape_provider, 'direct_debrid_link': direct_debrid_link}
 						yield source_item
-					except: pass
+					except Exception: pass
 			self.sources = list(_process())
 		except Exception as e:
 			from modules.kodi_utils import logger
@@ -57,7 +57,7 @@ class source:
 			append = self.scrape_results.append
 			year_query_list = self._year_query_list()
 			try: my_cloud_files = TorBox.user_cloud()
-			except: return self.sources
+			except Exception: return self.sources
 			for item in my_cloud_files['data']:
 				if not item['download_finished']: continue
 				if not self.folder_query in clean_title(normalize(item['name'])): continue
@@ -71,14 +71,14 @@ class source:
 					elif not seas_ep_filter(self.season, self.episode, normalized): continue
 					file['folder_id'] = folder_id
 					append(file)
-		except: return
+		except Exception: return
 
 	def _scrape_cloud_usenet(self):
 		try:
 			append = self.scrape_results.append
 			year_query_list = self._year_query_list()
 			try: my_cloud_files_usenet = TorBox.user_cloud_usenet()
-			except: return self.sources
+			except Exception: return self.sources
 			for item in my_cloud_files_usenet['data']:
 				if not item['download_finished']: continue
 				if not self.folder_query in clean_title(normalize(item['name'])): continue
@@ -93,7 +93,7 @@ class source:
 					file['folder_id'] = folder_id
 					file['direct_debrid_link'] = True
 					append(file)
-		except: return
+		except Exception: return
 
 	def _year_query_list(self):
 		return (str(self.year), str(self.year+1), str(self.year-1))

@@ -35,9 +35,9 @@ def ad_cloud(folder_id=None):
 				info_tag = listitem.getVideoInfoTag()
 				info_tag.setPlot(' ')
 				yield (url, listitem, True)
-			except: pass
+			except Exception: pass
 	try: cloud_dict = [i for i in AllDebrid.user_cloud()['magnets'] if i['statusCode'] == 4]
-	except: cloud_dict = []
+	except Exception: cloud_dict = []
 	handle = int(sys.argv[1])
 	add_items(handle, list(_builder()))
 	set_content(handle, 'files')
@@ -65,9 +65,9 @@ def browse_ad_cloud(folder):
 				info_tag = listitem.getVideoInfoTag()
 				info_tag.setPlot(' ')
 				yield (url, listitem, False)
-			except: pass
+			except Exception: pass
 	try: links = [i for i in json.loads(folder) if i['filename'].lower().endswith(tuple(extensions))]
-	except: links = []
+	except Exception: links = []
 	handle = int(sys.argv[1])
 	add_items(handle, list(_builder()))
 	set_content(handle, 'files')
@@ -106,13 +106,13 @@ def ad_account_info():
 		append('[B]Days Remaining:[/B] %s' % days_remaining)
 		hide_busy_dialog()
 		return show_text('ALL DEBRID', '\n\n'.join(body), font_size='large')
-	except: hide_busy_dialog()
+	except Exception: hide_busy_dialog()
 
 def active_days():
 	try:
 		account_info = AllDebrid.account_info()['user']
 		expires = datetime.fromtimestamp(account_info['premiumUntil'])
 		days_remaining = (expires - datetime.today()).days
-	except: days_remaining = 0
+	except Exception: days_remaining = 0
 	return days_remaining
 

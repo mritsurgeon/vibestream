@@ -26,7 +26,7 @@ class MenuEditor:
 			self.position = 0
 		self.action = params.get('action')
 		try: self.list_name = main_list_name_dict[self.active_list]
-		except: self.list_name = params.get('name')
+		except Exception: self.list_name = params.get('name')
 
 	def move(self):
 		list_items = navigator_cache.currently_used_list(self.active_list)
@@ -55,7 +55,7 @@ class MenuEditor:
 		list_type = 'edited' if edited else 'default'
 		current_list = edited or default
 		try: new_item = [i for i in default if str(i['name']) == str(self.name)][0]
-		except: return notification('No Results', 1500)
+		except Exception: return notification('No Results', 1500)
 		list_items = [i for i in current_list if str(i['name']) != str(self.name)]
 		pos = self.position if isinstance(self.position, int) and self.position >= 0 else 0
 		pos = min(pos, len(list_items))
@@ -83,7 +83,7 @@ class MenuEditor:
 	def browse(self):
 		list_name =  main_list_name_dict[self.active_list]
 		try: choice_items = self._get_removed_items()
-		except: return notification('No Results', 1500)
+		except Exception: return notification('No Results', 1500)
 		if not choice_items: return notification('No Results', 1500)
 		browse_item = self._menu_select(choice_items, list_name)
 		if browse_item is None or not isinstance(browse_item, int) or browse_item < 0 or browse_item >= len(choice_items): return
@@ -203,7 +203,7 @@ class MenuEditor:
 			try:
 				all_icons.remove(default_icon)
 				all_icons.insert(0, default_icon)
-			except: pass
+			except Exception: pass
 			list_items = [{'line1': i if i != default_icon else '%s (default)' % default_icon, 'icon': get_icon(i)} for i in all_icons]
 		else: list_items = [{'line1': i, 'icon': get_icon(i)} for i in all_icons]
 		kwargs = {'items': json.dumps(list_items), 'heading': 'Choose Icon'}
@@ -269,5 +269,5 @@ class MenuEditor:
 			icon_value = icon_value.replace('image://', '').replace('.png/', '').replace('.png', '')
 			icon_value = icon_value.split('/')[-1]
 			icon_var = [i[0] for i in all_icons if i[1] == icon_value][0]
-		except: icon_var = 'folder'
+		except Exception: icon_var = 'folder'
 		return icon_var

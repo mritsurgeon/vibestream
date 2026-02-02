@@ -36,9 +36,9 @@ def rd_cloud():
 				info_tag = listitem.getVideoInfoTag()
 				info_tag.setPlot(' ')
 				yield (url, listitem, True)
-			except: pass
+			except Exception: pass
 	try: cloud_files = [i for i in RealDebrid.user_cloud() if i['status'] == 'downloaded']
-	except: cloud_files = []
+	except Exception: cloud_files = []
 	handle = int(sys.argv[1])
 	add_items(handle, list(_builder()))
 	set_content(handle, 'files')
@@ -69,9 +69,9 @@ def rd_downloads():
 				info_tag = listitem.getVideoInfoTag()
 				info_tag.setPlot(' ')
 				yield (url, listitem, True)
-			except: pass
+			except Exception: pass
 	try: downloads = [i for i in RealDebrid.downloads() if i['download'].lower().endswith(tuple(extensions))]
-	except: downloads = []
+	except Exception: downloads = []
 	handle = int(sys.argv[1])
 	add_items(handle, list(_builder()))
 	set_content(handle, 'files')
@@ -99,7 +99,7 @@ def browse_rd_cloud(folder_id):
 				info_tag = listitem.getVideoInfoTag()
 				info_tag.setPlot(' ')
 				yield (url, listitem, False)
-			except: pass
+			except Exception: pass
 	handle = int(sys.argv[1])
 	cloud_files = RealDebrid.user_cloud_info(folder_id)
 	files = [i for i in cloud_files['files'] if i['selected'] == 1 and i['path'].lower().endswith(tuple(extensions))]
@@ -141,12 +141,12 @@ def rd_account_info():
 		append('[B]Fidelity Points:[/B] %s' % account_info['points'])
 		hide_busy_dialog()
 		return show_text('REAL DEBRID', '\n\n'.join(body), font_size='large')
-	except: hide_busy_dialog()
+	except Exception: hide_busy_dialog()
 
 def active_days():
 	try:
 		account_info = RealDebrid.account_info()
 		expires = datetime_workaround(account_info['expiration'], '%Y-%m-%dT%H:%M:%S.%fZ')
 		days_remaining = (expires - datetime.today()).days
-	except: days_remaining = 0
+	except Exception: days_remaining = 0
 	return days_remaining

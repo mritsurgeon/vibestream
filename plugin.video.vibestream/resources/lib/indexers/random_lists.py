@@ -52,7 +52,7 @@ def get_persistent_content(menu_type, key, remake_widgets, is_external):
 		menu_type_content = json.loads(get_property(memory_str % menu_type))
 		cached_content = menu_type_content.get(key)
 		return cached_content, False
-	except:
+	except Exception:
 		clear_property(memory_str % menu_type)
 		return None, True
 
@@ -61,7 +61,7 @@ def set_persistent_content(menu_type, key, data):
 	while get_property(memory_str % 'making_persistent_random_dict') == 'true': sleep(10)
 	set_property(memory_str % 'making_persistent_random_dict', 'true')
 	try: menu_type_content = json.loads(get_property(memory_str % menu_type))
-	except: menu_type_content = {}
+	except Exception: menu_type_content = {}
 	menu_type_content[key] = data
 	set_property(memory_str % menu_type, json.dumps(menu_type_content))
 	clear_property(memory_str % 'making_persistent_random_dict')
@@ -157,7 +157,7 @@ class RandomLists():
 			random_list = random.sample(self.random_results, min(len(self.random_results), 20))
 			if cache_to_memory: set_persistent_content('random_trakt_main', self.action, random_list)
 		try: self.params['list'] = [i[list_key]['ids'] for i in random_list]
-		except: self.params['list'] = [i['ids'] for i in random_list]
+		except Exception: self.params['list'] = [i['ids'] for i in random_list]
 		self.params['id_type'] = 'trakt_dict'
 		self.list_items = self.function(self.params).worker()
 		self.category_name = self.params_get('category_name', None) or self.base_list_name or ''
@@ -245,7 +245,7 @@ class RandomLists():
 			self.list_items = self.function(self.params).worker()
 			self.category_name =  list_name
 			self.make_directory()
-		except: clear_property(memory_str % 'random_because_you_watched')
+		except Exception: clear_property(memory_str % 'random_because_you_watched')
 
 	def make_directory(self, next_page_params={}):
 		add_items(self.handle, self.list_items)

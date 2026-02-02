@@ -56,6 +56,6 @@ class PlaybackWatchdog(xbmc.Player):
                              self.observer.on_playback_failed(reason='buffering')
                          break # Stop monitoring, let observer handle logic
                          
-                 except: pass
+                 except Exception: pass
             sleep(1000)
         logger('Watchdog', 'Monitoring Stopped')

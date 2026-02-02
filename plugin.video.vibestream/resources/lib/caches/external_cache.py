@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 from caches.base_cache import connect_database, get_timestamp
 # from modules.kodi_utils import logger
 
@@ -15,35 +16,35 @@ class ExternalCache(object):
 		try:
 			cache_data = self._execute(SELECT_RESULTS, (source, media_type, tmdb_id, title, year, season, episode)).fetchone()
 			if cache_data:
-				if cache_data[1] > get_timestamp(): result = eval(cache_data[0])
+				if cache_data[1] > get_timestamp(): result = json.loads(cache_data[0])
 				else: self.delete(source, media_type, title, year, tmdb_id, season, episode)
-		except: pass
+		except Exception: pass
 		return result
 
 	def set(self, source, media_type, tmdb_id, title, year, season, episode, results, expire_time):
 		try:
 			expires = get_timestamp(expire_time)
-			self._execute(INSERT_RESULTS, (source, media_type, tmdb_id, title, year, season, episode, repr(results or []), int(expires)))
-		except: pass
+			self._execute(INSERT_RESULTS, (source, media_type, tmdb_id, title, year, season, episode, json.dumps(results or []), int(expires)))
+		except Exception: pass
 
 	def delete(self, source, media_type, tmdb_id, title, season, episode):
 		try:
 			self._execute(DELETE_RESULTS, (source, media_type, tmdb_id, title, season, episode))
-		except: return
+		except Exception: return
 
 	def delete_cache_single(self, media_type, tmdb_id):
 		try:
 			self._execute(SINGLE_DELETE, (media_type, tmdb_id))
 			self._vacuum()
 			return True
-		except: return False
+		except Exception: return False
 
 	def clear_cache(self):
 		try:
 			self._execute(FULL_DELETE, ())
 			self._vacuum()
 			return True
-		except: return False
+		except Exception: return False
 
 	def _execute(self, command, params):
 		self.dbcon = connect_database('external_db')
@@ -56,7 +57,7 @@ class ExternalCache(object):
 			dbcon.close()
 			self._vacuum()
 			return True
-		except: return False
+		except Exception: return False
 
 	def _vacuum(self):
 		dbcon = connect_database('external_db')

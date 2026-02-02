@@ -65,7 +65,7 @@ class Select(BaseDialog):
 				for index in item_list_indexes: self.item_list[index].setProperty('check_status', status)
 				self.setProperty('select_button', select_property)
 				try: self.setFocusId(ok_id)
-				except: pass
+				except Exception: pass
 		else: self.control_id = controlID
 
 	def onAction(self, action):
