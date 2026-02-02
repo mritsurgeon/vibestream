@@ -203,33 +203,7 @@
                             </control>
                         </control>
                     </focusedlayout>
-                </control>
-                            <control type="group">
-                                <visible>!String.IsEmpty(ListItem.Property(perform_full_search))</visible>
-                                <control type="image">
-                                    <height>70</height>
-                                    <width>70</width>
-                                    <top>35</top>
-                                    <left>60</left>
-                                    <align>left</align>
-                                    <aligny>top</aligny>
-                                    <texture colordiffuse="FF1F2020">vibestream_common/info.png</texture>
-                                </control>
-                                <control type="label">
-                                    <top>50</top>
-                                    <left>210</left>
-                                    <width max="860">auto</width>
-                                    <height>40</height>
-                                    <font>font14</font> <!-- FENLIGHT_33 -->
-                                    <textcolor>FF1F2020</textcolor>
-                                    <align>center</align>
-                                    <aligny>center</aligny>
-                                    <label>[B]***START FULL SCRAPE***[/B]</label>
-                                </control>
-                            </control>
-                        </control>
-                    </focusedlayout>
-                </control>
+                </control> <!-- End of fixedlist 2000 -->
                 <control type="image">
                     <left>0</left>
                     <top>0</top>

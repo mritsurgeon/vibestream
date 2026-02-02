@@ -10,8 +10,12 @@ class CocoScrapersAdapter(ScraperInterface):
     def _get_provider(self):
         if self._provider_class: return self._provider_class
         try:
-            from cocoscrapers import sources
-            self._provider_class = sources.sources()
+            from cocoscrapers import sources as coco_sources
+            # sources is a module, not a function - we need to get the sources class from it
+            if hasattr(coco_sources, 'sources'):
+                self._provider_class = coco_sources.sources()
+            else:
+                kodi_utils.logger('CocoScrapers', 'sources module has no sources class')
         except ImportError:
             kodi_utils.logger('CocoScrapers', 'Failed to import cocoscrapers module')
         except Exception as e:
