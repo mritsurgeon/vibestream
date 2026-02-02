@@ -37,8 +37,10 @@ def generate_repo():
                 repo_zips.append(os.path.join(root, f))
     
     links_html = ""
-    for f in sorted(repo_zips):
-        links_html += f'<li><a href="{f}">{f}</a></li>\n'
+    if repo_zips:
+        # Sort and take the latest one
+        latest_repo = sorted(repo_zips)[-1]
+        links_html += f'<li><a href="{latest_repo}">{latest_repo}</a></li>\n'
     links_html += '<li><a href="addons.xml">addons.xml</a></li>\n'
     links_html += '<li><a href="addons.xml.md5">addons.xml.md5</a></li>\n'
     
