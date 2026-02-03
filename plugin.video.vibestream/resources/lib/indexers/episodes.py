@@ -28,7 +28,7 @@ run_plugin, unaired_label, tmdb_poster = 'RunPlugin(%s)', '[COLOR red][I]%s[/I][
 upper = string.upper
 content_type = 'episodes'
 list_view, single_view = 'view.episodes', 'view.episodes_single'
-category_name_dict = {'episode.progress': 'In Progress Episodes', 'episode.recently_watched': 'Recently Watched Episodes', 'episode.next': 'Next Episodes',
+category_name_dict = {'episode.progress': 'In Progress Episodes', 'episode.recently_watched': 'Recently Watched Episodes', 'episode.next': 'Your Latest Episodes',
 					'episode.trakt': {'true': 'Recently Aired Episodes', None: 'Trakt Calendar'}, 'episode.new_trakt': 'Your New Episodes'}
 
 def build_episode_list(params):
@@ -313,7 +313,7 @@ def build_single_episode(list_type, params={}):
 	elif list_type == 'episode.recently_watched': data = get_recently_watched('episode')
 	elif list_type == 'episode.trakt':
 		recently_aired = params.get('recently_aired', None)
-		data = trakt_get_my_calendar(recently_aired, get_datetime())
+		data = trakt_get_my_calendar(recently_aired, get_datetime()) or []
 		list_type = 'episode.trakt_recently_aired' if recently_aired else 'episode.trakt_calendar'
 		if flatten_episodes():
 			try:
