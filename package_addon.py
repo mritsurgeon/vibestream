@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import os
+import shutil
 import zipfile
 import xml.etree.ElementTree as ET
 
@@ -38,6 +39,14 @@ def create_package(addon_dir):
                 rel_path = os.path.relpath(abs_path, os.path.join(addon_dir, ".."))
                 zipf.write(abs_path, rel_path)
     print(f"  Saved: {full_output_path}")
+
+    # Copy icon.png and fanart.png to packages folder (Kodi addon browser 404 fix)
+    for asset in ('icon.png', 'fanart.png'):
+        src = os.path.join(addon_dir, asset)
+        if os.path.exists(src):
+            dst = os.path.join(addon_output_dir, asset)
+            shutil.copy2(src, dst)
+            print(f"  Copied: {asset}")
 
 if __name__ == "__main__":
     for item in os.listdir('.'):

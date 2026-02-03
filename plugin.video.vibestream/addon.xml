@@ -1,4 +1,4 @@
-<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta3">
+<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta4">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
@@ -19,6 +19,6 @@
             <icon>icon.png</icon>
             <fanart>fanart.png</fanart>
         </assets>
-        <news>VibeStream 1.1.0-beta3 - Your New Episodes, Calendar View fixes, build_new_trakt_episodes fix.</news>
+        <news>VibeStream 1.1.0-beta4 - Calendar fixes: loading spinner, navigation, TODAY display, contrast, icon/fanart 404.</news>
     </extension>
 </addon>

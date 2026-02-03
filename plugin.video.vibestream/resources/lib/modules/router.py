@@ -71,14 +71,15 @@ def routing(sys):
 			if _get('recently_aired'):
 				from indexers.episodes import build_single_episode
 				return build_single_episode('episode.trakt', params)
-			# Use new calendar view window
+			# Populate directory first (fixes loading spinner), then open calendar on top
+			from indexers.episodes import build_single_episode
 			from apis.trakt_api import trakt_get_my_calendar
 			from modules.utils import get_datetime
+			build_single_episode('episode.trakt', params)  # Adds list items so Kodi gets a directory
 			calendar_data = trakt_get_my_calendar(None, get_datetime())
 			from windows.calendar_view import open_calendar_view
 			choice = open_calendar_view(calendar_data)
 			if choice and choice.get('mode') == 'playback.media':
-				# User selected an episode, play it
 				from modules.sources import Sources
 				return Sources().playback_prep(choice)
 		if mode == 'build_new_trakt_episodes':

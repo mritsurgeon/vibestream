@@ -92,9 +92,9 @@ class CalendarView(BaseDialog):
             is_today = day == self.current_date
             is_past = day < self.current_date
             
-            # Create display labels
+            # Create display labels (no [B] in property - XML adds it in focusedlayout; use darker teal for contrast)
             if is_today:
-                line1 = '[B][COLOR FF00D4AA]TODAY[/COLOR][/B]'
+                line1 = '[COLOR FF008B72]TODAY[/COLOR]'  # Darker teal for better visibility
                 line2 = '%s %d' % (month_name, day_num)
             else:
                 line1 = day_name
@@ -107,6 +107,7 @@ class CalendarView(BaseDialog):
             else:
                 line3 = '[COLOR FF666666]No episodes[/COLOR]'
             
+            item.setLabel(line1)  # Required for list display
             item.setProperty('line1', line1)
             item.setProperty('line2', line2)
             item.setProperty('line3', line3)
@@ -139,6 +140,7 @@ class CalendarView(BaseDialog):
         if not episodes:
             # Show "No episodes" placeholder
             item = self.make_listitem()
+            item.setLabel('No episodes airing')
             item.setProperty('line1', 'No episodes airing')
             item.setProperty('line2', 'Check back later')
             item.setProperty('is_placeholder', 'true')
@@ -161,6 +163,7 @@ class CalendarView(BaseDialog):
             line1 = title.split(' s')[0] if ' s' in title else title  # Get show title only
             line2 = 'S%02dE%02d' % (season, episode_num)
             
+            item.setLabel(line1)  # Required for list display
             item.setProperty('line1', line1)
             item.setProperty('line2', line2)
             item.setProperty('season', str(season))
