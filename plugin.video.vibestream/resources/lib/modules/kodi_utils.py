@@ -79,6 +79,19 @@ def get_addon_fanart():
 def build_url(url_params):
 	return 'plugin://plugin.video.vibestream/?%s' % urlencode(url_params)
 
+def debug_log(location, message, data=None, hypothesis_id=None):
+	"""Write debug entry to addon profile debug.log for troubleshooting."""
+	try:
+		import json
+		from time import time
+		path = translatePath(addon_info('profile')) + 'debug.log'
+		entry = {'location': location, 'message': message, 'data': data or {}, 'timestamp': int(time() * 1000), 'sessionId': 'debug-session', 'hypothesisId': hypothesis_id or 'A'}
+		f = File(path, 'a')
+		f.write(json.dumps(entry) + '\n')
+		f.close()
+	except Exception:
+		pass
+
 def add_dir(url_params, list_name, handle, iconImage='folder', fanartImage=None, isFolder=True):
 	fanart = fanartImage or get_addon_fanart()
 	icon = get_icon(iconImage)

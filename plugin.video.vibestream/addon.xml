@@ -1,4 +1,4 @@
-<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta12">
+<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta13">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
@@ -19,6 +19,6 @@
             <icon>icon.png</icon>
             <fanart>fanart.png</fanart>
         </assets>
-        <news>VibeStream 1.1.0-beta12 - Fix wizard stuck on loading after setup; safer URL parsing for plugin root.</news>
+        <news>VibeStream 1.1.0-beta13 - Debug instrumentation for troubleshooting; install, reproduce issue, share addon_data/.../debug.log</news>
     </extension>
 </addon>
