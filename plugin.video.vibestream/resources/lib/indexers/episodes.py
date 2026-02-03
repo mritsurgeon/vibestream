@@ -29,7 +29,7 @@ upper = string.upper
 content_type = 'episodes'
 list_view, single_view = 'view.episodes', 'view.episodes_single'
 category_name_dict = {'episode.progress': 'In Progress Episodes', 'episode.recently_watched': 'Recently Watched Episodes', 'episode.next': 'Your Latest Episodes',
-					'episode.trakt': {'true': 'Recently Aired Episodes', None: 'Trakt Calendar'}, 'episode.new_trakt': 'Your New Episodes'}
+					'episode.trakt': {'true': 'Recently Aired Episodes', None: 'Trakt Calendar'}, 'episode.new_trakt': 'All Unwatched'}
 
 def build_episode_list(params):
 	def _process():
@@ -301,7 +301,7 @@ def build_single_episode(list_type, params={}):
 		if include_unwatched != 0:
 			if include_unwatched in (1, 3):
 				try:
-					original_list = trakt_watchlist('watchlist', 'tvshow')
+					original_list = trakt_watchlist('tvshow', None)
 					unwatched.extend([{'media_ids': i['media_ids'], 'season': 1, 'episode': 0, 'unwatched': True, 'title': i['title']} for i in original_list])
 				except Exception: pass
 			if include_unwatched in (2, 3):
@@ -388,7 +388,7 @@ def build_new_trakt_episodes(params={}):
 	
 	# 1. Trakt Watchlist
 	try:
-		watchlist = trakt_watchlist('watchlist', 'tvshow') or []
+		watchlist = trakt_watchlist('tvshow', None) or []
 		for item in watchlist:
 			tmdb_id = item.get('media_ids', {}).get('tmdb')
 			if tmdb_id and tmdb_id not in tracked_shows:
@@ -404,7 +404,7 @@ def build_new_trakt_episodes(params={}):
 	
 	# 2. Trakt Collection
 	try:
-		collection = trakt_collection('collection', 'tvshow') or []
+		collection = trakt_collection('tvshow', None) or []
 		for item in collection:
 			tmdb_id = item.get('media_ids', {}).get('tmdb')
 			if tmdb_id and tmdb_id not in tracked_shows:

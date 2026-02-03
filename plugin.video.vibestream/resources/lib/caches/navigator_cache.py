@@ -48,7 +48,7 @@ movie_list = [
 			]
 
 tvshow_list = [
-{'name': 'Your New Episodes', 'mode': 'build_new_trakt_episodes', 'iconImage': 'next_episodes'},
+{'name': 'All Unwatched', 'mode': 'build_new_trakt_episodes', 'iconImage': 'next_episodes'},
 {'name': 'Continue Watching', 'mode': 'build_tvshow_list', 'action': 'in_progress_tvshows', 'iconImage': 'player'},
 {'name': 'Your Latest Episodes', 'mode': 'build_next_episode', 'iconImage': 'next_episodes'},
 {'name': 'Trending Recent / Latest', 'mode': 'build_tvshow_list', 'action': 'trakt_tv_trending_recent', 'random_support': 'true', 'iconImage': 'trending_recent'},

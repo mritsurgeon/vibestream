@@ -149,7 +149,7 @@ class Navigator:
 			self.add({'mode': 'trakt.list.get_trakt_lists', 'list_type': 'liked_lists', 'category_name': 'Liked Lists'}, 'Trakt Liked Lists', 'trakt')
 			self.add({'mode': 'navigator.trakt_favorites', 'category_name': 'Favorites'}, 'Trakt Favorites', 'trakt')
 			self.add({'mode': 'navigator.trakt_recommendations', 'category_name': 'Recommended'}, 'Trakt Recommended', 'trakt')
-			self.add({'mode': 'build_my_calendar', 'run_plugin': 'true'}, 'Trakt Calendar', 'trakt')
+			self.add({'mode': 'build_my_calendar'}, 'Trakt Calendar', 'trakt')
 		if s.tmdb_user_active():
 			self.add({'mode': 'tmdb.list.get_tmdb_lists', 'list_type': 'my_lists', 'category_name': 'My TMDB Lists'}, 'TMDB My Lists', 'tmdb')
 			
@@ -513,14 +513,11 @@ class Navigator:
 		self.end_directory()
 
 	def add(self, url_params, list_name, iconImage='folder', original_image=False, cm_items=[]):
-		run_plugin = url_params.get('run_plugin') == 'true'
-		isFolder = url_params.get('isFolder', 'true') == 'true' and not run_plugin
+		isFolder = url_params.get('isFolder', 'true') == 'true'
 		if original_image: icon = iconImage
 		else: icon = get_icon(iconImage)
 		url_params['iconImage'] = icon
 		url = build_url(url_params)
-		if run_plugin:
-			url = 'RunPlugin(%s)' % url
 		listitem = make_listitem()
 		listitem.setLabel(list_name)
 		listitem.setArt({'icon': icon, 'poster': icon, 'thumb': icon, 'fanart': fanart, 'banner': icon, 'landscape': icon})

@@ -435,7 +435,8 @@ def trakt_fetch_collection_watchlist(list_type, media_type):
 	collected_at = 'listed_at' if list_type == 'watchlist' else 'collected_at' if media_type in ('movie', 'movies') else 'last_collected_at'
 	string = 'trakt_%s_%s' % (list_type, string_insert)
 	path = 'sync/%s/%s?extended=full'
-	params = {'path': path, 'path_insert': (list_type, media_type), 'with_auth': True, 'pagination': True}
+	path_segment = 'movies' if media_type in ('movie', 'movies') else 'shows'  # Trakt API expects 'movies'/'shows' not 'movie'/'tvshow'
+	params = {'path': path, 'path_insert': (list_type, path_segment), 'with_auth': True, 'pagination': True}
 	return cache_trakt_object(_process, string, params)
 
 def add_to_list(user, slug, data):

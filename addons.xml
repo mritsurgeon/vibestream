@@ -43,7 +43,7 @@
 	</extension>
 </addon>
 
-<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta7">
+<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta8">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
@@ -64,7 +64,7 @@
             <icon>icon.png</icon>
             <fanart>fanart.png</fanart>
         </assets>
-        <news>VibeStream 1.1.0-beta7 - Fen removal: VibeStream icon in calendar/dialogs, FENLIGHT→VIBESTREAM, updater vibestream_version/changes.</news>
+        <news>VibeStream 1.1.0-beta8 - Trakt Calendar: Back once returns to parent menu (skips episode list).</news>
     </extension>
 </addon>
 </addons>
