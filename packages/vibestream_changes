@@ -1,3 +1,8 @@
+[COLOR dodgerblue][B]VibeStream 1.1.0-beta11[/B][/COLOR]
+- I Can't Decide: personalized recommendations for Movies and TV Shows
+- "Because you watched X" shown under each title (from your watch history)
+- Uses Trakt/local watch history + TMDB recommendations per seed
+
 [COLOR dodgerblue][B]VibeStream 1.1.0-beta10[/B][/COLOR]
 - Resume Watching: renamed from Continue Watching (Movies and TV)
 - Resume Watching TV: in-progress only filter (excludes fully watched shows)

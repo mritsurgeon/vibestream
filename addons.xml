@@ -43,7 +43,7 @@
 	</extension>
 </addon>
 
-<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta10">
+<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta11">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
@@ -64,7 +64,7 @@
             <icon>icon.png</icon>
             <fanart>fanart.png</fanart>
         </assets>
-        <news>VibeStream 1.1.0-beta10 - Resume Watching: renamed from Continue Watching, TV filter = in-progress only (not finished). Your Latest Episodes: calendar source, unwatched, last 7 days.</news>
+        <news>VibeStream 1.1.0-beta11 - I Can't Decide: personalized recommendations with "Because you watched X" for Movies and TV Shows.</news>
     </extension>
 </addon>
 </addons>

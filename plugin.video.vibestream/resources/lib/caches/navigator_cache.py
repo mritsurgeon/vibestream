@@ -5,7 +5,7 @@ from modules.kodi_utils import get_property, set_property, clear_property
 # from modules.kodi_utils import logger
 
 # Bump this when default menu structure changes so upgraded users get new defaults.
-MENU_DEFAULTS_VERSION = '1.0.111'
+MENU_DEFAULTS_VERSION = '1.0.112'
 
 GET_LIST = 'SELECT list_contents FROM navigator WHERE list_name = ? AND list_type = ?'
 SET_LIST = 'INSERT OR REPLACE INTO navigator VALUES (?, ?, ?)'
@@ -39,6 +39,7 @@ root_list = [
 
 movie_list = [
 {'name': 'Resume Watching', 'mode': 'build_movie_list', 'action': 'in_progress_movies', 'iconImage': 'player'},
+{'name': "I Can't Decide", 'mode': 'build_movie_list', 'action': 'because_you_watched_movies', 'iconImage': 'favorites'},
 {'name': 'Trending Recent / Latest', 'mode': 'build_movie_list', 'action': 'trakt_movies_trending_recent', 'iconImage': 'trending_recent'},
 {'name': 'Popular Today', 'mode': 'build_movie_list', 'action': 'tmdb_movies_popular_today', 'random_support': 'true', 'iconImage': 'popular_today'},
 {'name': 'Premieres', 'mode': 'build_movie_list', 'action': 'tmdb_movies_premieres', 'random_support': 'true', 'iconImage': 'fresh'},
@@ -51,6 +52,7 @@ tvshow_list = [
 {'name': 'Your Latest Episodes', 'mode': 'build_new_trakt_episodes', 'recently_aired': 'true', 'iconImage': 'next_episodes'},
 {'name': 'All Unwatched', 'mode': 'build_new_trakt_episodes', 'iconImage': 'next_episodes'},
 {'name': 'Resume Watching', 'mode': 'build_tvshow_list', 'action': 'resume_watching_tvshows', 'iconImage': 'player'},
+{'name': "I Can't Decide", 'mode': 'build_tvshow_list', 'action': 'because_you_watched_tvshows', 'iconImage': 'favorites'},
 {'name': 'Trending Recent / Latest', 'mode': 'build_tvshow_list', 'action': 'trakt_tv_trending_recent', 'random_support': 'true', 'iconImage': 'trending_recent'},
 {'name': 'Popular Today', 'mode': 'build_tvshow_list', 'action': 'tmdb_tv_popular_today', 'random_support': 'true', 'iconImage': 'popular_today'},
 {'name': 'Premieres', 'mode': 'build_tvshow_list', 'action': 'tmdb_tv_premieres', 'random_support': 'true', 'iconImage': 'fresh'},

@@ -8,7 +8,7 @@ from modules.watched_status import get_database, watched_info_movie, get_watched
 from modules.recommendations import recommendations_manager
 # logger = kodi_utils.logger
 
-make_listitem, build_url, nextpage_landscape = kodi_utils.make_listitem, kodi_utils.build_url, kodi_utils.nextpage_landscape
+make_listitem, build_url, nextpage_landscape, notification = kodi_utils.make_listitem, kodi_utils.build_url, kodi_utils.nextpage_landscape, kodi_utils.notification
 string, external, add_items, add_dir, get_property = str, kodi_utils.external, kodi_utils.add_items, kodi_utils.add_dir, kodi_utils.get_property
 set_content, end_directory, set_view_mode, folder_path = kodi_utils.set_content, kodi_utils.end_directory, kodi_utils.set_view_mode, kodi_utils.folder_path
 poster_empty, fanart_empty, set_property = kodi_utils.empty_poster, kodi_utils.addon_fanart(), kodi_utils.set_property
@@ -109,6 +109,13 @@ class Movies:
 				data = discovery_function(url, page_no)
 				self.list = [i['id'] for i in data['results']]
 				if data['total_pages'] > page_no: self.new_page = {'url': url, 'new_page': string(data['page'] + 1)}
+			elif self.action == 'because_you_watched_movies':
+				self.id_type = 'because_you_watched'
+				data, total_pages = recommendations_manager.get_because_you_watched('movie', page_no, page_limit(self.is_home))
+				self.list = data or []
+				self.total_pages = total_pages
+				if total_pages > page_no: self.new_page = {'new_page': string(page_no + 1), 'paginate_start': self.paginate_start}
+				if not self.list and page_no == 1: notification('Watch some movies first to get personalized recommendations.', 4000)
 			elif self.action  == 'tmdb_movies_sets':
 				self.movieset_list_active = True
 				data = sorted(movieset_meta(self.params_get('key_id'), tmdb_api_key())['parts'], key=lambda k: k['release_date'] or '2050')
@@ -132,7 +139,11 @@ class Movies:
 		
 	def build_movie_content(self, _position, _id):
 		try:
-			meta = movie_meta(self.id_type, _id, self.tmdb_api_key, self.mpaa_region, self.current_date, self.current_time)
+			because_you_watched = None
+			if self.id_type == 'because_you_watched' and isinstance(_id, dict):
+				because_you_watched = _id.get('because_you_watched')
+				_id = _id.get('tmdb_id')
+			meta = movie_meta('tmdb_id', _id, self.tmdb_api_key, self.mpaa_region, self.current_date, self.current_time)
 			if not meta or 'blank_entry' in meta: return
 			listitem = make_listitem()
 			tmdb_active = settings.tmdb_user_active()
@@ -201,7 +212,11 @@ class Movies:
 			else: cm_append(('[B]Exit Movie List[/B]', run_plugin % build_url({'mode': 'navigator.exit_media_menu'})))
 			info_tag = listitem.getVideoInfoTag()
 			info_tag.setMediaType('movie'), info_tag.setTitle(title), info_tag.setOriginalTitle(meta_get('original_title')), info_tag.setGenres(meta_get('genre'))
-			info_tag.setDuration(meta_get('duration')), info_tag.setPlaycount(playcount), info_tag.setPlot(meta_get('plot'))
+			plot = meta_get('plot') or ''
+			if because_you_watched:
+				plot = '[COLOR dodgerblue]Because you watched %s[/COLOR][CR][CR]%s' % (because_you_watched, plot)
+				set_properties({'vibestream.because_you_watched': because_you_watched})
+			info_tag.setDuration(meta_get('duration')), info_tag.setPlaycount(playcount), info_tag.setPlot(plot)
 			info_tag.setUniqueIDs({'imdb': imdb_id, 'tmdb': str_tmdb_id}), info_tag.setIMDBNumber(imdb_id), info_tag.setPremiered(premiered)
 			info_tag.setYear(int(year)), info_tag.setRating(meta_get('rating')), info_tag.setVotes(meta_get('votes')), info_tag.setMpaa(meta_get('mpaa'))
 			info_tag.setCountries(meta_get('country')), info_tag.setTrailer(meta_get('trailer'))
@@ -222,6 +237,8 @@ class Movies:
 				except (TypeError, AttributeError):
 					pass
 			display_title = title + cam_note
+			if because_you_watched:
+				display_title = '%s[CR][COLOR gray]Because you watched %s[/COLOR]' % (display_title, because_you_watched)
 			listitem.setLabel(display_title)
 			listitem.addContextMenuItems(cm)
 			listitem.setArt({'poster': poster, 'fanart': fanart, 'icon': poster, 'clearlogo': clearlogo, 'landscape': landscape, 'thumb': thumb})
