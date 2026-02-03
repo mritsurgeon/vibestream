@@ -47,14 +47,13 @@ class Navigator:
 			if self.list_name == 'RootList':
 				self.category_name = 'VibeStream'
 				set_property('vibestream.addon_description', ADDON_DESCRIPTION)
-			from modules.setup_wizard import first_run_check
-			if first_run_check():
-				# If wizard was run, force back to RootList to ensure clean main menu landing
-				self.list_name = 'RootList'
-				self.params['action'] = 'RootList'
-				# Clear the breadcrumb stack in some skins if possible
-				k.execute_builtin('Container.Update(%s)' % k.build_url({'mode': 'navigator.main', 'action': 'RootList'}))
-				return
+				# Only check wizard on RootList and only once per session
+				if not get_property('vibestream.wizard_session_checked'):
+					set_property('vibestream.wizard_session_checked', 'true')
+					from modules.setup_wizard import first_run_check
+					if first_run_check():
+						# Wizard was run and completed, just return - menu will rebuild
+						return
 			if self.params_get('full_list', 'false') == 'true':
 				main_lists_result = get_main_lists(self.list_name)
 				browse_list = (main_lists_result[0] if main_lists_result and len(main_lists_result) > 0 else None) or []

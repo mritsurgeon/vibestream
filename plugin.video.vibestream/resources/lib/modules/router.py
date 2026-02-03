@@ -67,8 +67,23 @@ def routing(sys):
 			from indexers.episodes import build_single_episode
 			return build_single_episode('episode.next', params)
 		if mode == 'build_my_calendar':
-			from indexers.episodes import build_single_episode
-			return build_single_episode('episode.trakt', params)
+			# Recently Aired uses list view, regular calendar uses new calendar window
+			if _get('recently_aired'):
+				from indexers.episodes import build_single_episode
+				return build_single_episode('episode.trakt', params)
+			# Use new calendar view window
+			from apis.trakt_api import trakt_get_my_calendar
+			from modules.utils import get_datetime
+			calendar_data = trakt_get_my_calendar(None, get_datetime())
+			from windows.calendar_view import open_calendar_view
+			choice = open_calendar_view(calendar_data)
+			if choice and choice.get('mode') == 'playback.media':
+				# User selected an episode, play it
+				from modules.sources import Sources
+				return Sources().playback_prep(choice)
+		if mode == 'build_new_trakt_episodes':
+			from indexers.episodes import build_new_trakt_episodes
+			return build_new_trakt_episodes(params)
 		if mode == 'build_next_episode_manager':
 			from modules.episode_tools import build_next_episode_manager
 			return build_next_episode_manager()
