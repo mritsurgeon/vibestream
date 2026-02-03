@@ -6,7 +6,7 @@ from caches.base_cache import connect_database
 
 numeric_input = kodi_utils.numeric_input
 kodi_dialog, ok_dialog, select_dialog, confirm_dialog = kodi_utils.kodi_dialog, kodi_utils.ok_dialog, kodi_utils.select_dialog, kodi_utils.confirm_dialog
-default_addon_fanart, get_property, set_property, notification = kodi_utils.addon_fanart(), kodi_utils.get_property, kodi_utils.set_property, kodi_utils.notification
+default_addon_fanart, get_property, set_property, clear_property, notification = kodi_utils.addon_fanart(), kodi_utils.get_property, kodi_utils.set_property, kodi_utils.clear_property, kodi_utils.notification
 tmdb_default_api, trakt_default_id, trakt_default_secret = kodi_utils.tmdb_default_api, kodi_utils.trakt_default_id, kodi_utils.trakt_default_secret
 boolean_dict = {'true': 'false', 'false': 'true'}
 
@@ -36,8 +36,13 @@ class SettingsCache:
 
 	def remove_setting(self, setting_id):
 		dbcon = connect_database('settings_db')
-		setting_id = setting_id.replace('vibestream.', '')
-		dbcon.execute(BASE_DELETE, (setting_id,))
+		# Try original key first (DB stores exact keys, e.g. vibestream.setup_wizard_run)
+		cur = dbcon.execute(BASE_DELETE, (setting_id,))
+		if cur.rowcount == 0 and setting_id.startswith('vibestream.'):
+			stripped = setting_id.replace('vibestream.', '')
+			dbcon.execute(BASE_DELETE, (stripped,))
+		# Clear window property so get_setting doesn't return stale value
+		self.delete_memory_cache(setting_id)
 
 	def get_many(self, settings_list):
 		try:
@@ -80,10 +85,13 @@ class SettingsCache:
 	def set_memory_cache(self, setting_id, setting_value):
 		# Avoid double prefix: vibestream.setup_wizard_run -> vibestream.setup_wizard_run, not vibestream.vibestream.setup_wizard_run
 		prop = setting_id if setting_id.startswith('vibestream.') else 'vibestream.%s' % setting_id
-		set_property(prop, setting_value)
+		val = '' if setting_value is None else setting_value
+		set_property(prop, val)
 
 	def delete_memory_cache(self, setting_id):
-		clear_property('vibestream.%s' % setting_id)
+		# Match set_memory_cache: avoid double prefix (vibestream.vibestream.x)
+		prop = setting_id if setting_id.startswith('vibestream.') else 'vibestream.%s' % setting_id
+		clear_property(prop)
 
 	def setting_info(self, setting_id):
 		matches = [i for i in default_settings if i['setting_id'] == setting_id]

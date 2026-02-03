@@ -2,7 +2,7 @@
 from apis import tmdb_api
 from caches.meta_cache import meta_cache
 from modules.utils import jsondate_to_datetime, subtract_dates
-# from modules.kodi_utils import logger
+from modules.kodi_utils import logger
 
 movie_details, tvshow_details, season_episodes_details = tmdb_api.movie_details, tmdb_api.tvshow_details, tmdb_api.season_episodes_details
 movie_set_details, movie_external_id, tvshow_external_id = tmdb_api.movie_set_details, tmdb_api.movie_external_id, tmdb_api.tvshow_external_id
@@ -66,7 +66,7 @@ def movie_meta(id_type, media_id, api_key, mpaa_region, current_date, current_ti
 		try: duration = int(data_get('runtime', '90') * 60)
 		except Exception: duration = 0
 		try: genre = [i['name'] for i in data_get('genres')]
-		except Exception: genre == []
+		except Exception: genre = []
 		rootname = '%s (%s)' % (title, year)
 		companies = data_get('production_companies')
 		if companies:
@@ -114,7 +114,7 @@ def movie_meta(id_type, media_id, api_key, mpaa_region, current_date, current_ti
 					next((youtube_url % i['key'] for i in all_trailers if i['type'] == 'Trailer'), None) or \
 					next((youtube_url % i['key'] for i in all_trailers if 'trailer' in i['name'].lower()), None) or \
 					next((youtube_url % i['key'] for i in all_trailers), None) or ''
-				else: trailler = ''
+				else: trailer = ''
 			except Exception: pass
 		keywords = data_get('keywords', None)
 		status, homepage = data_get('status', 'N/A'), data_get('homepage', 'N/A')
@@ -132,7 +132,8 @@ def movie_meta(id_type, media_id, api_key, mpaa_region, current_date, current_ti
 				'director': director, 'alternative_titles': alternative_titles, 'plot': plot, 'studio': studio, 'extra_info': extra_info, 'mediatype': 'movie', 'tvdb_id': 'None',
 				'clearlogo': clearlogo, 'landscape': landscape, 'spoken_language': spoken_language, 'keywords': keywords}
 		metacache_set('movie', id_type, meta, movie_expiry(current_date, meta), current_time)
-	except Exception: pass
+	except Exception as e:
+		logger('VibeStream metadata', 'movie_meta: %s' % str(e))
 	return meta
 
 def tvshow_meta(id_type, media_id, api_key, mpaa_region, current_date, current_time=None):
@@ -196,7 +197,7 @@ def tvshow_meta(id_type, media_id, api_key, mpaa_region, current_date, current_t
 		if networks:
 			if len(networks) == 1: studio = ([i['name'] for i in networks][0],)
 			else:
-				try: studio = (next(i['name'] for i in networks if i['logo_path'] not in empty_value_check) or next(i['name'] for i in network),)
+				try: studio = (next(i['name'] for i in networks if i['logo_path'] not in empty_value_check) or next(i['name'] for i in networks),)
 				except Exception: pass
 		production_countries = data_get('production_countries', None)
 		if production_countries:
@@ -237,7 +238,7 @@ def tvshow_meta(id_type, media_id, api_key, mpaa_region, current_date, current_t
 					next((youtube_url % i['key'] for i in all_trailers if i['type'] == 'Trailer'), None) or \
 					next((youtube_url % i['key'] for i in all_trailers if 'trailer' in i['name'].lower()), None) or \
 					next((youtube_url % i['key'] for i in all_trailers), None) or ''
-				else: trailler = ''
+				else: trailer = ''
 			except Exception: pass
 		keywords = data_get('keywords', None)
 		status, _type, homepage = data_get('status', 'N/A'), data_get('type', 'N/A'), data_get('homepage', 'N/A')
@@ -259,7 +260,8 @@ def tvshow_meta(id_type, media_id, api_key, mpaa_region, current_date, current_t
 				'total_aired_eps': total_aired_eps, 'mediatype': 'tvshow', 'total_seasons': total_seasons, 'tvshowtitle': title, 'status': status, 'clearlogo': clearlogo,
 				'landscape': landscape, 'spoken_language': spoken_language, 'keywords': keywords}
 		metacache_set('tvshow', id_type, meta, tvshow_expiry(current_date, meta), current_time)
-	except Exception: pass
+	except Exception as e:
+		logger('VibeStream metadata', 'tvshow_meta: %s' % str(e))
 	return meta
 
 def movieset_meta(media_id, api_key, current_time=None):
@@ -380,7 +382,9 @@ def is_anime_check(tmdb_id):
 	from modules.utils import get_datetime
 	from modules.settings import tmdb_api_key, mpaa_region
 	meta = tvshow_meta('tmdb_id', tmdb_id, tmdb_api_key(), mpaa_region(), get_datetime())
-	genre = meta['genre']
+	if meta is None:
+		return False
+	genre = meta.get('genre', [])
 	if not genre or 'Animation' in genre:
 		try: keywords = meta.get('keywords', None) or tmdb_api.tmdb_tv_keywords(tmdb_id)['results']
 		except Exception: return False
