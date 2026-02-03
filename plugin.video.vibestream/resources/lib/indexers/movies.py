@@ -14,7 +14,7 @@ set_content, end_directory, set_view_mode, folder_path = kodi_utils.set_content,
 poster_empty, fanart_empty, set_property = kodi_utils.empty_poster, kodi_utils.addon_fanart(), kodi_utils.set_property
 sleep, xbmc_actor, set_category = kodi_utils.sleep, kodi_utils.xbmc_actor, kodi_utils.set_category
 add_item, home = kodi_utils.add_item, kodi_utils.home
-watched_indicators, widget_hide_next_page = settings.watched_indicators, settings.widget_hide_next_page
+watched_indicators, widget_hide_next_page, rating_watermark_enabled = settings.watched_indicators, settings.widget_hide_next_page, settings.rating_watermark_enabled
 widget_hide_watched, media_open_action, page_limit, paginate = settings.widget_hide_watched, settings.media_open_action, settings.page_limit, settings.paginate
 tmdb_api_key, mpaa_region = settings.tmdb_api_key, settings.mpaa_region
 run_plugin = 'RunPlugin(%s)'
@@ -241,7 +241,15 @@ class Movies:
 				display_title = '%s[CR][COLOR gray]Because you watched %s[/COLOR]' % (display_title, because_you_watched)
 			listitem.setLabel(display_title)
 			listitem.addContextMenuItems(cm)
-			listitem.setArt({'poster': poster, 'fanart': fanart, 'icon': poster, 'clearlogo': clearlogo, 'landscape': landscape, 'thumb': thumb})
+			display_poster = poster
+			if rating_watermark_enabled() and poster:
+				try:
+					from modules.rating_overlay import get_poster_with_rating
+					display_poster = get_poster_with_rating(poster, meta_get('rating')) or poster
+				except Exception:
+					pass
+			display_thumb = display_poster or thumb
+			listitem.setArt({'poster': display_poster, 'fanart': fanart, 'icon': display_poster, 'clearlogo': clearlogo, 'landscape': landscape, 'thumb': display_thumb})
 			props = {'vibestream.extras_params': extras_params, 'vibestream.options_params': options_params,
 				'belongs_to_collection': belongs_to_movieset, 'vibestream.more_like_this_params': more_like_this_params}
 			if cam_note:

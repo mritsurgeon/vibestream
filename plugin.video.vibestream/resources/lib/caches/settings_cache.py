@@ -21,10 +21,16 @@ class SettingsCache:
 	def get(self, setting_id):
 		try:
 			dbcon = connect_database('settings_db')
-			setting_id = setting_id.replace('vibestream.', '')
+			# Query with original setting_id first (DB stores exact keys from default_settings, e.g. vibestream.setup_wizard_run)
 			row = dbcon.execute(BASE_GET, (setting_id,)).fetchone()
+			if row is None and setting_id.startswith('vibestream.'):
+				stripped = setting_id.replace('vibestream.', '')
+				row = dbcon.execute(BASE_GET, (stripped,)).fetchone()
 			setting_value = row[0] if row is not None else None
-			self.set_memory_cache(setting_id, setting_value)
+			# Use stripped key for memory cache to avoid double prefix (vibestream.vibestream.x)
+			if setting_value is not None:
+				cache_key = setting_id.replace('vibestream.', '') if setting_id.startswith('vibestream.') else setting_id
+				self.set_memory_cache(cache_key, setting_value)
 		except Exception: setting_value = None
 		return setting_value
 
@@ -72,7 +78,9 @@ class SettingsCache:
 		for item in settings_list: self.set_memory_cache(item[0], item[3] or item[2])
 
 	def set_memory_cache(self, setting_id, setting_value):
-		set_property('vibestream.%s' % setting_id, setting_value)
+		# Avoid double prefix: vibestream.setup_wizard_run -> vibestream.setup_wizard_run, not vibestream.vibestream.setup_wizard_run
+		prop = setting_id if setting_id.startswith('vibestream.') else 'vibestream.%s' % setting_id
+		set_property(prop, setting_value)
 
 	def delete_memory_cache(self, setting_id):
 		clear_property('vibestream.%s' % setting_id)
@@ -262,6 +270,7 @@ default_settings = [
 #================================================================================#
 #==================== Extras
 {'setting_id': 'extras.enable_extra_ratings', 'setting_type': 'boolean', 'setting_default': 'true'},
+{'setting_id': 'rating_watermark', 'setting_type': 'boolean', 'setting_default': 'true'},
 {'setting_id': 'extras.enable_scrollbars', 'setting_type': 'boolean', 'setting_default': 'false'},
 {'setting_id': 'extras.view_mode', 'setting_type': 'action', 'setting_default': '0', 'settings_options': {'0': 'Simple', '1': 'Advanced'}},
 #==================== Special Open Actions

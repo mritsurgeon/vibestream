@@ -53,12 +53,15 @@ class Navigator:
 				if not get_property('vibestream.wizard_session_checked'):
 					set_property('vibestream.wizard_session_checked', 'true')
 					from modules.setup_wizard import first_run_check
-					debug_log('navigator.py:main', 'calling first_run_check', {}, 'H2')
+					debug_log('navigator.py:main', 'calling first_run_check', {'list_name': self.list_name}, 'H1')
 					wizard_ran = first_run_check()
-					debug_log('navigator.py:main', 'first_run_check returned', {'wizard_ran': wizard_ran}, 'H2')
+					debug_log('navigator.py:main', 'first_run_check returned', {'wizard_ran': wizard_ran, 'list_name': self.list_name}, 'H1')
 					if wizard_ran:
-						# Wizard completed - do NOT return; fall through to build menu so Kodi gets end_directory
-						pass
+						# Wizard completed - force navigation to root so user sees main menu, not widget/shortcut URL (e.g. TVShowList)
+						root_url = build_url({'mode': 'navigator.main', 'action': 'RootList'})
+						debug_log('navigator.py:main', 'wizard done, redirecting to root', {'root_url': root_url}, 'H1')
+						container_refresh_input(root_url, block=True)
+						return
 			if self.params_get('full_list', 'false') == 'true':
 				main_lists_result = get_main_lists(self.list_name)
 				browse_list = (main_lists_result[0] if main_lists_result and len(main_lists_result) > 0 else None) or []

@@ -640,6 +640,14 @@
                           <property name="setting_description">Choose this and the individual lists within the Extras window will each utilize a scrollbar when needed</property>
                           <onclick>RunPlugin(plugin://plugin.video.vibestream/?mode=settings_manager.set_boolean&amp;setting_id=extras.enable_scrollbars)</onclick>
                       </item>
+                      <item>
+                          <visible>Container(2000).HasFocus(20)</visible>
+                          <property name="setting_label">Rating Watermark on Posters</property>
+                          <property name="setting_type">boolean</property>
+                          <property name="setting_value">$INFO[Window(10000).Property(vibestream.rating_watermark)]</property>
+                          <property name="setting_description">Show viewer rating (e.g. 7.5) as a watermark on movie and TV show poster thumbnails in lists</property>
+                          <onclick>RunPlugin(plugin://plugin.video.vibestream/?mode=settings_manager.set_boolean&amp;setting_id=rating_watermark)</onclick>
+                      </item>
         <!-- Special Open Actions -->
                     <item>
                           <visible>Container(2000).HasFocus(20)</visible>

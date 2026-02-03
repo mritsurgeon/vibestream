@@ -1,8 +1,9 @@
-<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta13">
+<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta14">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
         <import addon="script.module.cocoscrapers" version="1.0.0"/>
+        <import addon="script.module.pillow" version="5.0.0"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="resources/lib/vibestream.py">
         <provides>video</provides>
@@ -19,6 +20,6 @@
             <icon>icon.png</icon>
             <fanart>fanart.png</fanart>
         </assets>
-        <news>VibeStream 1.1.0-beta13 - Debug instrumentation for troubleshooting; install, reproduce issue, share addon_data/.../debug.log</news>
+        <news>VibeStream 1.1.0-beta14 - Rating watermark on posters; setup wizard persistence fix across Kodi restarts; Pillow dependency for image overlays.</news>
     </extension>
 </addon>

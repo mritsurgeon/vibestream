@@ -237,7 +237,10 @@ def trakt_movies_trending_recent(page_no):
 	years = '%s-%s' % (str(current_year-1), str(current_year))
 	string = 'trakt_movies_trending_recent_%s' % page_no
 	params = {'path': 'movies/trending/%s', 'params': {'limit': 20, 'years': years}, 'page_no': page_no}
-	return lists_cache_object(get_trakt, string, params)
+	result = lists_cache_object(get_trakt, string, params)
+	if not result:
+		return trakt_movies_trending(page_no)
+	return result
 	
 def trakt_movies_trending_uk(page_no):
 	string = 'trakt_movies_trending_uk_%s' % page_no
@@ -249,7 +252,10 @@ def trakt_movies_trending_recent_uk(page_no):
 	years = '%s-%s' % (str(current_year-1), str(current_year))
 	string = 'trakt_movies_trending_recent_uk_%s' % page_no
 	params = {'path': 'movies/trending/%s', 'params': {'limit': 20, 'years': years, 'countries': 'gb'}, 'page_no': page_no}
-	return lists_cache_object(get_trakt, string, params)
+	result = lists_cache_object(get_trakt, string, params)
+	if not result:
+		return trakt_movies_trending_uk(page_no)
+	return result
 
 def trakt_movies_top10_boxoffice(page_no):
 	string = 'trakt_movies_top10_boxoffice'
@@ -282,7 +288,10 @@ def trakt_tv_trending_recent(page_no):
 	years = '%s-%s' % (str(current_year-1), str(current_year))
 	string = 'trakt_tv_trending_recent_%s' % page_no
 	params = {'path': 'shows/trending/%s', 'params': {'limit': 20, 'years': years}, 'page_no': page_no}
-	return lists_cache_object(get_trakt, string, params)
+	result = lists_cache_object(get_trakt, string, params)
+	if not result:
+		return trakt_tv_trending(page_no)
+	return result
 	
 def trakt_tv_trending_uk(page_no):
 	string = 'trakt_tv_trending_uk_%s' % page_no
@@ -294,7 +303,10 @@ def trakt_tv_trending_recent_uk(page_no):
 	years = '%s-%s' % (str(current_year-1), str(current_year))
 	string = 'trakt_tv_trending_recent_uk_%s' % page_no
 	params = {'path': 'shows/trending/%s', 'params': {'limit': 20, 'years': years, 'countries': 'gb'}, 'page_no': page_no}
-	return lists_cache_object(get_trakt, string, params)
+	result = lists_cache_object(get_trakt, string, params)
+	if not result:
+		return trakt_tv_trending_uk(page_no)
+	return result
 
 def trakt_tv_most_watched(page_no):
 	string = 'trakt_tv_most_watched_%s' % page_no
@@ -321,7 +333,10 @@ def trakt_anime_trending_recent(page_no):
 	years = '%s-%s' % (str(current_year-1), str(current_year))
 	string = 'trakt_anime_trending_recent_%s' % page_no
 	params = {'path': 'shows/trending/%s', 'params': {'genres': 'anime', 'limit': 20, 'years': years}, 'page_no': page_no}
-	return lists_cache_object(get_trakt, string, params)
+	result = lists_cache_object(get_trakt, string, params)
+	if not result:
+		return trakt_anime_trending(page_no)
+	return result
 
 def trakt_anime_most_watched(page_no):
 	string = 'trakt_anime_most_watched_%s' % page_no

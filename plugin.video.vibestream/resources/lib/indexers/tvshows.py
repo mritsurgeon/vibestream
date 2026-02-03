@@ -14,7 +14,7 @@ set_category, make_listitem, build_url, set_property = kodi_utils.set_category, 
 set_content, end_directory, set_view_mode, folder_path = kodi_utils.set_content, kodi_utils.end_directory, kodi_utils.set_view_mode, kodi_utils.folder_path
 poster_empty, fanart_empty, nextpage_landscape = kodi_utils.empty_poster, kodi_utils.addon_fanart(), kodi_utils.nextpage_landscape
 media_open_action, default_all_episodes, page_limit, paginate = settings.media_open_action, settings.default_all_episodes, settings.page_limit, settings.paginate
-widget_hide_next_page, widget_hide_watched, watched_indicators = settings.widget_hide_next_page, settings.widget_hide_watched, settings.watched_indicators
+widget_hide_next_page, widget_hide_watched, watched_indicators, rating_watermark_enabled = settings.widget_hide_next_page, settings.widget_hide_watched, settings.watched_indicators, settings.rating_watermark_enabled
 mpaa_region = settings.mpaa_region
 run_plugin, container_update = 'RunPlugin(%s)', 'Container.Update(%s)'
 main = ('tmdb_tv_popular', 'tmdb_tv_popular_today', 'tmdb_tv_top_rated', 'tmdb_tv_premieres', 'tmdb_tv_classics', 'tmdb_tv_airing_today', 'tmdb_tv_on_the_air', 'tmdb_tv_upcoming',
@@ -221,8 +221,16 @@ class TVShows:
 				set_properties({'vibestream.because_you_watched': because_you_watched})
 			listitem.setLabel(display_title)
 			listitem.addContextMenuItems(cm)
-			listitem.setArt({'poster': poster, 'fanart': fanart, 'icon': poster, 'clearlogo': clearlogo, 'landscape': landscape, 'thumb': thumb, 'icon': landscape,
-							'tvshow.poster': poster, 'tvshow.clearlogo': clearlogo})
+			display_poster = poster
+			if rating_watermark_enabled() and poster:
+				try:
+					from modules.rating_overlay import get_poster_with_rating
+					display_poster = get_poster_with_rating(poster, meta_get('rating')) or poster
+				except Exception:
+					pass
+			display_thumb = display_poster or thumb
+			listitem.setArt({'poster': display_poster, 'fanart': fanart, 'icon': landscape or display_poster, 'clearlogo': clearlogo, 'landscape': landscape, 'thumb': display_thumb,
+							'tvshow.poster': display_poster, 'tvshow.clearlogo': clearlogo})
 			info_tag = listitem.getVideoInfoTag()
 			info_tag.setMediaType('tvshow'), info_tag.setTitle(title), info_tag.setTvShowTitle(title), info_tag.setOriginalTitle(meta_get('original_title'))
 			info_tag.setUniqueIDs({'imdb': imdb_id, 'tmdb': string(tmdb_id), 'tvdb': string(tvdb_id)}), info_tag.setIMDBNumber(imdb_id)

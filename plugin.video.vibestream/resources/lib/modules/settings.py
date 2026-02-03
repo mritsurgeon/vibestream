@@ -172,6 +172,9 @@ def easynews_authorized():
 def extras_enable_extra_ratings():
 	return get_setting('vibestream.extras.enable_extra_ratings', 'true') == 'true'
 
+def rating_watermark_enabled():
+	return get_setting('vibestream.rating_watermark', 'true') == 'true'
+
 def extras_enable_scrollbars():
 	return get_setting('vibestream.extras.enable_scrollbars', 'true')
 

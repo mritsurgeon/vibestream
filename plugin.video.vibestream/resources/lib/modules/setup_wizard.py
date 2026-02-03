@@ -63,7 +63,7 @@ def _run_setup_wizard():
 
 	# Final
 	set_setting('vibestream.setup_wizard_run', 'true')
-	debug_log('setup_wizard.py:_run_setup_wizard', 'wizard complete, returning True', {}, 'H2')
+	debug_log('setup_wizard.py:_run_setup_wizard', 'wizard complete, returning True', {'setting_set': True}, 'H4')
 	try:
 		kodi_utils.ok_dialog('Setup Complete', 'VibeStream is now configured! Enjoy your movies and shows.')
 	except Exception as e:
