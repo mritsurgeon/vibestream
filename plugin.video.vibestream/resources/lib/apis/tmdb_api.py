@@ -189,6 +189,13 @@ def tmdb_movies_popular_today(page_no):
 	url = '%s/trending/movie/day?api_key=%s&language=en-US&region=US&with_original_language=en&page=%s' % (base_url, api_key, page_no)
 	return lists_cache_object(get_data, string, url, expiration= EXPIRY_1_DAY)
 
+def tmdb_trending_movie_week(page_no):
+	api_key = tmdb_api_key()
+	if api_key in empty_setting_check: return no_api_key()
+	string = 'tmdb_trending_movie_week_%s' % page_no
+	url = '%s/trending/movie/week?api_key=%s&language=en-US&region=US&with_original_language=en&page=%s' % (base_url, api_key, page_no)
+	return lists_cache_object(get_data, string, url, expiration=EXPIRY_1_DAY)
+
 def tmdb_movies_top_rated(page_no):
 	api_key = tmdb_api_key()
 	if api_key in empty_setting_check: return no_api_key()
@@ -350,6 +357,13 @@ def tmdb_tv_popular_today(page_no):
 	string = 'tmdb_tv_popular_today_%s' % page_no
 	url = '%s/trending/tv/day?api_key=%s&language=en-US&region=US&with_original_language=en&page=%s' % (base_url, api_key, page_no)
 	return lists_cache_object(get_data, string, url, expiration= EXPIRY_1_DAY)
+
+def tmdb_trending_tv_week(page_no):
+	api_key = tmdb_api_key()
+	if api_key in empty_setting_check: return no_api_key()
+	string = 'tmdb_trending_tv_week_%s' % page_no
+	url = '%s/trending/tv/week?api_key=%s&language=en-US&region=US&with_original_language=en&page=%s' % (base_url, api_key, page_no)
+	return lists_cache_object(get_data, string, url, expiration=EXPIRY_1_DAY)
 
 def tmdb_tv_top_rated(page_no):
 	api_key = tmdb_api_key()

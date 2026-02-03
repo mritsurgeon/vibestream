@@ -5,6 +5,7 @@ Returns cached composite path or original URL on failure.
 """
 import hashlib
 import os
+import sys
 
 def get_poster_with_rating(poster_url, rating):
 	"""
@@ -26,7 +27,7 @@ def get_poster_with_rating(poster_url, rating):
 	except ImportError:
 		return poster_url
 	cache_dir = translatePath(addon_info('profile')) + 'rating_cache/'
-	cache_key = hashlib.md5((str(poster_url) + str(rating)).encode()).hexdigest()
+	cache_key = hashlib.md5((str(poster_url) + str(rating) + 'v2').encode()).hexdigest()
 	cache_path = os.path.join(cache_dir, '%s.jpg' % cache_key)
 	if os.path.exists(cache_path):
 		return cache_path
@@ -43,14 +44,33 @@ def get_poster_with_rating(poster_url, rating):
 	if img.mode != 'RGB':
 		img = img.convert('RGB')
 	w, h = img.size
-	bar_h = max(int(h * 0.12), 24)
+	bar_h = max(int(h * 0.18), 36)
 	overlay = Image.new('RGBA', (w, bar_h), (0, 0, 0, 180))
 	draw = ImageDraw.Draw(overlay)
 	font = None
-	font_size = max(12, min(int(bar_h * 0.6), 28))
-	for path in ('/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
-	             '/system/fonts/DroidSans-Bold.ttf',
-	             '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf'):
+	font_size = max(14, min(int(bar_h * 0.7), 44))
+	# Platform-specific font paths: prefer bold/standout fonts (Impact, Arial Black)
+	font_paths = [
+		'/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
+		'/system/fonts/DroidSans-Bold.ttf',
+		'/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf',
+	]
+	if sys.platform == 'win32':
+		font_paths = [
+			os.path.join(os.environ.get('WINDIR', 'C:\\Windows'), 'Fonts', 'impact.ttf'),
+			os.path.join(os.environ.get('WINDIR', 'C:\\Windows'), 'Fonts', 'ariblk.ttf'),
+			os.path.join(os.environ.get('WINDIR', 'C:\\Windows'), 'Fonts', 'arialbd.ttf'),
+			os.path.join(os.environ.get('WINDIR', 'C:\\Windows'), 'Fonts', 'Arial Bold.ttf'),
+		] + font_paths
+	elif sys.platform == 'darwin':
+		font_paths = [
+			'/System/Library/Fonts/Supplemental/Arial Black.ttf',
+			'/Library/Fonts/Arial Black.ttf',
+			'/System/Library/Fonts/Supplemental/Arial Bold.ttf',
+			'/Library/Fonts/Arial Bold.ttf',
+			'/System/Library/Fonts/Helvetica.ttc',
+		] + font_paths
+	for path in font_paths:
 		try:
 			if os.path.exists(path):
 				font = ImageFont.truetype(path, font_size)

@@ -18,7 +18,7 @@ watched_indicators, widget_hide_next_page, rating_watermark_enabled = settings.w
 widget_hide_watched, media_open_action, page_limit, paginate = settings.widget_hide_watched, settings.media_open_action, settings.page_limit, settings.paginate
 tmdb_api_key, mpaa_region = settings.tmdb_api_key, settings.mpaa_region
 run_plugin = 'RunPlugin(%s)'
-main = ('tmdb_movies_popular', 'tmdb_movies_popular_today', 'tmdb_movies_top_rated', 'tmdb_movies_blockbusters', 'tmdb_movies_in_theaters', 'tmdb_movies_upcoming', 'tmdb_movies_latest_releases',
+main = ('tmdb_movies_popular', 'tmdb_movies_popular_today', 'tmdb_trending_movie_week', 'tmdb_movies_top_rated', 'tmdb_movies_blockbusters', 'tmdb_movies_in_theaters', 'tmdb_movies_upcoming', 'tmdb_movies_latest_releases',
 'tmdb_movies_premieres', 'tmdb_movies_classics', 'tmdb_movies_oscar_winners')
 special = ('tmdb_movies_languages', 'tmdb_movies_providers', 'tmdb_movies_providers_uk', 'tmdb_movies_year', 'tmdb_movies_decade', 'tmdb_movies_certifications', 'tmdb_movies_recommendations',
 'tmdb_movies_genres', 'tmdb_movies_search', 'tmdb_movie_keyword_results', 'tmdb_movie_keyword_results_direct')

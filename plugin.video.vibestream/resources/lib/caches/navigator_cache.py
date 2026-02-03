@@ -40,7 +40,7 @@ root_list = [
 movie_list = [
 {'name': 'Resume Watching', 'mode': 'build_movie_list', 'action': 'in_progress_movies', 'iconImage': 'player'},
 {'name': "I Can't Decide", 'mode': 'build_movie_list', 'action': 'because_you_watched_movies', 'iconImage': 'favorites'},
-{'name': 'Trending Recent / Latest', 'mode': 'build_movie_list', 'action': 'trakt_movies_trending_recent', 'iconImage': 'trending_recent'},
+{'name': 'Trending Recent / Latest', 'mode': 'build_movie_list', 'action': 'tmdb_trending_movie_week', 'iconImage': 'trending_recent'},
 {'name': 'Popular Today', 'mode': 'build_movie_list', 'action': 'tmdb_movies_popular_today', 'random_support': 'true', 'iconImage': 'popular_today'},
 {'name': 'Premieres', 'mode': 'build_movie_list', 'action': 'tmdb_movies_premieres', 'random_support': 'true', 'iconImage': 'fresh'},
 {'name': 'Classics', 'mode': 'build_movie_list', 'action': 'tmdb_movies_classics', 'random_support': 'true', 'iconImage': 'most_voted'},
@@ -53,7 +53,7 @@ tvshow_list = [
 {'name': 'All Unwatched', 'mode': 'build_new_trakt_episodes', 'iconImage': 'next_episodes'},
 {'name': 'Resume Watching', 'mode': 'build_tvshow_list', 'action': 'resume_watching_tvshows', 'iconImage': 'player'},
 {'name': "I Can't Decide", 'mode': 'build_tvshow_list', 'action': 'because_you_watched_tvshows', 'iconImage': 'favorites'},
-{'name': 'Trending Recent / Latest', 'mode': 'build_tvshow_list', 'action': 'trakt_tv_trending_recent', 'random_support': 'true', 'iconImage': 'trending_recent'},
+{'name': 'Trending Recent / Latest', 'mode': 'build_tvshow_list', 'action': 'tmdb_trending_tv_week', 'random_support': 'true', 'iconImage': 'trending_recent'},
 {'name': 'Popular Today', 'mode': 'build_tvshow_list', 'action': 'tmdb_tv_popular_today', 'random_support': 'true', 'iconImage': 'popular_today'},
 {'name': 'Premieres', 'mode': 'build_tvshow_list', 'action': 'tmdb_tv_premieres', 'random_support': 'true', 'iconImage': 'fresh'},
 {'name': 'Classics', 'mode': 'build_tvshow_list', 'action': 'tmdb_tv_classics', 'random_support': 'true', 'iconImage': 'most_voted'},
