@@ -45,6 +45,11 @@ class CalendarView(BaseDialog):
         self.populate_days()
         if self.days:
             self.populate_episodes(0)
+        # Ensure focus is on day list for navigation (left=days, right=episodes)
+        try:
+            self.setFocusId(DAY_LIST_ID)
+        except Exception:
+            pass
         
     def build_calendar_data(self):
         """Group episodes by date and build day list"""
@@ -94,7 +99,7 @@ class CalendarView(BaseDialog):
             
             # Create display labels (no [B] in property - XML adds it in focusedlayout; use darker teal for contrast)
             if is_today:
-                line1 = '[COLOR FF008B72]TODAY[/COLOR]'  # Darker teal for better visibility
+                line1 = '[COLOR FF1E90FF]TODAY[/COLOR]'  # Dodger blue for strong visibility
                 line2 = '%s %d' % (month_name, day_num)
             else:
                 line1 = day_name
@@ -203,7 +208,7 @@ class CalendarView(BaseDialog):
             if focus_id == EPISODE_LIST_ID:
                 self.select_episode()
         
-        elif action_id == self.up_action or action_id == self.down_action:
+        elif action_id in (self.up_action, self.down_action):
             if focus_id == DAY_LIST_ID:
                 # Day selection changed, update episodes
                 try:

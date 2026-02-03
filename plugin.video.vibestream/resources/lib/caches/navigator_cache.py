@@ -5,7 +5,7 @@ from modules.kodi_utils import get_property, set_property, clear_property
 # from modules.kodi_utils import logger
 
 # Bump this when default menu structure changes so upgraded users get new defaults.
-MENU_DEFAULTS_VERSION = '1.0.108'
+MENU_DEFAULTS_VERSION = '1.0.109'
 
 GET_LIST = 'SELECT list_contents FROM navigator WHERE list_name = ? AND list_type = ?'
 SET_LIST = 'INSERT OR REPLACE INTO navigator VALUES (?, ?, ?)'

@@ -71,30 +71,10 @@ def routing(sys):
 			if _get('recently_aired'):
 				from indexers.episodes import build_single_episode
 				return build_single_episode('episode.trakt', params)
-			# Populate directory first (fixes loading spinner), then open calendar on top
-			# Wrap in try/except so we always return a directory (fixes GetDirectory error)
-			from modules import kodi_utils
+			# Trakt Calendar: RunPlugin opens dialog on top of current view; back returns to parent
 			from apis.trakt_api import trakt_get_my_calendar
 			from modules.utils import get_datetime
-			calendar_data = []
-			try:
-				from indexers.episodes import build_single_episode
-				build_single_episode('episode.trakt', params)  # Adds list items so Kodi gets a directory
-				calendar_data = trakt_get_my_calendar(None, get_datetime()) or []
-			except Exception:
-				# Fallback: add placeholder so Kodi gets a directory (fixes GetDirectory error)
-				try:
-					handle = int(sys.argv[1])
-					li = kodi_utils.make_listitem()
-					li.setLabel('Trakt Calendar')
-					li.setProperty('is_placeholder', 'true')
-					kodi_utils.add_items(handle, [li])
-					kodi_utils.set_content(handle, 'episodes')
-					kodi_utils.set_category(handle, 'Trakt Calendar')
-					kodi_utils.end_directory(handle, cacheToDisc=False)
-					calendar_data = trakt_get_my_calendar(None, get_datetime()) or []
-				except Exception:
-					calendar_data = []
+			calendar_data = trakt_get_my_calendar(None, get_datetime()) or []
 			from windows.calendar_view import open_calendar_view
 			choice = open_calendar_view(calendar_data)
 			if choice and choice.get('mode') == 'playback.media':

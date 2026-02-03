@@ -1,4 +1,4 @@
-<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta5">
+<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta7">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
@@ -19,6 +19,6 @@
             <icon>icon.png</icon>
             <fanart>fanart.png</fanart>
         </assets>
-        <news>VibeStream 1.1.0-beta5 - GetDirectory error fix, Your Latest Episodes, robust calendar error handling.</news>
+        <news>VibeStream 1.1.0-beta7 - Fen removal: VibeStream icon in calendar/dialogs, FENLIGHT→VIBESTREAM, updater vibestream_version/changes.</news>
     </extension>
 </addon>

@@ -1,0 +1,5 @@
+[COLOR dodgerblue][B]VibeStream 1.1.0-beta7[/B][/COLOR]
+- Fen removal: VibeStream icon in calendar and all dialogs (replaces Fen+)
+- FENLIGHT comments replaced with VIBESTREAM in skin XML
+- Updater now uses vibestream_version and vibestream_changes
+- Tips and code references updated (Fenlight→VibeStream, Fen→VibeStream)

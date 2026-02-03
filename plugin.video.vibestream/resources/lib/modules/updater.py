@@ -50,7 +50,7 @@ def get_location(insert=''):
 
 def get_versions():
 	try:
-		result = requests.get(get_location('fen_light_version'))
+		result = requests.get(get_location('vibestream_version'))
 		if result.status_code != 200: return None, None
 		online_version = result.text.replace('\n', '')
 		current_version = addon_version()
@@ -63,7 +63,7 @@ def get_changes(online_version=None):
 			current_version, online_version = get_versions()
 			if not version_check(current_version, online_version): return ok_dialog(heading=heading_str, text=no_changes_str)
 		show_busy_dialog()
-		result = requests.get(get_location('fen_light_changes'))
+		result = requests.get(get_location('vibestream_changes'))
 		hide_busy_dialog()
 		if result.status_code != 200: return notification(error_str, icon=downloads_icon)
 		changes = result.text

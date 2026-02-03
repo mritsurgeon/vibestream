@@ -28,7 +28,7 @@
                     <align>left</align>
                     <aligny>top</aligny>
                     <aspectratio aligny="top">keep</aspectratio>
-                    <texture colordiffuse="FF00D4AA">vibestream_common/vibestream.png</texture>
+                    <texture colordiffuse="FF1E90FF">vibestream_common/vibestream.png</texture>
                 </control>
                 <control type="label">
                     <left>60</left>
@@ -58,7 +58,7 @@
                 </control>
                 
                 <!-- Day list -->
-                <control type="fixedlist" id="3000">
+                <control type="list" id="3000">
                     <left>0</left>
                     <top>0</top>
                     <width>280</width>
@@ -119,14 +119,14 @@
                     
                     <focusedlayout height="100" width="280">
                         <control type="group">
-                            <!-- Highlighted day container (darker teal FF008B72 for better contrast) -->
+                            <!-- Highlighted day container (dodger blue FF1E90FF for strong contrast) -->
                             <control type="image">
                                 <animation effect="fade" start="100" end="85" time="0" condition="!Control.HasFocus(3000)">Conditional</animation>
                                 <left>0</left>
                                 <top>0</top>
                                 <width>270</width>
                                 <height>100</height>
-                                <texture colordiffuse="FF008B72" border="15">vibestream_common/circle.png</texture>
+                                <texture colordiffuse="FF1E90FF" border="15">vibestream_common/circle.png</texture>
                             </control>
                             <!-- Day name -->
                             <control type="label">
@@ -193,7 +193,7 @@
                 </control>
                 
                 <!-- Episode list -->
-                <control type="fixedlist" id="3001">
+                <control type="list" id="3001">
                     <left>10</left>
                     <top>55</top>
                     <width>1480</width>
@@ -222,7 +222,7 @@
                                 <top>25</top>
                                 <width>8</width>
                                 <height>60</height>
-                                <texture colordiffuse="FF00D4AA">vibestream_common/white.png</texture>
+                                <texture colordiffuse="FF1E90FF">vibestream_common/white.png</texture>
                             </control>
                             <!-- Show title -->
                             <control type="label">
@@ -251,14 +251,14 @@
                     
                     <focusedlayout height="110" width="1480">
                         <control type="group">
-                            <!-- Highlighted episode card (darker teal for better contrast) -->
+                            <!-- Highlighted episode card (dodger blue for strong contrast) -->
                             <control type="image">
                                 <animation effect="fade" start="100" end="75" time="0" condition="!Control.HasFocus(3001)">Conditional</animation>
                                 <left>0</left>
                                 <top>0</top>
                                 <width>1470</width>
                                 <height>110</height>
-                                <texture colordiffuse="FF008B72" border="15">vibestream_common/circle.png</texture>
+                                <texture colordiffuse="FF1E90FF" border="15">vibestream_common/circle.png</texture>
                             </control>
                             <!-- Show title -->
                             <control type="label">

@@ -24,6 +24,13 @@ def create_package(addon_dir):
     
     full_output_path = os.path.join(addon_output_dir, output_filename)
     print(f"Packaging {addon_id} v{version}...")
+
+    # Ensure vibestream.png in skins is VibeStream icon (not Fen+)
+    media_icon = os.path.join(addon_dir, 'resources', 'skins', 'Default', 'media', 'vibestream_common', 'vibestream.png')
+    icon_src = os.path.join(addon_dir, 'icon.png')
+    if os.path.exists(icon_src) and os.path.exists(os.path.dirname(media_icon)):
+        shutil.copy2(icon_src, media_icon)
+        print(f"  Updated: vibestream_common/vibestream.png from icon.png")
     
     excludes = [".git", "__pycache__", ".DS_Store", "brain", ".gemini", ".idea", ".vscode"]
     # Legacy Fen Light art no longer used (VibeStream uses vibestream_icon/fanart only)
