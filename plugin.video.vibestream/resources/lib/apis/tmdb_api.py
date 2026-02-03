@@ -192,7 +192,7 @@ def tmdb_movies_popular_today(page_no):
 def tmdb_trending_movie_week(page_no):
 	api_key = tmdb_api_key()
 	if api_key in empty_setting_check: return no_api_key()
-	string = 'tmdb_trending_movie_week_%s' % page_no
+	string = 'tmdb_trending_movie_week_v2_%s' % page_no
 	url = '%s/trending/movie/week?api_key=%s&language=en-US&region=US&with_original_language=en&page=%s' % (base_url, api_key, page_no)
 	return lists_cache_object(get_data, string, url, expiration=EXPIRY_1_DAY)
 
@@ -361,7 +361,7 @@ def tmdb_tv_popular_today(page_no):
 def tmdb_trending_tv_week(page_no):
 	api_key = tmdb_api_key()
 	if api_key in empty_setting_check: return no_api_key()
-	string = 'tmdb_trending_tv_week_%s' % page_no
+	string = 'tmdb_trending_tv_week_v2_%s' % page_no
 	url = '%s/trending/tv/week?api_key=%s&language=en-US&region=US&with_original_language=en&page=%s' % (base_url, api_key, page_no)
 	return lists_cache_object(get_data, string, url, expiration=EXPIRY_1_DAY)
 
@@ -668,7 +668,27 @@ def get_reviews_data(media_type, tmdb_id):
 	return cache_function(builder, string, url, json=False, expiration=EXPIRY_1_WEEK)
 
 def get_data(url):
-	data = get_tmdb(url).json()
+	resp = get_tmdb(url)
+	# #region agent log
+	import json as _json
+	_log = '/Users/ian/Downloads/VibeStream/.cursor/debug.log'
+	try:
+		has_resp = resp is not None
+		status = getattr(resp, 'status_code', None) if has_resp else None
+		raw = resp.json() if has_resp else None
+		has_results = isinstance(raw, dict) and 'results' in raw
+		results_len = len(raw.get('results', [])) if has_results else 0
+		with open(_log, 'a') as f: f.write(_json.dumps({'location':'tmdb_api.get_data','message':'api_response','data':{'has_resp':has_resp,'status':status,'has_results':has_results,'results_len':results_len,'resp_keys':list(raw.keys()) if isinstance(raw,dict) else None},'timestamp':__import__('time').time(),'hypothesisId':'H1,H2'})+'\n')
+	except Exception as e:
+		with open(_log, 'a') as f: f.write(_json.dumps({'location':'tmdb_api.get_data','message':'log_exception','data':{'err':str(e)},'timestamp':__import__('time').time(),'hypothesisId':'H2'})+'\n')
+	# #endregion
+	if resp is None: raise Exception('get_tmdb returned None')
+	data = resp.json()
+	# TMDb returns {"status_code": N, "status_message": "..."} on error - no "results" key
+	if 'results' not in data:
+		status_code = data.get('status_code', 'unknown')
+		status_msg = data.get('status_message', 'Unknown error')
+		raise Exception('TMDb API error %s: %s' % (status_code, status_msg))
 	data['results'] = [remove_keys(i, tmdb_dict_removals) for i in data['results']]
 	return data
 

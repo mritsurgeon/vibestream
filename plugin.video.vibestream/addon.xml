@@ -1,4 +1,4 @@
-<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta16">
+<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta17">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
@@ -21,6 +21,6 @@
             <icon>icon.png</icon>
             <fanart>fanart.png</fanart>
         </assets>
-        <news>VibeStream 1.1.0-beta16 - Trending Recent/Latest now uses TMDb week; larger rating watermark on posters.</news>
+        <news>VibeStream 1.1.0-beta17 - Trending Recent/Latest fix: align TMDb params with Popular Today (region, language).</news>
     </extension>
 </addon>
