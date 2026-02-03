@@ -99,7 +99,8 @@ def routing(sys):
 				from modules.sources import Sources
 				return Sources().playback_prep(choice)
 			# User closed calendar without selecting - go back to parent to skip episode list
-			kodi_utils.execute_builtin('Container.ParentDir')
+			kodi_utils.sleep(100)
+			kodi_utils.execute_builtin('Container.ParentDir', block=True)
 		if mode == 'build_new_trakt_episodes':
 			from indexers.episodes import build_new_trakt_episodes
 			return build_new_trakt_episodes(params)

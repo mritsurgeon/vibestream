@@ -12,7 +12,7 @@ add_items, set_content, set_sort_method, end_directory = kodi_utils.add_items, k
 date_offset_info, default_all_episodes, nextep_include_unwatched = settings.date_offset, settings.default_all_episodes, settings.nextep_include_unwatched
 nextep_airing_today, nextep_sort_key, nextep_sort_direction = settings.nextep_airing_today, settings.nextep_sort_key, settings.nextep_sort_direction
 nextep_include_unaired, ep_display_format, widget_hide_watched = settings.nextep_include_unaired, settings.single_ep_display_format, settings.widget_hide_watched
-make_listitem, build_url, xbmc_actor, set_category = kodi_utils.make_listitem, kodi_utils.build_url, kodi_utils.xbmc_actor, kodi_utils.set_category
+make_listitem, build_url, xbmc_actor, set_category, notification = kodi_utils.make_listitem, kodi_utils.build_url, kodi_utils.xbmc_actor, kodi_utils.set_category, kodi_utils.notification
 nextep_limit_history, nextep_limit, tmdb_api_key, mpaa_region = settings.nextep_limit_history, settings.nextep_limit, settings.tmdb_api_key, settings.mpaa_region
 get_property, nextep_include_airdate, calendar_sort_order = kodi_utils.get_property, settings.nextep_include_airdate, settings.calendar_sort_order
 watched_indicators_info, nextep_method, show_specials, flatten_episodes = settings.watched_indicators, settings.nextep_method, settings.show_specials, settings.flatten_episodes
@@ -325,13 +325,15 @@ def build_single_episode(list_type, params={}):
 			try: data = sorted(data, key=lambda i: (i['sort_title'], i.get('first_aired', '2100-12-31')), reverse=True)
 			except Exception: data = sorted(data, key=lambda i: i['sort_title'], reverse=True)
 	elif list_type == 'episode.new_trakt':
-		# Uses data provided by build_new_trakt_episodes function
+		# Uses data provided by build_new_trakt_episodes - Trakt My Lists only
 		data = params.get('data_override', [])
 		include_unwatched, include_unaired, nextep_content = 3, True, nextep_method()  # Force include all unwatched
 		sort_key, sort_direction = 'name', False  # Sort by show name ascending
 		include_airdate = True
 		resformat, resinsert = '%Y-%m-%dT%H:%M:%S.%fZ', '2000-01-01T00:00:00.000Z'
 		list_type = 'episode.next_trakt'  # Use next episode display logic
+		if params.get('recently_aired_days'):
+			category_name = 'Your Latest Episodes'  # Override for last-7-days view
 	else: data, return_results = sorted(params, key=lambda i: i['custom_order']), True
 	list_type_compare = list_type.split('episode.')[1]
 	list_type_starts_with = list_type_compare.startswith
@@ -354,6 +356,18 @@ def build_single_episode(list_type, params={}):
 			item_list = sorted([i for i in item_list if not i['unwatched']], key=lambda i: func(i[sort_key]), reverse=sort_direction) + unwatched
 		else: item_list = sorted(item_list, key=lambda i: func(i[sort_key]), reverse=sort_direction)
 		item_list = airing_today + item_list
+		# Your Latest Episodes: filter to episodes aired in last N days only
+		recently_aired_days = params.get('recently_aired_days')
+		if recently_aired_days and list_type_starts_with('next_'):
+			from datetime import timedelta
+			cutoff = current_date - timedelta(days=int(recently_aired_days))
+			def _aired_in_range(item):
+				try:
+					air_date = jsondate_to_datetime(item.get('first_aired', '2000-01-01')[:10], '%Y-%m-%d').date()
+					return cutoff <= air_date <= current_date
+				except Exception:
+					return False
+			item_list = [i for i in item_list if _aired_in_range(i)]
 	else:
 		item_list.sort(key=lambda i: i['sort_order'])
 		if list_type_compare in ('trakt_calendar', 'trakt_recently_aired'):
@@ -374,75 +388,60 @@ def build_single_episode(list_type, params={}):
 	end_directory(handle, cacheToDisc=False)
 	set_view_mode(single_view, content_type, is_external)
 
+def _get_tracked_shows_from_my_lists():
+	"""Get all TV shows from user's Trakt My Lists only."""
+	from apis.trakt_api import trakt_get_lists, get_trakt_list_contents
+	tracked_shows = {}
+	def _add_show(media_ids, title='Unknown'):
+		tmdb_id = media_ids.get('tmdb') if isinstance(media_ids, dict) else None
+		if tmdb_id and tmdb_id not in tracked_shows:
+			tracked_shows[tmdb_id] = {
+				'media_ids': media_ids if isinstance(media_ids, dict) else {'tmdb': tmdb_id},
+				'season': 1,
+				'episode': 0,
+				'unwatched': True,
+				'title': title
+			}
+	try:
+		for list_item in (trakt_get_lists('my_lists') or []):
+			user = list_item.get('user', {}).get('ids', {}).get('slug')
+			slug = list_item.get('ids', {}).get('slug')
+			if not user or not slug:
+				continue
+			for item in (get_trakt_list_contents('my_lists', user, slug, True) or []):
+				_type = item.get('type')
+				if _type == 'show':
+					_add_show(item.get('media_ids', {}), item.get('title', 'Unknown'))
+				elif _type == 'episode':
+					_add_show(item.get('media_ids', {}), item.get('title', 'Unknown'))
+	except Exception:
+		pass
+	return list(tracked_shows.values())
+
+
 def build_new_trakt_episodes(params={}):
 	"""
-	Display ALL unwatched episodes from shows in user's Trakt lists.
-	Combines watchlist, collection, and favorites to find shows user is tracking,
-	then shows unwatched episodes from those shows.
+	Display unwatched episodes from shows in Trakt My Lists only.
+	- Your Latest Episodes (recently_aired): episodes aired in last 7 days, unwatched
+	- All Unwatched: all unwatched episodes
 	"""
-	from apis.trakt_api import trakt_watchlist, trakt_collection
-	from caches.favorites_cache import favorites_cache
-	
-	# Gather all tracked shows from various sources
-	tracked_shows = {}  # tmdb_id -> show_info dict
-	
-	# 1. Trakt Watchlist
-	try:
-		watchlist = trakt_watchlist('tvshow', None) or []
-		for item in watchlist:
-			tmdb_id = item.get('media_ids', {}).get('tmdb')
-			if tmdb_id and tmdb_id not in tracked_shows:
-				tracked_shows[tmdb_id] = {
-					'media_ids': item['media_ids'],
-					'season': 1,
-					'episode': 0,
-					'unwatched': True,
-					'title': item.get('title', 'Unknown')
-				}
-	except Exception:
-		pass
-	
-	# 2. Trakt Collection
-	try:
-		collection = trakt_collection('tvshow', None) or []
-		for item in collection:
-			tmdb_id = item.get('media_ids', {}).get('tmdb')
-			if tmdb_id and tmdb_id not in tracked_shows:
-				tracked_shows[tmdb_id] = {
-					'media_ids': item['media_ids'],
-					'season': 1,
-					'episode': 0,
-					'unwatched': True,
-					'title': item.get('title', 'Unknown')
-				}
-	except Exception:
-		pass
-	
-	# 3. Favorites
-	try:
-		favorites = favorites_cache.get_favorites('tvshow') or []
-		for item in favorites:
-			tmdb_id = int(item['tmdb_id'])
-			if tmdb_id not in tracked_shows:
-				tracked_shows[tmdb_id] = {
-					'media_ids': {'tmdb': tmdb_id},
-					'season': 1,
-					'episode': 0,
-					'unwatched': True,
-					'title': item.get('title', 'Unknown')
-				}
-	except Exception:
-		pass
-	
-	# Convert to list format expected by build_single_episode
-	data = list(tracked_shows.values())
+	data = _get_tracked_shows_from_my_lists()
+	recently_aired = params.get('recently_aired', 'false') == 'true'  # Your New Episodes: last 7 days only
 	
 	if not data:
-		# No tracked shows, show user-friendly message
-		from modules.kodi_utils import notification
-		notification('No tracked shows found. Add shows to Trakt or Favorites.', 3000)
+		# No tracked shows - add placeholder so GetDirectory succeeds, then notify
+		handle = int(sys.argv[1])
+		li = make_listitem()
+		li.setLabel('Add shows to Trakt My Lists')
+		li.setProperty('is_placeholder', 'true')
+		add_items(handle, [li])
+		set_content(handle, content_type)
+		set_category(handle, 'Your Latest Episodes' if recently_aired else 'All Unwatched')
+		end_directory(handle, cacheToDisc=False)
+		set_view_mode(single_view, content_type, external())
+		notification('Add shows to Trakt My Lists (My List → Trakt My Lists) to see unwatched episodes.', 4000)
 		return
 	
 	# Use the existing next episodes logic which handles unwatched filtering
-	return build_single_episode('episode.new_trakt', {'data_override': data})
+	return build_single_episode('episode.new_trakt', {'data_override': data, 'recently_aired_days': 7 if recently_aired else None})
 
