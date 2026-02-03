@@ -52,8 +52,8 @@ class Navigator:
 					set_property('vibestream.wizard_session_checked', 'true')
 					from modules.setup_wizard import first_run_check
 					if first_run_check():
-						# Wizard was run and completed, just return - menu will rebuild
-						return
+						# Wizard completed - do NOT return; fall through to build menu so Kodi gets end_directory
+						pass
 			if self.params_get('full_list', 'false') == 'true':
 				main_lists_result = get_main_lists(self.list_name)
 				browse_list = (main_lists_result[0] if main_lists_result and len(main_lists_result) > 0 else None) or []

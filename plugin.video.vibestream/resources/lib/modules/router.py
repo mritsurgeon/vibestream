@@ -5,10 +5,29 @@ from urllib.parse import parse_qsl
 
 def sys_exit_check(): return external()
 
+def _debug_log(location, message, data=None, hypothesis_id=None):
+	try:
+		import json
+		import xbmcvfs
+		import xbmcaddon
+		from time import time
+		path = xbmcvfs.translatePath(xbmcaddon.Addon('plugin.video.vibestream').getAddonInfo('profile')) + 'debug.log'
+		entry = {'location': location, 'message': message, 'data': data or {}, 'timestamp': int(time() * 1000), 'sessionId': 'debug-session', 'hypothesisId': hypothesis_id or 'A'}
+		f = xbmcvfs.File(path, 'a')
+		f.write(json.dumps(entry) + '\n')
+		f.close()
+	except Exception:
+		pass
+
 def routing(sys):
-	params = dict(parse_qsl(sys.argv[2][1:], keep_blank_values=True))
+	raw_url = sys.argv[2] if len(sys.argv) > 2 else ''
+	query = raw_url.split('?', 1)[1] if raw_url and '?' in raw_url else (raw_url[1:] if raw_url and raw_url.startswith('?') else '')
+	params = dict(parse_qsl(query, keep_blank_values=True))
 	_get = params.get
 	mode = _get('mode', 'navigator.main')
+	# #region agent log
+	_debug_log('router.py:routing', 'entry', {'raw_url': raw_url, 'query': query, 'params': params, 'mode': mode}, 'H1')
+	# #endregion
 	if 'navigator.' in mode:
 		from indexers.navigator import Navigator
 		method = mode.split('.')[1]
