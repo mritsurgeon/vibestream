@@ -201,6 +201,8 @@ def build_single_episode(list_type, params={}):
 			bookmarks = get_bookmarks_episode(tmdb_id, season, watched_db)
 			progress = get_progress_status_episode(bookmarks, episode)
 			if not list_type_starts_with('next_'): playcount = get_watched_status_episode(watched_info, (season, episode))
+			if params.get('filter_unwatched_only') and playcount:
+				return
 			if list_type_starts_with('next_'):
 				if include_airdate:
 					if episode_date: display_premiered = '[%s] ' % make_day(current_date, episode_date)
@@ -313,8 +315,12 @@ def build_single_episode(list_type, params={}):
 	elif list_type == 'episode.recently_watched': data = get_recently_watched('episode')
 	elif list_type == 'episode.trakt':
 		recently_aired = params.get('recently_aired', None)
+		filter_unwatched_only = params.get('filter_unwatched_only', False)
+		recently_aired_days = params.get('recently_aired_days')
 		data = trakt_get_my_calendar(recently_aired, get_datetime()) or []
 		list_type = 'episode.trakt_recently_aired' if recently_aired else 'episode.trakt_calendar'
+		if filter_unwatched_only:
+			category_name = 'Your Latest Episodes'
 		if flatten_episodes():
 			try:
 				duplicates = set()
@@ -382,6 +388,18 @@ def build_single_episode(list_type, params={}):
 										key=lambda i: i['first_aired'])
 				item_list = [i for i in item_list if not i in airing_today]
 				item_list = airing_today + item_list
+			# Your Latest Episodes: filter to last N days when using calendar source
+			recently_aired_days = params.get('recently_aired_days')
+			if recently_aired_days and list_type_compare == 'trakt_recently_aired':
+				from datetime import timedelta
+				cutoff = current_date - timedelta(days=int(recently_aired_days))
+				def _aired_in_range(item):
+					try:
+						air_date = jsondate_to_datetime(item.get('first_aired', '2000-01-01')[:10], '%Y-%m-%d').date()
+						return cutoff <= air_date <= current_date
+					except Exception:
+						return False
+				item_list = [i for i in item_list if _aired_in_range(i)]
 	add_items(handle, [i['list_items'] for i in item_list])
 	set_content(handle, content_type)
 	set_category(handle, category_name)
@@ -421,27 +439,33 @@ def _get_tracked_shows_from_my_lists():
 
 def build_new_trakt_episodes(params={}):
 	"""
-	Display unwatched episodes from shows in Trakt My Lists only.
-	- Your Latest Episodes (recently_aired): episodes aired in last 7 days, unwatched
-	- All Unwatched: all unwatched episodes
+	- Your Latest Episodes (recently_aired): calendar source (watchlist/collection/progress), unwatched, last 7 days
+	- All Unwatched: Trakt My Lists only, all unwatched episodes
 	"""
+	recently_aired = params.get('recently_aired', 'false') == 'true'
+
+	if recently_aired:
+		# Your Latest Episodes: same source as Trakt Calendar (calendars/my/shows)
+		return build_single_episode('episode.trakt', {
+			'recently_aired': True,
+			'filter_unwatched_only': True,
+			'recently_aired_days': 7
+		})
+
+	# All Unwatched: Trakt My Lists only
 	data = _get_tracked_shows_from_my_lists()
-	recently_aired = params.get('recently_aired', 'false') == 'true'  # Your New Episodes: last 7 days only
-	
 	if not data:
-		# No tracked shows - add placeholder so GetDirectory succeeds, then notify
 		handle = int(sys.argv[1])
 		li = make_listitem()
 		li.setLabel('Add shows to Trakt My Lists')
 		li.setProperty('is_placeholder', 'true')
 		add_items(handle, [li])
 		set_content(handle, content_type)
-		set_category(handle, 'Your Latest Episodes' if recently_aired else 'All Unwatched')
+		set_category(handle, 'All Unwatched')
 		end_directory(handle, cacheToDisc=False)
 		set_view_mode(single_view, content_type, external())
 		notification('Add shows to Trakt My Lists (My List → Trakt My Lists) to see unwatched episodes.', 4000)
 		return
-	
-	# Use the existing next episodes logic which handles unwatched filtering
-	return build_single_episode('episode.new_trakt', {'data_override': data, 'recently_aired_days': 7 if recently_aired else None})
+
+	return build_single_episode('episode.new_trakt', {'data_override': data, 'recently_aired_days': None})
 

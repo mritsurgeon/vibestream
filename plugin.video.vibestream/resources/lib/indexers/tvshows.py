@@ -22,7 +22,8 @@ main = ('tmdb_tv_popular', 'tmdb_tv_popular_today', 'tmdb_tv_top_rated', 'tmdb_t
 special = ('tmdb_tv_languages', 'tmdb_tv_networks', 'tmdb_tv_providers', 'tmdb_tv_providers_uk', 'tmdb_tv_year', 'tmdb_tv_decade', 'tmdb_tv_recommendations', 'tmdb_tv_genres',
 'tmdb_tv_search', 'tmdb_tv_keyword_results', 'tmdb_tv_keyword_results_direct', 'tmdb_anime_year', 'tmdb_anime_decade', 'tmdb_anime_genres',
 'tmdb_anime_providers', 'tmdb_anime_search')
-personal = {'in_progress_tvshows': ('modules.watched_status', 'get_in_progress_tvshows'), 'favorites_tvshows': ('modules.favorites', 'get_favorites'),
+personal = {'in_progress_tvshows': ('modules.watched_status', 'get_in_progress_tvshows'), 'resume_watching_tvshows': ('modules.watched_status', 'get_resume_watching_tvshows'),
+'favorites_tvshows': ('modules.favorites', 'get_favorites'),
 'favorites_anime_tvshows': ('modules.favorites', 'get_favorites'), 'watched_tvshows': ('modules.watched_status', 'get_watched_items')}
 trakt_main = ('trakt_tv_trending', 'trakt_tv_trending_recent', 'trakt_tv_most_watched', 'trakt_tv_most_favorited',
 'trakt_anime_trending', 'trakt_anime_trending_recent', 'trakt_anime_most_watched', 'trakt_anime_most_favorited')

@@ -1,5 +1,5 @@
-[COLOR dodgerblue][B]VibeStream 1.1.0-beta9[/B][/COLOR]
-- Your Latest Episodes: unwatched episodes from last 7 days, Trakt My Lists only
-- All Unwatched: all unwatched episodes, Trakt My Lists only
-- Trakt Calendar: Back once returns to parent menu (skips episode list)
-- Empty state: add placeholder so GetDirectory succeeds, clearer message
+[COLOR dodgerblue][B]VibeStream 1.1.0-beta10[/B][/COLOR]
+- Resume Watching: renamed from Continue Watching (Movies and TV)
+- Resume Watching TV: in-progress only filter (excludes fully watched shows)
+- Your Latest Episodes: calendar source (watchlist/collection/progress), unwatched, last 7 days
+- All Unwatched: Trakt My Lists only

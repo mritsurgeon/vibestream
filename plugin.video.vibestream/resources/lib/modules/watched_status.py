@@ -59,7 +59,7 @@ def make_batch_insert(action, media_type, media_id, season, episode, last_played
 def refresh_container(refresh=True):
 	if refresh: kodi_refresh()
 
-def active_tvshows_information(status_type):
+def active_tvshows_information(status_type, in_progress_only=False):
 	def _process(item):
 		media_id = item['media_id']
 		meta = metadata.tvshow_meta('tmdb_id', media_id, api_key, mpaa_region_value, get_datetime())
@@ -80,7 +80,7 @@ def active_tvshows_information(status_type):
 	data = [v for k, v in watched_info.items()]
 	progress_location = tv_progress_location()
 	if status_type == 'watched': include_other = progress_location in (0, 2)
-	else: include_other = progress_location in (1, 2)
+	else: include_other = False if in_progress_only else progress_location in (1, 2)
 	threads = list(make_thread_list(_process, data))
 	[i.join() for i in threads]
 	return results
@@ -423,6 +423,16 @@ def get_in_progress_movies(dummy_arg, page_no):
 def get_in_progress_tvshows(dummy_arg, page_no):
 	# results = cache_watched_tvshow_status(active_tvshows_information, 'progress')
 	results = active_tvshows_information('progress')
+	hidden_items = get_hidden_progress_items(watched_indicators_function())
+	results = [i for i in results if not int(i['media_id']) in hidden_items]
+	if lists_sort_order('progress') == 0: results = sort_for_article(results, 'title')
+	else: results = sorted(results, key=lambda x: x['last_played'], reverse=True)
+	return results
+
+def get_resume_watching_tvshows(dummy_arg, page_no):
+	"""Resume Watching: TV shows in progress only (not finished). Uses same source as Continue Watching
+	but filters to exclude fully watched shows. Data comes from Trakt sync or local watched DB."""
+	results = active_tvshows_information('progress', in_progress_only=True)
 	hidden_items = get_hidden_progress_items(watched_indicators_function())
 	results = [i for i in results if not int(i['media_id']) in hidden_items]
 	if lists_sort_order('progress') == 0: results = sort_for_article(results, 'title')
