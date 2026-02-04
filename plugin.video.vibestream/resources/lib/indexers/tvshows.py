@@ -138,7 +138,6 @@ class TVShows:
 				self.list = data or []
 				self.total_pages = total_pages
 				if total_pages > page_no: self.new_page = {'new_page': string(page_no + 1), 'paginate_start': self.paginate_start}
-				if not self.list and page_no == 1: notification('Watch some TV shows first to get personalized recommendations.', 4000)
 			elif self.action == 'imdb_more_like_this':
 				if self.params_get('get_imdb'):
 					self.params['key_id'] = tvshow_meta('tmdb_id', self.params_get('key_id'), tmdb_api_key(), mpaa_region(), get_datetime(), get_current_timestamp())['imdb_id']
@@ -239,7 +238,16 @@ class TVShows:
 			listitem.setLabel(display_title)
 			listitem.addContextMenuItems(cm)
 			display_poster = poster
-			if rating_watermark_enabled() and poster:
+			
+			# "I Can't Decide" Overlay
+			if because_you_watched:
+				try:
+					from modules.recommendation_overlay import get_poster_with_caption
+					display_poster = get_poster_with_caption(poster, "Because you watched %s" % because_you_watched, rating=meta_get('rating')) or poster
+				except Exception as e:
+					logger('VibeStream TVShows Overlay', 'Failed to create overlay: %s' % str(e))
+
+			if rating_watermark_enabled() and poster and not because_you_watched:
 				try:
 					from modules.rating_overlay import get_poster_with_rating
 					display_poster = get_poster_with_rating(poster, meta_get('rating')) or poster

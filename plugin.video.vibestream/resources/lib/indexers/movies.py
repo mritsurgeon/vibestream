@@ -143,7 +143,6 @@ class Movies:
 				self.list = data or []
 				self.total_pages = total_pages
 				if total_pages > page_no: self.new_page = {'new_page': string(page_no + 1), 'paginate_start': self.paginate_start}
-				if not self.list and page_no == 1: notification('Watch some movies first to get personalized recommendations.', 4000)
 			elif self.action  == 'tmdb_movies_sets':
 				self.movieset_list_active = True
 				data = sorted(movieset_meta(self.params_get('key_id'), tmdb_api_key())['parts'], key=lambda k: k['release_date'] or '2050')
@@ -275,7 +274,16 @@ class Movies:
 			listitem.setLabel(display_title)
 			listitem.addContextMenuItems(cm)
 			display_poster = poster
-			if rating_watermark_enabled() and poster:
+			
+			# "I Can't Decide" Overlay
+			if because_you_watched:
+				try:
+					from modules.recommendation_overlay import get_poster_with_caption
+					display_poster = get_poster_with_caption(poster, "Because you watched %s" % because_you_watched, rating=meta_get('rating')) or poster
+				except Exception as e:
+					logger('VibeStream Movies Overlay', 'Failed to create overlay: %s' % str(e))
+					
+			if rating_watermark_enabled() and poster and not because_you_watched:
 				try:
 					from modules.rating_overlay import get_poster_with_rating
 					display_poster = get_poster_with_rating(poster, meta_get('rating')) or poster

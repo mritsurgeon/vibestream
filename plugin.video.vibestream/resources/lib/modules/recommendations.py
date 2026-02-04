@@ -3,8 +3,12 @@ from modules.watched_status import get_recently_watched
 from modules.metadata import movie_meta, tvshow_meta
 from modules.settings import tmdb_api_key, mpaa_region
 from modules.utils import get_datetime
-from apis.tmdb_api import tmdb_api_key as get_tmdb_key, tmdb_movies_recommendations, tmdb_tv_recommendations
+from modules import kodi_utils
+from apis.tmdb_api import tmdb_api_key as get_tmdb_key, tmdb_movies_recommendations, tmdb_tv_recommendations, tmdb_movies_popular, tmdb_tv_popular
+from modules.watched_status import get_watched_items
 from caches.main_cache import main_cache
+
+logger = kodi_utils.logger
 
 # Cache discovery params so "New For You" doesn't refetch metadata every time (5 min TTL)
 DISCOVERY_CACHE_PREFIX = 'vibestream_discovery_'
@@ -72,15 +76,34 @@ class RecommendationsManager:
             start = (page_no - 1) * page_limit
             page_items = cached[start:start + page_limit]
             total_pages = max(1, (len(cached) + page_limit - 1) // page_limit)
+            logger('VibeStream I Cant Decide', 'cache hit %s page=%s returning %s items (total %s)' % (media_type, page_no, len(page_items), len(cached)))
             return page_items, total_pages
 
         recently_watched = get_recently_watched(media_type, short_list=1)
         if not recently_watched:
-            return [], 1
+            logger('VibeStream I Cant Decide', '%s no recently_watched -> fallback' % media_type)
+            return self._get_fallback_recommendations(media_type, page_no, page_limit)
 
         # Get unique seeds (by tmdb_id for movies, by show tmdb_id for tv)
         seen = set()
         seeds = []
+        
+        # Pre-fetch watched status to exclude items the user has already seen
+        # watched_items is a list of dicts or just dicts depending on type.
+        # get_watched_items returns a list of items.
+        try:
+            watched_list = get_watched_items(media_type, 1) # page_no 1, but we want all. 
+            # get_watched_items implementation in watched_status.py fetches ALL items if page_no is irrelevant or it returns everything.
+            # Looking at watched_status.py: get_watched_items(media_type, page_no) returns results.
+            # Movie: [v for k,v in watched_info_movie().items()] -> returns list of dicts {'media_id': ...}
+            # TV: active_tvshows_information('watched') -> returns list of dicts.
+            watched_ids = set()
+            for i in watched_list:
+                 mid = i.get('media_id') or (i.get('media_ids') or {}).get('tmdb')
+                 if mid: watched_ids.add(str(mid))
+        except Exception:
+            watched_ids = set()
+
         for item in recently_watched[:BECAUSE_YOU_WATCHED_SEEDS * 2]:  # Overfetch in case of dupes
             tmdb_id = item.get('media_id') or (item.get('media_ids') or {}).get('tmdb')
             if not tmdb_id or tmdb_id in seen:
@@ -98,7 +121,11 @@ class RecommendationsManager:
             seeds.append((tmdb_id, title))
 
         if not seeds:
-            return [], 1
+            logger('VibeStream I Cant Decide', '%s recently_watched had %s items but 0 valid seeds -> fallback' % (media_type, len(recently_watched)))
+            return self._get_fallback_recommendations(media_type, page_no, page_limit)
+
+        seed_titles = [t for _, t in seeds]
+        logger('VibeStream I Cant Decide', '%s seeds from recently_watched: %s' % (media_type, ' | '.join(seed_titles)))
 
         rec_func = tmdb_movies_recommendations if media_type == 'movie' else tmdb_tv_recommendations
         merged = []
@@ -107,18 +134,48 @@ class RecommendationsManager:
             try:
                 data = rec_func(seed_tmdb_id, 1)
                 results = data.get('results', [])[:BECAUSE_YOU_WATCHED_PER_SEED]
+                added = 0
                 for r in results:
                     rid = r.get('id')
-                    if rid and rid not in seen_ids:
+                    if rid and rid not in seen_ids and str(rid) not in watched_ids:
                         seen_ids.add(rid)
                         merged.append({'tmdb_id': rid, 'because_you_watched': seed_title})
-            except Exception:
-                continue
+                        added += 1
+                logger('VibeStream I Cant Decide', 'seed "%s" (tmdb=%s) -> %s recs added (total merged=%s)' % (seed_title, seed_tmdb_id, added, len(merged)))
+            except Exception as e:
+                logger('VibeStream I Cant Decide', 'seed "%s" tmdb=%s failed: %s' % (seed_title, seed_tmdb_id, str(e)))
+
+        if not merged:
+             logger('VibeStream I Cant Decide', 'Merged list empty after processing seeds -> fallback')
+             return self._get_fallback_recommendations(media_type, page_no, page_limit)
 
         main_cache.set(cache_key, merged, expiration=BECAUSE_YOU_WATCHED_HOURS)
         start = (page_no - 1) * page_limit
         page_items = merged[start:start + page_limit]
         total_pages = max(1, (len(merged) + page_limit - 1) // page_limit)
+        logger('VibeStream I Cant Decide', '%s built %s items page=%s showing %s' % (media_type, len(merged), page_no, len(page_items)))
         return page_items, total_pages
+
+    def _get_fallback_recommendations(self, media_type, page_no, page_limit):
+        """
+        Fallback logic when no watch history is available.
+        Uses generic Popular/Trending items.
+        """
+        logger('VibeStream I Cant Decide', 'Using fallback recommendations for %s' % media_type)
+        fallback_func = tmdb_movies_popular if media_type == 'movie' else tmdb_tv_popular
+        try:
+            data = fallback_func(1)
+            results = data.get('results', [])
+            fallback_items = [{'tmdb_id': r['id'], 'because_you_watched': 'Global Popularity'} for r in results]
+            
+            # We don't cache fallbacks under the main key so that if the user watches something, 
+            # the next load will try to generate real recs again.
+            start = (page_no - 1) * page_limit
+            page_items = fallback_items[start:start + page_limit]
+            total_pages = max(1, (len(fallback_items) + page_limit - 1) // page_limit)
+            return page_items, total_pages
+        except Exception as e:
+            logger('VibeStream I Cant Decide', 'Fallback failed: %s' % str(e))
+            return [], 1
 
 recommendations_manager = RecommendationsManager()
