@@ -23,7 +23,7 @@ def movie_meta(id_type, media_id, api_key, mpaa_region, current_date, current_ti
 	meta = metacache_get('movie', id_type, media_id, current_time)
 	if meta: return meta
 	try:
-		if id_type in ('tmdb_id', 'imdb_id'): data = movie_details(media_id, api_key)
+		if id_type == 'tmdb_id': data = movie_details(media_id, api_key)
 		else:
 			external_result = movie_external_id(id_type, media_id, api_key)
 			if not external_result: data = None

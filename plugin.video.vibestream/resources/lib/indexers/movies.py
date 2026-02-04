@@ -6,7 +6,7 @@ from modules.metadata import movie_meta, movieset_meta
 from modules.utils import manual_function_import, get_datetime, make_thread_list_enumerate, make_thread_list_multi_arg, get_current_timestamp, paginate_list, jsondate_to_datetime
 from modules.watched_status import get_database, watched_info_movie, get_watched_status_movie, get_bookmarks_movie, get_progress_status_movie
 from modules.recommendations import recommendations_manager
-# logger = kodi_utils.logger
+logger = kodi_utils.logger
 
 make_listitem, build_url, nextpage_landscape, notification = kodi_utils.make_listitem, kodi_utils.build_url, kodi_utils.nextpage_landscape, kodi_utils.notification
 string, external, add_items, add_dir, get_property = str, kodi_utils.external, kodi_utils.add_items, kodi_utils.add_dir, kodi_utils.get_property
@@ -56,8 +56,11 @@ class Movies:
 			except Exception: pass
 			if self.action in main:
 				data = function(page_no)
-				self.list = [i['id'] for i in data['results']]
-				if data['total_pages'] > page_no: self.new_page = {'new_page': string(data['page'] + 1)}
+				if data is None or not isinstance(data, dict) or 'results' not in data:
+					self.list = []
+				else:
+					self.list = [i['id'] for i in data['results']]
+					if data['total_pages'] > page_no: self.new_page = {'new_page': string(data['page'] + 1)}
 			elif self.action in special:
 				key_id = self.params_get('key_id') or self.params_get('query')
 				if not key_id: return
@@ -74,8 +77,17 @@ class Movies:
 			elif self.action in trakt_main:
 				self.id_type = 'trakt_dict'
 				data = function(page_no)
-				try: self.list = [i['movie']['ids'] for i in data]
-				except Exception: self.list = [i['ids'] for i in data]
+				if data is None:
+					logger('VibeStream Movies fetch_list', 'action=%s data=None -> blank' % self.action)
+					self.list = []
+				else:
+					try: self.list = [i['movie']['ids'] for i in data]
+					except Exception as e:
+						try: self.list = [i['ids'] for i in data]
+						except Exception: self.list = []
+						logger('VibeStream Movies fetch_list', 'action=%s extract failed %s list_len=%s' % (self.action, str(e), len(self.list)))
+					if not self.list and data:
+						logger('VibeStream Movies fetch_list', 'action=%s data has %s items but list empty' % (self.action, len(data)))
 				if self.action not in ('trakt_movies_top10_boxoffice', 'trakt_recommendations'): self.new_page = {'new_page': string(page_no + 1)}
 			elif self.action in trakt_personal:
 				self.id_type = 'trakt_dict'
@@ -129,7 +141,8 @@ class Movies:
 			if self.new_page and not self.widget_hide_next_page:
 					self.new_page.update({'mode': 'build_movie_list', 'action': self.action, 'category_name': self.category_name})
 					add_dir(self.new_page, 'Next Page (%s) >>' % self.new_page['new_page'], handle, 'nextpage', nextpage_landscape)
-		except Exception: pass
+		except Exception as e:
+			logger('VibeStream Movies fetch_list', 'action=%s exception %s' % (self.params_get('action'), str(e)))
 		set_content(handle, content_type)
 		set_category(handle, self.category_name)
 		end_directory(handle, cacheToDisc=False if self.is_external else True)
@@ -143,8 +156,10 @@ class Movies:
 			if self.id_type == 'because_you_watched' and isinstance(_id, dict):
 				because_you_watched = _id.get('because_you_watched')
 				_id = _id.get('tmdb_id')
-			meta = movie_meta('tmdb_id', _id, self.tmdb_api_key, self.mpaa_region, self.current_date, self.current_time)
-			if not meta or 'blank_entry' in meta: return
+			meta = movie_meta(self.id_type, _id, self.tmdb_api_key, self.mpaa_region, self.current_date, self.current_time)
+			if not meta or 'blank_entry' in meta:
+				logger('VibeStream Movies build_content', 'action=%s meta=None/blank id=%s' % (self.action, _id))
+				return
 			listitem = make_listitem()
 			tmdb_active = settings.tmdb_user_active()
 			my_tmdb_list = _id.get('my_tmdb_list', '') if isinstance(_id, dict) else ''
@@ -155,6 +170,8 @@ class Movies:
 			meta_get = meta.get
 			premiered = meta_get('premiered')
 			title, year = meta_get('title'), meta_get('year') or '2050'
+			if not title:
+				logger('VibeStream Movies build_content', 'action=%s title empty tmdb_id=%s' % (self.action, meta_get('tmdb_id')))
 			tmdb_id, imdb_id = meta_get('tmdb_id'), meta_get('imdb_id')
 			str_tmdb_id = string(tmdb_id)
 			poster, fanart, clearlogo, landscape = meta_get('poster') or poster_empty, meta_get('fanart') or fanart_empty, meta_get('clearlogo') or '', meta_get('landscape') or ''

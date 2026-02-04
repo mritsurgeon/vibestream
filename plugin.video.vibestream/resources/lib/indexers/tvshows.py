@@ -6,7 +6,7 @@ from modules.metadata import tvshow_meta
 from modules.utils import manual_function_import, get_datetime, make_thread_list_enumerate, make_thread_list_multi_arg, get_current_timestamp, paginate_list
 from modules.watched_status import get_database, watched_info_tvshow, get_watched_status_tvshow, get_progress_status_tvshow
 from modules.recommendations import recommendations_manager
-# logger = kodi_utils.logger
+logger = kodi_utils.logger
 
 string, external, add_items, add_dir, notification = str, kodi_utils.external, kodi_utils.add_items, kodi_utils.add_dir, kodi_utils.notification
 sleep, add_item, xbmc_actor, home, tmdb_api_key = kodi_utils.sleep, kodi_utils.add_item, kodi_utils.xbmc_actor, kodi_utils.home, settings.tmdb_api_key
@@ -62,8 +62,11 @@ class TVShows:
 			except Exception: pass
 			if self.action in main:
 				data = function(page_no)
-				self.list = [i['id'] for i in data['results']]
-				if not is_random and  data['total_pages'] > page_no: self.new_page = {'new_page': string(page_no + 1)}
+				if data is None or not isinstance(data, dict) or 'results' not in data:
+					self.list = []
+				else:
+					self.list = [i['id'] for i in data['results']]
+					if not is_random and data['total_pages'] > page_no: self.new_page = {'new_page': string(data['page'] + 1)}
 			elif self.action in special:
 				key_id = self.params_get('key_id') or self.params_get('query')
 				if not key_id: return
@@ -79,8 +82,17 @@ class TVShows:
 			elif self.action in trakt_main:
 				self.id_type = 'trakt_dict'
 				data = function(page_no)
-				try: self.list = [i['show']['ids'] for i in data]
-				except Exception: self.list = [i['ids'] for i in data]
+				if data is None:
+					logger('VibeStream TVShows fetch_list', 'action=%s data=None -> blank' % self.action)
+					self.list = []
+				else:
+					try: self.list = [i['show']['ids'] for i in data]
+					except Exception as e:
+						try: self.list = [i['ids'] for i in data]
+						except Exception: self.list = []
+						logger('VibeStream TVShows fetch_list', 'action=%s extract failed %s list_len=%s' % (self.action, str(e), len(self.list)))
+					if not self.list and data:
+						logger('VibeStream TVShows fetch_list', 'action=%s data has %s items but list empty' % (self.action, len(data)))
 				if not is_random and self.action != 'trakt_recommendations': self.new_page = {'new_page': string(page_no + 1)}
 			elif self.action in trakt_special:
 				self.id_type = 'trakt_dict'
@@ -136,7 +148,8 @@ class TVShows:
 			if self.new_page and not self.widget_hide_next_page:
 						self.new_page.update({'mode': 'build_tvshow_list', 'action': self.action, 'category_name': self.category_name})
 						add_dir(self.new_page, 'Next Page (%s) >>' % self.new_page['new_page'], handle, 'nextpage', nextpage_landscape)
-		except Exception: pass
+		except Exception as e:
+			logger('VibeStream TVShows fetch_list', 'action=%s exception %s' % (self.params_get('action'), str(e)))
 		set_content(handle, content_type)
 		set_category(handle, self.category_name)
 		end_directory(handle, cacheToDisc=False if self.is_external else True)
@@ -150,8 +163,10 @@ class TVShows:
 			if self.id_type == 'because_you_watched' and isinstance(_id, dict):
 				because_you_watched = _id.get('because_you_watched')
 				_id = _id.get('tmdb_id')
-			meta = tvshow_meta('tmdb_id', _id, self.tmdb_api_key, self.mpaa_region, self.current_date, self.current_time)
-			if not meta or 'blank_entry' in meta: return
+			meta = tvshow_meta(self.id_type, _id, self.tmdb_api_key, self.mpaa_region, self.current_date, self.current_time)
+			if not meta or 'blank_entry' in meta:
+				logger('VibeStream TVShows build_content', 'action=%s meta=None/blank id=%s' % (self.action, _id))
+				return
 			cm = []
 			cm_append = cm.append
 			listitem = make_listitem()
@@ -161,6 +176,8 @@ class TVShows:
 			meta_get = meta.get
 			premiered = meta_get('premiered')
 			trailer, title, year = meta_get('trailer'), meta_get('title'), meta_get('year') or '2050'
+			if not title:
+				logger('VibeStream TVShows build_content', 'action=%s title empty tmdb_id=%s' % (self.action, meta_get('tmdb_id')))
 			tvdb_id, imdb_id = meta_get('tvdb_id'), meta_get('imdb_id')
 			poster, fanart, clearlogo, landscape = meta_get('poster') or poster_empty, meta_get('fanart') or fanart_empty, meta_get('clearlogo') or '', meta_get('landscape') or ''
 			thumb = poster or landscape or fanart
