@@ -6,7 +6,6 @@ from caches.main_cache import main_cache
 from caches.navigator_cache import navigator_cache as nc
 from caches.settings_cache import get_setting, set_setting
 from modules import meta_lists as ml, kodi_utils as k, settings as s
-from modules.kodi_utils import debug_log
 from modules.watched_status import get_recently_watched
 # logger = k.logger
 
@@ -43,7 +42,6 @@ class Navigator:
 		self.is_home = home()
 
 	def main(self):
-		debug_log('navigator.py:main', 'entry', {'list_name': self.list_name, 'params': self.params}, 'H2')
 		try:
 			# Netflix/HBO-style: clean category title at root; set description for skins
 			if self.list_name == 'RootList':
@@ -53,13 +51,10 @@ class Navigator:
 				if not get_property('vibestream.wizard_session_checked'):
 					set_property('vibestream.wizard_session_checked', 'true')
 					from modules.setup_wizard import first_run_check
-					debug_log('navigator.py:main', 'calling first_run_check', {'list_name': self.list_name}, 'H1')
 					wizard_ran = first_run_check()
-					debug_log('navigator.py:main', 'first_run_check returned', {'wizard_ran': wizard_ran, 'list_name': self.list_name}, 'H1')
 					if wizard_ran:
 						# Wizard completed - force navigation to root so user sees main menu, not widget/shortcut URL (e.g. TVShowList)
 						root_url = build_url({'mode': 'navigator.main', 'action': 'RootList'})
-						debug_log('navigator.py:main', 'wizard done, redirecting to root', {'root_url': root_url}, 'H1')
 						container_refresh_input(root_url, block=True)
 						return
 			if self.params_get('full_list', 'false') == 'true':
@@ -67,7 +62,6 @@ class Navigator:
 				browse_list = (main_lists_result[0] if main_lists_result and len(main_lists_result) > 0 else None) or []
 			else:
 				browse_list = currently_used_list(self.list_name) or []
-			debug_log('navigator.py:main', 'building menu', {'list_name': self.list_name, 'browse_list_len': len(browse_list)}, 'H2')
 			for count, item in enumerate(browse_list):
 				iconImage = item.get('iconImage') or ''
 				icon, original_image = (iconImage, True) if iconImage.startswith('http') else (iconImage, False)
@@ -80,13 +74,11 @@ class Navigator:
 							('[B]Browse Removed items[/B]', run_plugin % build_url({'mode': 'menu_editor.browse', 'active_list': self.list_name, 'position': count}))]
 				self.add(item, item.get('name', ''), icon, original_image, cm_items=cm_items)
 		except Exception as e:
-			debug_log('navigator.py:main', 'exception', {'error': str(e)}, 'H2')
 			try:
 				k.logger('VibeStream Navigator.main', str(e))
 			except Exception:
 				pass
 		try:
-			debug_log('navigator.py:main', 'calling end_directory', {}, 'H2')
 			self.end_directory()
 		except Exception as e:
 			try:

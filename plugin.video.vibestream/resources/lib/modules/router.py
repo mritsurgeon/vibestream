@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from modules.kodi_utils import external, debug_log
+from modules.kodi_utils import external
 from urllib.parse import parse_qsl
 # from modules.kodi_utils import logger
 
@@ -11,9 +11,6 @@ def routing(sys):
 	params = dict(parse_qsl(query, keep_blank_values=True))
 	_get = params.get
 	mode = _get('mode', 'navigator.main')
-	# #region agent log
-	debug_log('router.py:routing', 'entry', {'raw_url': raw_url, 'query': query, 'params': params, 'mode': mode}, 'H1')
-	# #endregion
 	if 'navigator.' in mode:
 		from indexers.navigator import Navigator
 		method = mode.split('.')[1]
@@ -333,7 +330,7 @@ def routing(sys):
 			return set_list_backdrop(_get('list_id', None), _get('backdrop_url', None))
 	if mode == 'set_view':
 		from modules.kodi_utils import set_view
-		return kodi_utils.set_view(_get('view_type'))
+		return set_view(_get('view_type'))
 	if mode == 'sync_settings':
 		from caches.settings_cache import sync_settings
 		return sync_settings(params)

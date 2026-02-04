@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
 from modules import kodi_utils
-from modules.kodi_utils import debug_log
 from caches.settings_cache import set_setting, get_setting
 
 # Local imports
@@ -19,12 +18,10 @@ def run_setup_wizard():
 		return False
 
 def _run_setup_wizard():
-	debug_log('setup_wizard.py:_run_setup_wizard', 'start', {}, 'H2')
 	# 1. Welcome — user can skip and go straight to the addon
 	if not confirm_dialog(heading='Welcome to VibeStream!',
 						 text='This wizard will help you set up Trakt, Real-Debrid, and your Quality Presets for the best experience.\n\nStart setup now?',
 						 ok_label='Start Setup', cancel_label='Skip for Now'):
-		debug_log('setup_wizard.py:_run_setup_wizard', 'user skipped wizard', {}, 'H2')
 		set_setting('vibestream.setup_wizard_run', 'true')
 		return False
 
@@ -63,7 +60,6 @@ def _run_setup_wizard():
 
 	# Final
 	set_setting('vibestream.setup_wizard_run', 'true')
-	debug_log('setup_wizard.py:_run_setup_wizard', 'wizard complete, returning True', {'setting_set': True}, 'H4')
 	try:
 		kodi_utils.ok_dialog('Setup Complete', 'VibeStream is now configured! Enjoy your movies and shows.')
 	except Exception as e:
@@ -73,10 +69,6 @@ def _run_setup_wizard():
 
 def first_run_check():
 	wizard_not_run = get_setting('vibestream.setup_wizard_run', 'false') == 'false'
-	debug_log('setup_wizard.py:first_run_check', 'entry', {'wizard_not_run': wizard_not_run}, 'H2')
 	if wizard_not_run:
-		result = run_setup_wizard()
-		debug_log('setup_wizard.py:first_run_check', 'run_setup_wizard returned', {'result': result}, 'H2')
-		return result
-	debug_log('setup_wizard.py:first_run_check', 'skipping wizard (already run)', {}, 'H2')
+		return run_setup_wizard()
 	return False
