@@ -284,9 +284,6 @@ def routing(sys):
 		if mode == 'show_text':
 			from modules.kodi_utils import show_text
 			return show_text(_get('heading'), _get('text', None), _get('file', None), _get('font_size', 'small'), _get('kodi_log', 'false') == 'true')
-		if mode == 'show_text_media':
-			from modules.kodi_utils import show_text_media
-			return show_text(_get('heading'), _get('text', None), _get('file', None), _get('meta'), {})
 	if 'settings_manager.' in mode:
 		from caches import settings_cache
 		method = mode.split('.')[1]
