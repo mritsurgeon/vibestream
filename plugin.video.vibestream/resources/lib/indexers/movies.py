@@ -113,6 +113,22 @@ class Movies:
 				data = function(url, page_no)
 				self.list = [i['id'] for i in data['results']]
 				if data['total_pages'] > page_no: self.new_page = {'url': url, 'new_page': string(data['page'] + 1)}
+			elif self.action == 'tmdb_movies_no_cams':
+				from apis.tmdb_api import tmdb_movies_popular, tmdb_movies_in_theaters
+				from modules.quality_check import filter_movies_no_cams
+				pool_ids = set()
+				try:
+					# Fetch candidates from Popular and In Theaters (Pages 1 & 2 to ensure enough volume)
+					for func in (tmdb_movies_popular, tmdb_movies_in_theaters):
+						for p in (1, 2):
+							try:
+								res = func(p)
+								if res and 'results' in res:
+									pool_ids.update(i['id'] for i in res['results'])
+							except: pass
+				except: pass
+				self.list = filter_movies_no_cams(list(pool_ids))
+				self.total_pages = 1
 			elif self.action == 'recommendations_discovery':
 				url = recommendations_manager.get_discovery_params('movie')
 				if not url: return
