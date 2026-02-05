@@ -51,7 +51,8 @@ def lists_cache_object(function, string, args, json=False, expiration=48):
 	try:
 		if json: result = function(*args).json()
 		else: result = function(*args)
-	except Exception: result = None
+	except Exception as e:
+		result = None
 	
 	if result is None:
 		return lists_cache.get(string, ignore_expiry=True)

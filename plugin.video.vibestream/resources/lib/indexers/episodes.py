@@ -5,7 +5,7 @@ from caches.favorites_cache import favorites_cache
 from modules import kodi_utils, settings, watched_status as ws
 from modules.metadata import tvshow_meta, episodes_meta, all_episodes_meta
 from modules.utils import jsondate_to_datetime, adjust_premiered_date, make_day, get_datetime, title_key, date_difference, make_thread_list_enumerate
-# logger = kodi_utils.logger
+logger = kodi_utils.logger
 
 set_view_mode, external, home = kodi_utils.set_view_mode, kodi_utils.external, kodi_utils.home
 add_items, set_content, set_sort_method, end_directory = kodi_utils.add_items, kodi_utils.set_content, kodi_utils.set_sort_method, kodi_utils.end_directory
@@ -317,7 +317,9 @@ def build_single_episode(list_type, params={}):
 		recently_aired = params.get('recently_aired', None)
 		filter_unwatched_only = params.get('filter_unwatched_only', False)
 		recently_aired_days = params.get('recently_aired_days')
+		logger('VibeStream build_single_episode episode.trakt', 'calling trakt_get_my_calendar recently_aired=%s' % recently_aired)
 		data = trakt_get_my_calendar(recently_aired, get_datetime()) or []
+		logger('VibeStream build_single_episode episode.trakt', 'trakt_get_my_calendar returned %d items' % (len(data) if data else 0))
 		list_type = 'episode.trakt_recently_aired' if recently_aired else 'episode.trakt_calendar'
 		if filter_unwatched_only:
 			category_name = 'Your Latest Episodes'
@@ -393,6 +395,7 @@ def build_single_episode(list_type, params={}):
 			if recently_aired_days and list_type_compare == 'trakt_recently_aired':
 				from datetime import timedelta
 				cutoff = current_date - timedelta(days=int(recently_aired_days))
+				before_count = len(item_list)
 				def _aired_in_range(item):
 					try:
 						air_date = jsondate_to_datetime(item.get('first_aired', '2000-01-01')[:10], '%Y-%m-%d').date()
@@ -400,6 +403,7 @@ def build_single_episode(list_type, params={}):
 					except Exception:
 						return False
 				item_list = [i for i in item_list if _aired_in_range(i)]
+				logger('VibeStream build_single_episode', 'trakt_recently_aired filter: before=%d after=%d days=%s' % (before_count, len(item_list), recently_aired_days))
 	add_items(handle, [i['list_items'] for i in item_list])
 	set_content(handle, content_type)
 	set_category(handle, category_name)
@@ -442,30 +446,38 @@ def build_new_trakt_episodes(params={}):
 	- Your Latest Episodes (recently_aired): calendar source (watchlist/collection/progress), unwatched, last 7 days
 	- All Unwatched: Trakt My Lists only, all unwatched episodes
 	"""
-	recently_aired = params.get('recently_aired', 'false') == 'true'
+	try:
+		recently_aired = params.get('recently_aired', 'false') == 'true'
+		logger('VibeStream build_new_trakt_episodes', 'entry recently_aired=%s' % recently_aired)
 
-	if recently_aired:
-		# Your Latest Episodes: same source as Trakt Calendar (calendars/my/shows)
-		return build_single_episode('episode.trakt', {
-			'recently_aired': True,
-			'filter_unwatched_only': True,
-			'recently_aired_days': 7
-		})
+		if recently_aired:
+			# Your Latest Episodes: same source as Trakt Calendar (calendars/my/shows)
+			logger('VibeStream build_new_trakt_episodes', 'calling build_single_episode episode.trakt')
+			return build_single_episode('episode.trakt', {
+				'recently_aired': True,
+				'filter_unwatched_only': True,
+				'recently_aired_days': 7
+			})
 
-	# All Unwatched: Trakt My Lists only
-	data = _get_tracked_shows_from_my_lists()
-	if not data:
-		handle = int(sys.argv[1])
-		li = make_listitem()
-		li.setLabel('Add shows to Trakt My Lists')
-		li.setProperty('is_placeholder', 'true')
-		add_items(handle, [li])
-		set_content(handle, content_type)
-		set_category(handle, 'All Unwatched')
-		end_directory(handle, cacheToDisc=False)
-		set_view_mode(single_view, content_type, external())
-		notification('Add shows to Trakt My Lists (My List → Trakt My Lists) to see unwatched episodes.', 4000)
-		return
+		# All Unwatched: Trakt My Lists only
+		logger('VibeStream build_new_trakt_episodes', 'calling _get_tracked_shows_from_my_lists')
+		data = _get_tracked_shows_from_my_lists()
+		logger('VibeStream build_new_trakt_episodes', '_get_tracked_shows_from_my_lists returned %d shows' % (len(data) if data else 0))
+		if not data:
+			handle = int(sys.argv[1])
+			li = make_listitem()
+			li.setLabel('Add shows to Trakt My Lists')
+			li.setProperty('is_placeholder', 'true')
+			add_items(handle, [li])
+			set_content(handle, content_type)
+			set_category(handle, 'All Unwatched')
+			end_directory(handle, cacheToDisc=False)
+			set_view_mode(single_view, content_type, external())
+			notification('Add shows to Trakt My Lists (My List → Trakt My Lists) to see unwatched episodes.', 4000)
+			return
 
-	return build_single_episode('episode.new_trakt', {'data_override': data, 'recently_aired_days': None})
+		return build_single_episode('episode.new_trakt', {'data_override': data, 'recently_aired_days': None})
+	except Exception as e:
+		logger('VibeStream build_new_trakt_episodes', 'exception %s' % str(e))
+		raise
 

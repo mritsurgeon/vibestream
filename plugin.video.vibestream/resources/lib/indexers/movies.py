@@ -168,10 +168,12 @@ class Movies:
 	def build_movie_content(self, _position, _id):
 		try:
 			because_you_watched = None
+			id_type = self.id_type
 			if self.id_type == 'because_you_watched' and isinstance(_id, dict):
 				because_you_watched = _id.get('because_you_watched')
 				_id = _id.get('tmdb_id')
-			meta = movie_meta(self.id_type, _id, self.tmdb_api_key, self.mpaa_region, self.current_date, self.current_time)
+				id_type = 'tmdb_id'
+			meta = movie_meta(id_type, _id, self.tmdb_api_key, self.mpaa_region, self.current_date, self.current_time)
 			if not meta or 'blank_entry' in meta:
 				logger('VibeStream Movies build_content', 'action=%s meta=None/blank id=%s' % (self.action, _id))
 				return

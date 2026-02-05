@@ -239,6 +239,7 @@ def trakt_movies_trending_recent(page_no):
 	params = {'path': 'movies/trending/%s', 'params': {'limit': 20, 'years': years}, 'page_no': page_no}
 	result = lists_cache_object(get_trakt, string, params)
 	if not result:
+		logger('VibeStream trakt_movies_trending_recent', 'empty result page=%s years=%s fallback to trending' % (page_no, years))
 		return trakt_movies_trending(page_no)
 	return result
 	
@@ -290,6 +291,7 @@ def trakt_tv_trending_recent(page_no):
 	params = {'path': 'shows/trending/%s', 'params': {'limit': 20, 'years': years}, 'page_no': page_no}
 	result = lists_cache_object(get_trakt, string, params)
 	if not result:
+		logger('VibeStream trakt_tv_trending_recent', 'empty result page=%s years=%s fallback to trending' % (page_no, years))
 		return trakt_tv_trending(page_no)
 	return result
 	
@@ -832,13 +834,22 @@ def trakt_official_status(media_type):
 
 def trakt_get_my_calendar(recently_aired, current_date):
 	def _process(dummy):
-		data = get_trakt(params)
-		data = [{'sort_title': '%s s%s e%s' % (i['show']['title'], str(i['episode']['season']).zfill(2), str(i['episode']['number']).zfill(2)),
-				'media_ids': i['show']['ids'], 'season': i['episode']['season'], 'episode': i['episode']['number'], 'first_aired': i['first_aired']} \
-									for i in data if i['episode']['season'] > 0]
-		data = [i for n, i in enumerate(data) if i not in data[n + 1:]] # remove duplicates
-		return data
+		try:
+			raw = get_trakt(params)
+			logger('VibeStream trakt_get_my_calendar', 'get_trakt raw type=%s len=%s' % (type(raw).__name__, len(raw) if raw else 0))
+			if raw is None:
+				return []
+			data = [{'sort_title': '%s s%s e%s' % (i['show']['title'], str(i['episode']['season']).zfill(2), str(i['episode']['number']).zfill(2)),
+					'media_ids': i['show']['ids'], 'season': i['episode']['season'], 'episode': i['episode']['number'], 'first_aired': i['first_aired']} \
+									for i in raw if i.get('episode', {}).get('season', 0) > 0]
+			data = [i for n, i in enumerate(data) if i not in data[n + 1:]]  # remove duplicates
+			logger('VibeStream trakt_get_my_calendar', 'processed %d items after filter' % len(data))
+			return data
+		except Exception as e:
+			logger('VibeStream trakt_get_my_calendar', 'exception in _process %s' % str(e))
+			raise
 	start, finish = trakt_calendar_days(recently_aired, current_date)
+	logger('VibeStream trakt_get_my_calendar', 'entry recently_aired=%s start=%s finish=%s' % (recently_aired, start, finish))
 	string = 'trakt_get_my_calendar_%s_%s' % (start, finish)
 	params = {'path': 'calendars/my/shows/%s/%s', 'path_insert': (start, finish), 'with_auth': True, 'pagination': False}
 	return cache_trakt_object(_process, string, params)

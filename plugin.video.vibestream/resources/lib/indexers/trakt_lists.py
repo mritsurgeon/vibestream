@@ -11,7 +11,7 @@ from indexers.episodes import build_single_episode
 from modules import kodi_utils
 from modules.utils import paginate_list
 from modules.settings import paginate, page_limit, tmdb_user_active
-# logger = kodi_utils.logger
+logger = kodi_utils.logger
 
 add_dir, external, sleep, get_icon = kodi_utils.add_dir, kodi_utils.external, kodi_utils.sleep, kodi_utils.get_icon
 trakt_icon, fanart, add_item, set_property = get_icon('trakt'), kodi_utils.get_addon_fanart(), kodi_utils.add_item, kodi_utils.set_property
@@ -69,18 +69,26 @@ def get_trakt_lists(params):
 	def _process():
 		for item in lists:
 			try:
-				if list_type == 'liked_lists': item = item['list']
+				if list_type == 'liked_lists': item = item.get('list') or item
 				cm = []
 				cm_append = cm.append
-				list_name, user, slug, item_count = item['name'], item['user']['ids']['slug'], item['ids']['slug'], item['item_count']
-				list_name_upper = " ".join(w.capitalize() for w in list_name.split())
+				user_obj = item.get('user') or {}
+				ids = item.get('ids') or {}
+				list_name = item.get('name') or ''
+				user = (user_obj.get('ids') or {}).get('slug', '') if isinstance(user_obj, dict) else ''
+				slug = ids.get('slug', '') if isinstance(ids, dict) else ''
+				item_count = item.get('item_count', 0)
+				if not list_name or not slug:
+					logger('VibeStream get_trakt_lists', 'skip item missing name/slug list_type=%s item=%s' % (list_type, str(item)[:200]))
+					continue
+				list_name_upper = " ".join(w.capitalize() for w in (list_name or '').split())
 				mode = 'random.build_trakt_my_lists_contents' if randomize_contents == 'true' else 'trakt.list.build_trakt_list'
 				url_params = {'mode': mode, 'user': user, 'slug': slug, 'list_type': list_type, 'list_name': list_name}
 				if randomize_contents: url_params['random'] = 'true'
 				elif shuffle: url_params['shuffle'] = 'true'
 				url = build_url(url_params)
 				if list_type == 'liked_lists':
-					display = '%s | [I]%s (x%s)[/I]' % (list_name_upper, user, str(item_count))
+					display = '%s | [I]%s (x%s)[/I]' % (list_name_upper, user or '?', str(item_count))
 					cm_append(('[B]Unlike List[/B]', 'RunPlugin(%s)' % build_url({'mode': 'trakt.trakt_unlike_a_list', 'user': user, 'list_slug': slug})))
 				else:
 					display = '%s [I](x%s)[/I]' % (list_name_upper, str(item_count))
@@ -95,12 +103,20 @@ def get_trakt_lists(params):
 				info_tag.setPlot(' ')
 				listitem.addContextMenuItems(cm)
 				yield (url, listitem, True)
-			except Exception: pass
+			except Exception as e:
+				logger('VibeStream get_trakt_lists', 'item error list_type=%s %s' % (list_type, str(e)))
 	handle = int(sys.argv[1])
 	list_type, randomize_contents, shuffle = params['list_type'], params.get('random', 'false'), params.get('shuffle', 'false') == 'true'
+	sort_method = 'label'
 	returning_to_list = False
 	try:
 		lists = trakt_get_lists(list_type)
+		if lists is None:
+			logger('VibeStream get_trakt_lists', 'trakt_get_lists returned None list_type=%s' % list_type)
+			lists = []
+		elif not isinstance(lists, list):
+			logger('VibeStream get_trakt_lists', 'trakt_get_lists returned non-list type=%s list_type=%s' % (type(lists).__name__, list_type))
+			lists = []
 		if shuffle:
 			returning_to_list = 'trakt.list.build_trakt_list' in folder_path()
 			if returning_to_list:
@@ -113,8 +129,12 @@ def get_trakt_lists(params):
 		else:
 			clear_property('vibestream.trakt.lists.order')
 			sort_method = 'label'
-		add_items(handle, list(_process()))
-	except Exception: pass
+		items = list(_process())
+		if lists and not items:
+			logger('VibeStream get_trakt_lists', 'list_type=%s has %s lists but 0 items yielded (all skipped)' % (list_type, len(lists)))
+		add_items(handle, items)
+	except Exception as e:
+		logger('VibeStream get_trakt_lists', 'exception list_type=%s %s' % (list_type, str(e)))
 	set_content(handle, 'files')
 	set_category(handle, params.get('category_name', ''))
 	set_sort_method(handle, sort_method)
@@ -224,7 +244,11 @@ def build_trakt_list(params):
 			user, slug, list_type = params.get('user'), params.get('slug'), params.get('list_type')
 			with_auth = list_type == 'my_lists'
 			result = get_trakt_list_contents(list_type, user, slug, with_auth)
-		process_list, total_pages, paginate_start = _paginate_list(result, page_no, paginate_start)
+			if result is None:
+				logger('VibeStream build_trakt_list', 'get_trakt_list_contents None list=%s user=%s slug=%s' % (list_name, user, slug))
+			elif not result:
+				logger('VibeStream build_trakt_list', 'get_trakt_list_contents empty list=%s user=%s slug=%s' % (list_name, user, slug))
+		process_list, total_pages, paginate_start = _paginate_list(result or [], page_no, paginate_start)
 		all_movies = [i for i in process_list if i['type'] == 'movie']
 		all_tvshows = [i for i in process_list if i['type'] == 'show']
 		all_seasons = [i for i in process_list if i['type'] == 'season']
@@ -242,13 +266,17 @@ def build_trakt_list(params):
 		[i.join() for i in threads]
 		item_list.sort(key=lambda k: k[1])
 		if use_result: return [i[0] for i in item_list]
-		add_items(handle, [i[0] for i in item_list])
+		items_to_add = [i[0] for i in item_list]
+		if process_list and not items_to_add:
+			logger('VibeStream build_trakt_list', 'list=%s had %s raw items but 0 built (meta/title failed)' % (list_name, len(process_list)))
+		add_items(handle, items_to_add)
 		if total_pages > page_no:
 			new_page = str(page_no + 1)
 			new_params = {'mode': 'trakt.list.build_trakt_list', 'list_type': list_type, 'list_name': list_name,
 							'user': user, 'slug': slug, 'paginate_start': paginate_start, 'new_page': new_page}
 			add_dir(new_params, 'Next Page (%s) >>' % new_page, handle, 'nextpage', nextpage_landscape)
-	except Exception: pass
+	except Exception as e:
+		logger('VibeStream build_trakt_list', 'exception list=%s %s' % (params.get('list_name'), str(e)))
 	set_content(handle, content)
 	set_category(handle, list_name)
 	end_directory(handle, cacheToDisc=False if is_external else True)

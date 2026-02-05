@@ -39,7 +39,7 @@ def filter_movies_no_cams(tmdb_ids):
             pass
 
     # Thread the checks
-    threads = list(make_thread_list_multi_arg(_check, tmdb_ids))
+    threads = list(make_thread_list(_check, tmdb_ids))
     [i.join() for i in threads]
     
     return eligible_ids
