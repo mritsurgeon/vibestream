@@ -1,4 +1,4 @@
-<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta22">
+<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta23">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
@@ -21,6 +21,6 @@
             <icon>icon.png</icon>
             <fanart>fanart.png</fanart>
         </assets>
-        <news>VibeStream 1.1.0-beta22 - Fix: Resolved empty lists in 'I Can't Decide' and 'No CAMs' menus. Corrected ID type handling and threading logic. Improved reliability of dynamic overlays.</news>
+        <news>VibeStream 1.1.0-beta23 - UI Update: Enhanced rating overlays with larger fonts, gold star icon, and improved badge style for better visibility on posters.</news>
     </extension>
 </addon>

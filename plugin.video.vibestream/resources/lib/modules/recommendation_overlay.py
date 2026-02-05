@@ -6,6 +6,19 @@ Returns cached composite path or original URL on failure.
 import hashlib
 import os
 import sys
+import math
+
+def draw_star(draw, center, radius, fill_color, outline_color):
+    cx, cy = center
+    points = []
+    # 5 points
+    for i in range(10):
+        angle = i * 36 * math.pi / 180 - math.pi / 2
+        r = radius if i % 2 == 0 else radius * 0.4
+        x = cx + r * math.cos(angle)
+        y = cy + r * math.sin(angle)
+        points.append((x, y))
+    draw.polygon(points, fill=fill_color, outline=outline_color)
 
 def get_poster_with_caption(poster_url, caption, rating=None):
     """
@@ -34,7 +47,7 @@ def get_poster_with_caption(poster_url, caption, rating=None):
     # Cache directory
     cache_dir = translatePath(addon_info('profile')) + 'rec_overlay_cache/'
     # Include caption and rating in hash
-    hash_str = str(poster_url) + str(caption) + str(rating) + 'v2'
+    hash_str = str(poster_url) + str(caption) + str(rating) + 'v3' # v3 for new visual style
     cache_key = hashlib.md5(hash_str.encode()).hexdigest()
     cache_path = os.path.join(cache_dir, '%s.jpg' % cache_key)
 
@@ -72,7 +85,9 @@ def get_poster_with_caption(poster_url, caption, rating=None):
     font = None
     rating_font = None
     caption_font_size = max(16, min(int(bar_h * 0.35), 40))
-    rating_font_size = max(20, min(int(h * 0.08), 60))
+    
+    # Large, readable rating font size
+    rating_font_size = max(40, min(int(h * 0.12), 110))
     
     font_paths = [
         '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf',
@@ -82,16 +97,19 @@ def get_poster_with_caption(poster_url, caption, rating=None):
     ]
     if sys.platform == 'win32':
         font_paths = [
+            os.path.join(os.environ.get('WINDIR', 'C:\\Windows'), 'Fonts', 'impact.ttf'), # Impact is great for numbers
             os.path.join(os.environ.get('WINDIR', 'C:\\Windows'), 'Fonts', 'arialbd.ttf'),
             os.path.join(os.environ.get('WINDIR', 'C:\\Windows'), 'Fonts', 'calibrib.ttf'),
             os.path.join(os.environ.get('WINDIR', 'C:\\Windows'), 'Fonts', 'segmdl2.ttf'), # Segoe UI
         ] + font_paths
     elif sys.platform == 'darwin':
         font_paths = [
+            '/System/Library/Fonts/Supplemental/Arial Black.ttf', # Thickest font
+            '/Library/Fonts/Arial Black.ttf',
+            '/System/Library/Fonts/Supplemental/DIN Alternate Bold.ttf',
             '/System/Library/Fonts/Supplemental/Arial Bold.ttf',
             '/Library/Fonts/Arial Bold.ttf',
             '/System/Library/Fonts/Helvetica.ttc',
-            '/System/Library/Fonts/Supplemental/DIN Alternate Bold.ttf', # Nice modern font on macOS
         ] + font_paths
         
     found_font = None
@@ -114,17 +132,6 @@ def get_poster_with_caption(poster_url, caption, rating=None):
             font = ImageFont.load_default()
             rating_font = ImageFont.load_default()
         except Exception: pass
-
-    # --- Text Helper ---
-    def draw_text_with_outline(draw_obj, xy, text, font, text_color=(255, 255, 255), outline_color=(0, 0, 0), outline_width=2):
-        x, y = xy
-        # Draw outline
-        for dx in range(-outline_width, outline_width + 1):
-            for dy in range(-outline_width, outline_width + 1):
-                if dx != 0 or dy != 0:
-                    draw_obj.text((x + dx, y + dy), text, font=font, fill=outline_color)
-        # Draw main text
-        draw_obj.text((x, y), text, font=font, fill=text_color)
 
     # --- Caption Rendering (Bottom Center) ---
     text_color = (255, 255, 255)
@@ -154,11 +161,10 @@ def get_poster_with_caption(poster_url, caption, rating=None):
         tx = (w - tw) // 2
         if tx < 5: tx = 5
             
-        # Draw without outline in the bar since bar is dark
         draw.text((tx, current_y), line, fill=text_color, font=font)
         current_y += caption_font_size * 1.2
 
-    # --- Rating Rendering (Top Right) ---
+    # --- Rating Rendering (Top Right with Star) ---
     if rating and rating not in (0, '0', 0.0, '0.0', None, ''):
         try:
             rating_val = float(rating)
@@ -166,39 +172,57 @@ def get_poster_with_caption(poster_url, caption, rating=None):
         except:
             rating_text = str(rating)
 
-        # Star character if font supports it, otherwise just number
-        # Many basic fonts don't support unicode star cleanly, so let's stick to text or simple shape
-        # Let's draw a yellow star shape manually or just a box
+        # Star Dimensions
+        star_radius = int(rating_font_size * 0.35) # Star slightly smaller than text height
+        star_diameter = star_radius * 2
         
-        # Calculate size
+        # Text Dimensions
         try:
             bbox = draw.textbbox((0, 0), rating_text, font=rating_font) if rating_font else (0, 0, len(rating_text) * 12, 24)
             rw = bbox[2] - bbox[0]
             rh = bbox[3] - bbox[1]
+            # Offset fix for some fonts
+            text_y_offset = bbox[1]
         except:
             rw, rh = len(rating_text) * 12, 24
+            text_y_offset = 0
 
-        padding = 10
-        rx = w - rw - padding - 10 # 10px from right
-        ry = padding # 10px from top
+        padding = int(h * 0.02) # Dynamic padding based on image height
+        if padding < 8: padding = 8
         
-        # Background box for rating (Semi-transparent Black or Dark Yellow/Gold)
-        # Let's do a rounded box look (simulated with rectangle)
-        box_coords = [rx - 5, ry - 5, rx + rw + 5, ry + rh + 10]
-        draw.rectangle(box_coords, fill=(0, 0, 0, 180)) # Dark background
+        gap = int(padding * 0.8) # Gap between star and text
         
-        # Accent line (Gold/Yellow)
-        draw.rectangle([rx - 5, ry - 5, rx - 2, ry + rh + 10], fill=(255, 215, 0, 255))
+        content_width = star_diameter + gap + rw
+        content_height = max(star_diameter, rh)
+        
+        box_width = content_width + (padding * 2)
+        box_height = content_height + (padding * 1.5)
 
-        # Draw Rating Text with outline
-        draw_text_with_outline(draw, (rx, ry), rating_text, rating_font, text_color=(255, 255, 255), outline_width=2)
+        rx = w - box_width - padding
+        ry = padding
+        
+        # Draw Rounded Box (Dark Background)
+        box_color = (0, 0, 0, 200)
+        draw.rectangle([rx, ry, rx + box_width, ry + box_height], fill=box_color, outline=None)
+        
+        # Draw Gold Star
+        star_center_x = rx + padding + star_radius
+        star_center_y = ry + (box_height // 2)
+        draw_star(draw, (star_center_x, star_center_y), star_radius, (255, 215, 0), (218, 165, 32))
+
+        # Draw Rating Text
+        text_x = rx + padding + star_diameter + gap
+        # Vertically center text
+        text_y = ry + (box_height - rh) // 2 - text_y_offset
+        
+        draw.text((text_x, text_y), rating_text, font=rating_font, fill=(255, 255, 255))
 
     # --- Final Composite ---
     img_rgba = img.convert('RGBA')
     img = Image.alpha_composite(img_rgba, overlay).convert('RGB')
 
     try:
-        img.save(cache_path, 'JPEG', quality=85)
+        img.save(cache_path, 'JPEG', quality=90)
     except Exception:
         return poster_url
 
