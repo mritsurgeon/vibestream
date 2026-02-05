@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from modules.utils import get_datetime, jsondate_to_datetime, subtract_dates, make_thread_list_multi_arg
+from modules.utils import get_datetime, jsondate_to_datetime, subtract_dates, make_thread_list
 from modules.settings import tmdb_api_key, mpaa_region
 from modules.metadata import movie_meta
 
