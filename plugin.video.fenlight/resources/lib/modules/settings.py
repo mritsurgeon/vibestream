@@ -104,6 +104,12 @@ def include_prerelease_results():
 def auto_play(media_type):
 	return get_setting('fenlight.auto_play_%s' % media_type, 'false') == 'true'
 
+def autoplay_language_preference():
+	return get_setting('fenlight.autoplay_language', 'en')
+
+def autoplay_source_prompt():
+	return get_setting('fenlight.autoplay_source_prompt', 'true') == 'true'
+
 def autoplay_next_episode():
 	if auto_play('episode') and get_setting('fenlight.autoplay_next_episode', 'false') == 'true': return True
 	else: return False

@@ -225,7 +225,7 @@ class Sources():
 					# Fallback to Legacy
 					logger('VibeStream get_sources', 'CocoScrapers not available, using Legacy external')
 					self.activate_providers('external', external, False)
-			if self.background: [i.join() for i in self.threads]
+			if self.background: [i.join(timeout=scraper_timeout) for i in self.threads]
 		elif self.active_internal_scrapers: self.scrapers_dialog()
 		return self.sources
 
@@ -240,7 +240,7 @@ class Sources():
 		for i in self.prescrape_scrapers: threads_append(Thread(target=self.activate_providers, args=(i[0], i[1], True), name=i[2]))
 		[i.start() for i in self.prescrape_threads]
 		self.remove_scrapers.extend(i[2] for i in self.prescrape_scrapers)
-		if self.background: [i.join() for i in self.prescrape_threads]
+		if self.background: [i.join(timeout=scraper_timeout) for i in self.prescrape_threads]
 		else: self.scrapers_dialog()
 		return self.prescrape_sources
 
@@ -265,7 +265,6 @@ class Sources():
 			for file_type in filter_keys: results = self.special_filter(results, file_type)
 			after_special = len(results)
 			logger('VibeStream process_results', 'filter steps: after_sort=%s after_quality_filter=%s after_audio=%s after_special=%s' % (after_sort, after_quality, after_audio, after_special))
-		results = self.sort_preferred_autoplay(results)
 		results = self.sort_preferred_autoplay(results)
 		results = self.sort_first(results)
 		return results
@@ -750,7 +749,11 @@ class Sources():
 			hide_busy_dialog()
 			url = None
 			results = [i for i in results if not 'Uncached' in i.get('cache_provider', '')]
-			if not source: source = results[0]
+			if not source:
+				if self.autoplay:
+					from modules.autoplay_selector import rank_sources
+					results = rank_sources(results, self.media_type)
+				source = results[0]
 			items = [source]
 			if not self.limit_resolve: 
 				source_index = results.index(source)

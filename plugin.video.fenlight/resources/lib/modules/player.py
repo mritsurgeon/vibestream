@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import json
+import time
 from threading import Thread
 from apis.trakt_api import make_trakt_slug
 from caches.settings_cache import get_setting, set_setting
@@ -8,10 +9,11 @@ from modules.quality_manager import QualityManager
 from modules.health_manager import health_manager
 # logger = ku.logger
 
-set_property, clear_property, get_visibility, hide_busy_dialog, xbmc_actor = ku.set_property, ku.clear_property, ku.get_visibility, ku.hide_busy_dialog, ku.xbmc_actor
+set_property, clear_property, get_property, get_visibility, hide_busy_dialog, xbmc_actor = ku.set_property, ku.clear_property, ku.get_property, ku.get_visibility, ku.hide_busy_dialog, ku.xbmc_actor
 xbmc_player, execute_builtin, sleep = ku.xbmc_player, ku.execute_builtin, ku.sleep
 make_listitem, volume_checker, get_infolabel, xbmc_monitor = ku.make_listitem, ku.volume_checker, ku.get_infolabel, ku.xbmc_monitor
 close_all_dialog, notification, poster_empty, fanart_empty = ku.close_all_dialog, ku.notification, ku.empty_poster, ku.get_addon_fanart()
+kodi_dialog = ku.kodi_dialog
 auto_resume, auto_nextep_settings, store_resolved_to_cloud = st.auto_resume, st.auto_nextep_settings, st.store_resolved_to_cloud
 set_bookmark, mark_movie, mark_episode = ws.set_bookmark, ws.mark_movie, ws.mark_episode
 total_time_errors = ('0.0', '', 0.0, None)
@@ -81,6 +83,8 @@ class FenLightPlayer(xbmc_player):
 			ensure_dialog_dead, total_check_time = False, 0
 			# Close loading/resolver dialog as soon as playback has started so user sees video
 			self.playback_close_dialogs()
+			if getattr(self.sources_object, 'autoplay', False):
+				Thread(target=self._show_autoplay_prompt).start()
 			if self.media_type == 'episode':
 				play_random_continual = self.sources_object.random_continual
 				play_random = self.sources_object.random
@@ -108,9 +112,16 @@ class FenLightPlayer(xbmc_player):
 						buffer_count = 0
 					
 					# 15 seconds of buffering -> Switch
-					if buffer_count > 15 and (self.curr_time - start_time > 10): 
+					if buffer_count > 15 and (self.curr_time - start_time > 10):
 						notification('Buffering Detected. Switching Source...', 3000)
-						self.retry_next_source()
+						self.retry_next_source(reason='buffering')
+						break
+
+					# Manual skip requested (by autoplay prompt or external RunPlugin)
+					if get_property('fenlight.next_source') == '1':
+						clear_property('fenlight.next_source')
+						notification('Switching to next source...', 2000)
+						self.retry_next_source(reason='manual')
 						break
 
 					if not ensure_dialog_dead:
@@ -140,30 +151,39 @@ class FenLightPlayer(xbmc_player):
 			self.sources_object.cancel_all_playback = True
 			return self.kill_dialog()
 
-	def retry_next_source(self):
+	def _show_autoplay_prompt(self):
+		from caches.settings_cache import get_setting
+		if get_setting('fenlight.autoplay_source_prompt', 'true') != 'true': return
+		sleep(3000)
+		if not self.isPlayingVideo(): return
+		quality = self.playing_item.get('quality', '')
+		provider = self.playing_item.get('scrape_provider', '')
+		if provider == 'external': provider = self.playing_item.get('debrid', provider)
+		name = self.playing_item.get('display_name', '') or self.playing_item.get('name', '')
+		result = kodi_dialog().yesno(
+			'Now Playing',
+			'Auto-selected: [B]%s[/B] from [B]%s[/B]\n%s\n\nWrong language or quality?' % (quality, provider.upper(), name),
+			nolabel='Keep Playing',
+			yeslabel='Next Source',
+			autoclose=8000
+		)
+		if result: set_property('fenlight.next_source', '1')
+
+	def retry_next_source(self, reason='auto'):
+		ku.logger('VibeStream Player', 'retry_next_source triggered: reason=%s' % reason)
 		self.stop()
-		qm = QualityManager()
-		qm.step_down() # Downgrade quality preference
-		
-		# Re-filter RAW sources with new preset
-		all_sources = self.sources_object.sources
-		candidates = qm.filter_sources(all_sources)
-		
-		# Find next valid source
-		# Simple logic: Pick top of candidates that isn't the one we just played
-		next_source = None
 		current_link = self.playing_item.get('link', '')
-		
-		for source in candidates:
-			if source.get('link') == current_link: continue
-			# Check logic to skip already failed? (Ideal)
-			next_source = source
-			break
-			
-		if next_source:
-			# Note: sources.py handles the resolution loop. We calling sources_object.play_file([next_source]).
+		current_provider = self.playing_item.get('scrape_provider', '')
+		if current_provider:
+			health_manager.record_event(current_provider, 0)
+		qm = QualityManager()
+		if reason != 'manual': qm.step_down()
+		all_sources = self.sources_object.sources
+		candidates = [s for s in qm.filter_sources(all_sources) if s.get('link') != current_link]
+		candidates.sort(key=lambda s: health_manager.get_health_score(s.get('scrape_provider', '')), reverse=True)
+		if candidates:
 			self.sources_object.background = True
-			Thread(target=self.sources_object.play_file, args=([next_source],)).start()
+			Thread(target=self.sources_object.play_file, args=([candidates[0]],)).start()
 		else:
 			notification('No fallback sources available.')
 
@@ -298,6 +318,7 @@ class FenLightPlayer(xbmc_player):
 		clear_property('fenlight.window_stack')
 		clear_property('script.trakt.ids')
 		clear_property('subs.player_filename')
+		clear_property('fenlight.next_source')
 
 	def clear_playing_item(self):
 		if self.playing_item['cache_provider'] == 'Offcloud':

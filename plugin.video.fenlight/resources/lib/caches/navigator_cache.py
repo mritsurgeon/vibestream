@@ -85,8 +85,8 @@ class NavigatorCache:
 			self.rebuild_database()
 			self.set_list('__menu_version__', 'default', MENU_DEFAULTS_VERSION)
 			# Apply new defaults to Movie/TV edited lists so the new order shows without "Restore Menu".
-			for list_name in ('MovieList', 'TVShowList'):
-				self.set_list(list_name, 'edited', main_menus[list_name])
+			for menu_name in ('MovieList', 'TVShowList'):
+				self.set_list(menu_name, 'edited', main_menus[menu_name])
 		default_contents = self.get_memory_cache(list_name, 'default')
 		if not default_contents:
 			default_contents = self.get_list(list_name, 'default')

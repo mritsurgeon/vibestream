@@ -3,7 +3,6 @@ from threading import Thread
 import time
 from modules import kodi_utils
 
-# Local imports
 xbmc = kodi_utils.xbmc
 logger = kodi_utils.logger
 sleep = kodi_utils.sleep
@@ -39,23 +38,16 @@ class PlaybackWatchdog(xbmc.Player):
         buffer_count = 0
         while self._monitoring and self._playback_active:
             if self.isPlaying():
-                # Check Buffering
-                # xbmc.getCondVisibility('Player.CacheLevel') ? 
-                # Or try/except on player methods
-                 try:
-                     # If cache is low and stalling?
-                     # Ideally we check boolean "Player.Paused" but "Player.Caching".
-                     if kodi_utils.xbmc.getCondVisibility("Player.Caching"):
-                         buffer_count += 1
-                     else:
-                         buffer_count = 0
-                         
-                     if buffer_count > 15: # approx 15 seconds (sleep 1s)
-                         logger('Watchdog', 'Excessive Buffering Detected')
-                         if self.observer and hasattr(self.observer, 'on_playback_failed'):
-                             self.observer.on_playback_failed(reason='buffering')
-                         break # Stop monitoring, let observer handle logic
-                         
-                 except: pass
+                try:
+                    if kodi_utils.xbmc.getCondVisibility("Player.Caching"):
+                        buffer_count += 1
+                    else:
+                        buffer_count = 0
+                    if buffer_count > 15:
+                        logger('Watchdog', 'Excessive Buffering Detected')
+                        if self.observer and hasattr(self.observer, 'on_playback_failed'):
+                            self.observer.on_playback_failed(reason='buffering')
+                        break
+                except: pass
             sleep(1000)
         logger('Watchdog', 'Monitoring Stopped')

@@ -466,6 +466,8 @@ default_settings = [
 {'setting_id': 'auto_play_episode', 'setting_type': 'boolean', 'setting_default': 'false'},
 {'setting_id': 'results_quality_episode', 'setting_type': 'string', 'setting_default': 'SD, 720p, 1080p, 4K'},
 {'setting_id': 'autoplay_quality_episode', 'setting_type': 'string', 'setting_default': 'SD, 720p, 1080p, 4K'},
+{'setting_id': 'autoplay_language', 'setting_type': 'action', 'setting_default': 'en', 'settings_options': {'any': 'Any Language', 'en': 'English', 'fr': 'French', 'es': 'Spanish', 'de': 'German', 'it': 'Italian', 'pt': 'Portuguese', 'nl': 'Dutch'}},
+{'setting_id': 'autoplay_source_prompt', 'setting_type': 'boolean', 'setting_default': 'true'},
 {'setting_id': 'autoplay_next_episode', 'setting_type': 'boolean', 'setting_default': 'false'},
 {'setting_id': 'autoplay_default_action', 'setting_type': 'action', 'setting_default': '0', 'settings_options': {'0': 'Play', '1': 'Cancel', '2': 'Pause & Wait'}},
 {'setting_id': 'autoplay_alert_method', 'setting_type': 'action', 'setting_default': '0', 'settings_options': {'0': 'Window', '1': 'Notification'}},

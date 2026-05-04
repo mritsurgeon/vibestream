@@ -871,7 +871,7 @@ def trakt_sync_activities(force_update=False):
 	elif _check_daily_expiry():
 		clear_daily_cache()
 		set_setting('trakt.next_daily_clear', str(int(time.time()) + (24*3600)))
-	if not trakt_user_active and not force_update: return 'no account'
+	if not trakt_user_active() and not force_update: return 'no account'
 	try: latest = trakt_get_activity()
 	except: return 'failed'
 	if latest is None: return 'failed'

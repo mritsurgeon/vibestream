@@ -26,6 +26,9 @@ def routing(sys):
 		if mode == 'playback.video':
 			from modules.player import FenLightPlayer
 			return FenLightPlayer().run(_get('url', None), _get('obj', None))
+		if mode == 'playback.next_source':
+			from modules.kodi_utils import set_property
+			return set_property('fenlight.next_source', '1')
 	if 'choice' in mode:
 		from indexers import dialogs
 		return exec('dialogs.%s(params)' % mode)

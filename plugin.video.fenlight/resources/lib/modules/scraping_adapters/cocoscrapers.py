@@ -18,20 +18,29 @@ class CocoScrapersAdapter(ScraperInterface):
             kodi_utils.logger('CocoScrapers', 'Error importing sources: %s' % str(e))
         return self._provider_class
 
+    _REQUIRED_KEYS = {'url', 'quality'}
+
+    def _validate_source(self, item):
+        if not isinstance(item, dict): return False
+        if not self._REQUIRED_KEYS.issubset(item.keys()): return False
+        if not isinstance(item.get('url'), str) or not item['url']: return False
+        return True
+
     def search(self, query_info):
-        """
-        Delegates search to CocoScrapers. Works with script.module.cocoscrapers when installed.
-        Tries getAll(query_info) then getSources(query_info) for API compatibility.
-        """
         provider = self._get_provider()
         if not provider: return []
-        
         try:
             if hasattr(provider, 'getAll'):
-                return provider.getAll(query_info) or []
-            if hasattr(provider, 'getSources'):
-                return provider.getSources(query_info) or []
-            return []
+                raw = provider.getAll(query_info) or []
+            elif hasattr(provider, 'getSources'):
+                raw = provider.getSources(query_info) or []
+            else:
+                return []
+            valid = [s for s in raw if self._validate_source(s)]
+            dropped = len(raw) - len(valid)
+            if dropped:
+                kodi_utils.logger('CocoScrapers', 'Dropped %d malformed results' % dropped)
+            return valid
         except Exception as e:
             kodi_utils.logger('CocoScrapers', 'Search failed: %s' % str(e))
             return []

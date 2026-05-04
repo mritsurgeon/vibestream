@@ -9,6 +9,7 @@ kodi_refresh, sleep, path_join, translatePath, addon_profile = kodi_utils.kodi_r
 delete_file, get_property, set_property, clear_property = kodi_utils.delete_file, kodi_utils.get_property, kodi_utils.set_property, kodi_utils.clear_property
 notification, confirm_dialog, ok_dialog, open_file, show_text = kodi_utils.notification, kodi_utils.confirm_dialog, kodi_utils.ok_dialog, kodi_utils.open_file, kodi_utils.show_text
 path_exists, list_dirs, progress_dialog, make_directory = kodi_utils.path_exists, kodi_utils.list_dirs, kodi_utils.progress_dialog, kodi_utils.make_directory
+execute_builtin = kodi_utils.execute_builtin
 userdata_path = addon_profile()
 databases_path = path_join(userdata_path, 'databases/')
 database_path_raw = path_join(userdata_path, 'databases')
@@ -251,50 +252,36 @@ def clear_all_cache():
 	clear_icons()
 	
 def clear_icons():
-    from sqlite3 import dbapi2 as db
-    import sqlite3
-    import xbmcvfs
-    import xbmc
-    
-    cleared = False
-    thumbnailsPath = xbmcvfs.translatePath('special://profile/Thumbnails/')
-    databasePath = xbmcvfs.translatePath('special://profile/Database/')
-    addonPath = xbmcvfs.translatePath('special://home/addons')
-    
-    try:
-        dbcon = sqlite3.connect(databasePath+'/Textures13.db')
-        dbcur = dbcon.cursor()
-        
-        # Get the cached paths
-        icon = dbcur.execute("SELECT cachedurl FROM texture WHERE url ='" + addonPath + "/plugin.video.fenlight/resources/media/vibestream_icon.png';").fetchone()
-        fanart = dbcur.execute("SELECT cachedurl FROM texture WHERE url ='" + addonPath + "/plugin.video.fenlight/resources/media/vibestream_fanart.png';").fetchone()
-        
-        if icon is not None:
-            if xbmcvfs.exists(thumbnailsPath + icon[0]):
-                xbmcvfs.delete(thumbnailsPath + icon[0])
-            dbcur.execute("DELETE FROM texture WHERE url ='" + addonPath + "/plugin.video.fenlight/resources/media/vibestream_icon.png';")
-        
-        if fanart is not None:
-            if xbmcvfs.exists(thumbnailsPath + fanart[0]):
-                xbmcvfs.delete(thumbnailsPath + fanart[0])
-            dbcur.execute("DELETE FROM texture WHERE url ='" + addonPath + "/plugin.video.fenlight/resources/media/vibestream_fanart.png';")
-        
-        # Commit changes before closing the connection
-        dbcon.commit()
-        dbcon.close()
-        
-        # Add a delay before reloading the skin
-        sleep(500)
-        
-        # Reload the skin to refresh textures
-        execute_builtin('ReloadSkin()')
-        
-        cleared = True
-    except Exception as e:
-        kodi_utils.logger('ERROR', f'Error clearing icon cache: {str(e)}')
-        cleared = False
-    
-    return cleared
+	import sqlite3 as db
+	import xbmcvfs
+	cleared = False
+	thumbnailsPath = xbmcvfs.translatePath('special://profile/Thumbnails/')
+	databasePath = xbmcvfs.translatePath('special://profile/Database/')
+	addonPath = xbmcvfs.translatePath('special://home/addons')
+	try:
+		dbcon = db.connect(databasePath + '/Textures13.db')
+		dbcur = dbcon.cursor()
+		icon = dbcur.execute("SELECT cachedurl FROM texture WHERE url=?",
+			(addonPath + '/plugin.video.fenlight/resources/media/vibestream_icon.png',)).fetchone()
+		fanart = dbcur.execute("SELECT cachedurl FROM texture WHERE url=?",
+			(addonPath + '/plugin.video.fenlight/resources/media/vibestream_fanart.png',)).fetchone()
+		if icon is not None:
+			if xbmcvfs.exists(thumbnailsPath + icon[0]): xbmcvfs.delete(thumbnailsPath + icon[0])
+			dbcur.execute("DELETE FROM texture WHERE url=?",
+				(addonPath + '/plugin.video.fenlight/resources/media/vibestream_icon.png',))
+		if fanart is not None:
+			if xbmcvfs.exists(thumbnailsPath + fanart[0]): xbmcvfs.delete(thumbnailsPath + fanart[0])
+			dbcur.execute("DELETE FROM texture WHERE url=?",
+				(addonPath + '/plugin.video.fenlight/resources/media/vibestream_fanart.png',))
+		dbcon.commit()
+		dbcon.close()
+		sleep(500)
+		execute_builtin('ReloadSkin()')
+		cleared = True
+	except Exception as e:
+		kodi_utils.logger('ERROR', 'Error clearing icon cache: %s' % str(e))
+		cleared = False
+	return cleared
 
 def refresh_cached_data(meta):
 	from caches.meta_cache import meta_cache
