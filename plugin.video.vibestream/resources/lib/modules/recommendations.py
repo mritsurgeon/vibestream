@@ -165,6 +165,7 @@ class RecommendationsManager:
         fallback_func = tmdb_movies_popular if media_type == 'movie' else tmdb_tv_popular
         try:
             data = fallback_func(1)
+            if not data or not isinstance(data, dict) or 'results' not in data: return [], 1
             results = data.get('results', [])
             fallback_items = [{'tmdb_id': r['id'], 'because_you_watched': 'Global Popularity'} for r in results]
             

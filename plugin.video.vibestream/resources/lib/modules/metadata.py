@@ -26,7 +26,20 @@ def movie_meta(id_type, media_id, api_key, mpaa_region, current_date, current_ti
 	if id_type == 'imdb_id': omdb_imdb_id = media_id
 	if media_id == None: return None
 	meta = metacache_get('movie', id_type, media_id, current_time)
-	if meta: return meta
+	if meta:
+		if not meta.get('blank_entry'): return meta
+		if omdb_imdb_id and omdb_imdb_id not in ('', 'tt0000000', None):
+			omdb_meta = omdb_movie_metadata(omdb_imdb_id)
+			if omdb_meta:
+				if id_type == 'tmdb_id': omdb_meta['tmdb_id'] = media_id
+				artwork = fanart_movie_artwork(str(media_id) if id_type == 'tmdb_id' else '')
+				if artwork.get('fanart'): omdb_meta['fanart'] = artwork['fanart']
+				if artwork.get('clearlogo'): omdb_meta['clearlogo'] = artwork['clearlogo']
+				if artwork.get('landscape'): omdb_meta['landscape'] = artwork['landscape']
+				if artwork.get('poster') and not omdb_meta.get('poster'): omdb_meta['poster'] = artwork['poster']
+				metacache_set('movie', id_type, omdb_meta, EXPIRES_1_DAYS, current_time)
+				return omdb_meta
+		return meta
 	try:
 		if id_type == 'tmdb_id': data = movie_details(media_id, api_key)
 		else:
@@ -35,7 +48,11 @@ def movie_meta(id_type, media_id, api_key, mpaa_region, current_date, current_ti
 			else: data = movie_details(external_result['id'], api_key)
 		if not data: return None
 		elif data.get('status_code') in invalid_error_codes:
-			if omdb_imdb_id and omdb_imdb_id not in ('', 'tt0000000'):
+			if not omdb_imdb_id or omdb_imdb_id in ('', 'tt0000000'):
+				if id_type == 'tmdb_id':
+					from apis.trakt_api import trakt_lookup_movie_imdb_id
+					omdb_imdb_id = trakt_lookup_movie_imdb_id(media_id)
+			if omdb_imdb_id and omdb_imdb_id not in ('', 'tt0000000', None):
 				omdb_meta = omdb_movie_metadata(omdb_imdb_id)
 				if omdb_meta:
 					if id_type == 'tmdb_id': omdb_meta['tmdb_id'] = media_id
@@ -164,7 +181,21 @@ def tvshow_meta(id_type, media_id, api_key, mpaa_region, current_date, current_t
 	if id_type == 'imdb_id': omdb_imdb_id = media_id
 	if media_id == None: return None
 	meta = metacache_get('tvshow', id_type, media_id, current_time)
-	if meta: return meta
+	if meta:
+		if not meta.get('blank_entry'): return meta
+		if omdb_imdb_id and omdb_imdb_id not in ('', 'tt0000000', None):
+			omdb_meta = omdb_tvshow_metadata(omdb_imdb_id)
+			if omdb_meta:
+				if id_type == 'tmdb_id': omdb_meta['tmdb_id'] = media_id
+				if omdb_tvdb_id: omdb_meta['tvdb_id'] = str(omdb_tvdb_id)
+				artwork = fanart_tvshow_artwork(omdb_meta.get('tvdb_id', 'None'))
+				if artwork.get('fanart'): omdb_meta['fanart'] = artwork['fanart']
+				if artwork.get('clearlogo'): omdb_meta['clearlogo'] = artwork['clearlogo']
+				if artwork.get('landscape'): omdb_meta['landscape'] = artwork['landscape']
+				if artwork.get('poster') and not omdb_meta.get('poster'): omdb_meta['poster'] = artwork['poster']
+				metacache_set('tvshow', id_type, omdb_meta, EXPIRES_1_DAYS, current_time)
+				return omdb_meta
+		return meta
 	try:
 		if id_type == 'tmdb_id': data = tvshow_details(media_id, api_key)
 		else:
@@ -172,6 +203,10 @@ def tvshow_meta(id_type, media_id, api_key, mpaa_region, current_date, current_t
 			if not external_result: data = None
 			else: data = tvshow_details(external_result['id'], api_key)
 		if not data or data.get('status_code', '') in invalid_error_codes:
+			if not omdb_imdb_id or omdb_imdb_id in ('', 'tt0000000'):
+				if id_type == 'tmdb_id':
+					from apis.trakt_api import trakt_lookup_tvshow_ids
+					omdb_imdb_id, omdb_tvdb_id = trakt_lookup_tvshow_ids(media_id)
 			if omdb_imdb_id and omdb_imdb_id not in ('', 'tt0000000'):
 				omdb_meta = omdb_tvshow_metadata(omdb_imdb_id)
 				if omdb_meta:

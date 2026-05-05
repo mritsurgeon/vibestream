@@ -885,6 +885,23 @@ def trakt_show_all_episodes(show_id):
 		return call_trakt('shows/%s/seasons' % show_id, params={'extended': 'episodes'}, with_auth=False, pagination=False)
 	except Exception: return None
 
+def trakt_lookup_movie_imdb_id(tmdb_id):
+	try:
+		results = call_trakt('search/tmdb/%s' % tmdb_id, params={'type': 'movie'}, with_auth=False, pagination=False)
+		if results and isinstance(results, list):
+			return results[0]['movie']['ids'].get('imdb', None)
+	except Exception: pass
+	return None
+
+def trakt_lookup_tvshow_ids(tmdb_id):
+	try:
+		results = call_trakt('search/tmdb/%s' % tmdb_id, params={'type': 'show'}, with_auth=False, pagination=False)
+		if results and isinstance(results, list):
+			ids = results[0]['show']['ids']
+			return ids.get('imdb', None), ids.get('tvdb', None)
+	except Exception: pass
+	return None, None
+
 def trakt_sync_activities(force_update=False):
 	# def clear_watched_tvshow_cache():
 	# 	from modules.watched_status import clear_cache_watched_tvshow_status
