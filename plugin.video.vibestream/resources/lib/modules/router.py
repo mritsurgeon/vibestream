@@ -59,15 +59,14 @@ def routing(sys):
 		if mode == 'build_episode_list':
 			from indexers.episodes import build_episode_list
 			return build_episode_list(params)
-		if mode == 'build_in_progress_episode':
+		if mode in ('build_in_progress_episode', 'build_recently_watched_episode', 'build_next_episode'):
 			from indexers.episodes import build_single_episode
-			return build_single_episode('episode.progress', params)
-		if mode == 'build_recently_watched_episode':
-			from indexers.episodes import build_single_episode
-			return build_single_episode('episode.recently_watched', params)
-		if mode == 'build_next_episode':
-			from indexers.episodes import build_single_episode
-			return build_single_episode('episode.next', params)
+			mode_mapping = {
+				'build_in_progress_episode': 'episode.progress',
+				'build_recently_watched_episode': 'episode.recently_watched',
+				'build_next_episode': 'episode.next'
+			}
+			return build_single_episode(mode_mapping[mode], params)
 		if mode == 'build_my_calendar':
 			# Recently Aired uses list view, regular calendar uses new calendar window
 			if _get('recently_aired'):
