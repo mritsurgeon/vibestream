@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from xml.dom.minidom import parseString as mdParse
 from caches.meta_cache import meta_cache
-from modules.metadata import movie_expiry, tvshow_expiry
+# from modules.metadata import movie_expiry, tvshow_expiry
 from modules.utils import get_datetime, get_current_timestamp
 from modules.kodi_utils import make_session
 # from modules.kodi_utils import logger
@@ -40,6 +40,7 @@ class OMDbAPI:
 				'imdb': {'rating': imdb_rating, 'icon': imdb_icon},
 				'tmdb': {'rating': '', 'icon': tmdb_icon},
 				}
+		from modules.metadata import movie_expiry, tvshow_expiry
 		media_type = meta.get('mediatype')
 		expiry_function = movie_expiry if media_type == 'movie' else tvshow_expiry
 		meta['extra_ratings'] = data

@@ -1,4 +1,4 @@
-<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta25">
+<addon id="plugin.video.vibestream" name="VibeStream Beta" provider-name="mritsurgeon" version="1.1.0-beta26">
     <requires>
         <import addon="xbmc.python" version="3.0.0"/>
         <import addon="script.module.requests" version="2.19.1"/>
