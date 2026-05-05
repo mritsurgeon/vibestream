@@ -65,8 +65,11 @@ class Movies:
 				key_id = self.params_get('key_id') or self.params_get('query')
 				if not key_id: return
 				data = function(key_id, page_no)
-				self.list = [i['id'] for i in data['results']]
-				if data['total_pages'] > page_no: self.new_page = {'new_page': string(data['page'] + 1), 'key_id': key_id}
+				if data is None or not isinstance(data, dict) or 'results' not in data:
+					self.list = []
+				else:
+					self.list = [i['id'] for i in data['results']]
+					if data['total_pages'] > page_no: self.new_page = {'new_page': string(data['page'] + 1), 'key_id': key_id}
 			elif self.action in personal:
 				data = function('movie', page_no)
 				if self.action == 'recent_watched_movies': total_pages = 1

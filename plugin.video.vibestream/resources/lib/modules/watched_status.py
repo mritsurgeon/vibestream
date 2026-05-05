@@ -63,6 +63,7 @@ def active_tvshows_information(status_type, in_progress_only=False):
 	def _process(item):
 		media_id = item['media_id']
 		meta = metadata.tvshow_meta('tmdb_id', media_id, api_key, mpaa_region_value, get_datetime())
+		if not meta: return
 		watched_status = get_watched_status_tvshow(watched_info[media_id], meta.get('total_aired_eps'))[0]
 		airing_status = meta.get('status', '')
 		if status_type == 'watched':

@@ -880,6 +880,11 @@ def get_trakt(params):
 						with_auth=params.get('with_auth', False), method=params.get('method'), pagination=params.get('pagination', True), page_no=params.get('page_no'))
 	return result[0] if params.get('pagination', True) else result
 
+def trakt_show_all_episodes(show_id):
+	try:
+		return call_trakt('shows/%s/seasons' % show_id, params={'extended': 'episodes'}, with_auth=False, pagination=False)
+	except Exception: return None
+
 def trakt_sync_activities(force_update=False):
 	# def clear_watched_tvshow_cache():
 	# 	from modules.watched_status import clear_cache_watched_tvshow_status

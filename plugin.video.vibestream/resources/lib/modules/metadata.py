@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from apis import tmdb_api
+from apis.omdb_api import omdb_movie_metadata, omdb_tvshow_metadata
+from apis.fanart_api import fanart_movie_artwork, fanart_tvshow_artwork
 from caches.meta_cache import meta_cache
 from modules.utils import jsondate_to_datetime, subtract_dates
 from modules.kodi_utils import logger
@@ -12,13 +14,16 @@ writer_credits = ('Author', 'Writer', 'Screenplay', 'Characters')
 alt_titles_check, finished_show_check, empty_value_check = ('US', 'GB', 'UK', ''), ('Ended', 'Canceled'), ('', 'None', None)
 tmdb_image_url, youtube_url, date_format = 'https://image.tmdb.org/t/p/%s%s', 'plugin://plugin.video.youtube/play/?video_id=%s', '%Y-%m-%d'
 EXPIRES_1_DAYS, EXPIRES_4_DAYS, EXPIRES_7_DAYS, EXPIRES_14_DAYS, EXPIRES_30_DAYS, EXPIRES_182_DAYS = 24, 96, 168, 336, 720, 4368
-invalid_error_codes = (6, 34, 37)
+invalid_error_codes = (6, 7, 34, 37)
 
 def movie_meta(id_type, media_id, api_key, mpaa_region, current_date, current_time=None):
+	omdb_imdb_id = None
 	if id_type == 'trakt_dict':
+		omdb_imdb_id = media_id.get('imdb', None)
 		if media_id.get('tmdb', None): id_type, media_id = 'tmdb_id', media_id['tmdb']
 		elif media_id.get('imdb', None): id_type, media_id = 'imdb_id', media_id['imdb']
 		else: id_type, media_id = None, None
+	if id_type == 'imdb_id': omdb_imdb_id = media_id
 	if media_id == None: return None
 	meta = metacache_get('movie', id_type, media_id, current_time)
 	if meta: return meta
@@ -30,6 +35,17 @@ def movie_meta(id_type, media_id, api_key, mpaa_region, current_date, current_ti
 			else: data = movie_details(external_result['id'], api_key)
 		if not data: return None
 		elif data.get('status_code') in invalid_error_codes:
+			if omdb_imdb_id and omdb_imdb_id not in ('', 'tt0000000'):
+				omdb_meta = omdb_movie_metadata(omdb_imdb_id)
+				if omdb_meta:
+					if id_type == 'tmdb_id': omdb_meta['tmdb_id'] = media_id
+					artwork = fanart_movie_artwork(str(media_id) if id_type == 'tmdb_id' else '')
+					if artwork.get('fanart'): omdb_meta['fanart'] = artwork['fanart']
+					if artwork.get('clearlogo'): omdb_meta['clearlogo'] = artwork['clearlogo']
+					if artwork.get('landscape'): omdb_meta['landscape'] = artwork['landscape']
+					if artwork.get('poster') and not omdb_meta.get('poster'): omdb_meta['poster'] = artwork['poster']
+					metacache_set('movie', id_type, omdb_meta, EXPIRES_1_DAYS, current_time)
+					return omdb_meta
 			if id_type == 'tmdb_id': meta = {'tmdb_id': media_id, 'imdb_id': 'tt0000000', 'tvdb_id': '0000000', 'blank_entry': True}
 			else: meta = {'tmdb_id': '0000000', 'imdb_id': media_id, 'tvdb_id': '0000000', 'blank_entry': True}
 			metacache_set('movie', id_type, meta, EXPIRES_1_DAYS, current_time)
@@ -137,11 +153,15 @@ def movie_meta(id_type, media_id, api_key, mpaa_region, current_date, current_ti
 	return meta
 
 def tvshow_meta(id_type, media_id, api_key, mpaa_region, current_date, current_time=None):
+	omdb_imdb_id, omdb_tvdb_id = None, None
 	if id_type == 'trakt_dict':
+		omdb_imdb_id = media_id.get('imdb', None)
+		omdb_tvdb_id = media_id.get('tvdb', None)
 		if media_id.get('tmdb', None): id_type, media_id = 'tmdb_id', media_id['tmdb']
 		elif media_id.get('imdb', None): id_type, media_id = 'imdb_id', media_id['imdb']
 		elif media_id.get('tvdb', None): id_type, media_id = 'tvdb_id', media_id['tvdb']
 		else: id_type, media_id = None, None
+	if id_type == 'imdb_id': omdb_imdb_id = media_id
 	if media_id == None: return None
 	meta = metacache_get('tvshow', id_type, media_id, current_time)
 	if meta: return meta
@@ -152,6 +172,18 @@ def tvshow_meta(id_type, media_id, api_key, mpaa_region, current_date, current_t
 			if not external_result: data = None
 			else: data = tvshow_details(external_result['id'], api_key)
 		if not data or data.get('status_code', '') in invalid_error_codes:
+			if omdb_imdb_id and omdb_imdb_id not in ('', 'tt0000000'):
+				omdb_meta = omdb_tvshow_metadata(omdb_imdb_id)
+				if omdb_meta:
+					if id_type == 'tmdb_id': omdb_meta['tmdb_id'] = media_id
+					if omdb_tvdb_id: omdb_meta['tvdb_id'] = str(omdb_tvdb_id)
+					artwork = fanart_tvshow_artwork(omdb_meta.get('tvdb_id', 'None'))
+					if artwork.get('fanart'): omdb_meta['fanart'] = artwork['fanart']
+					if artwork.get('clearlogo'): omdb_meta['clearlogo'] = artwork['clearlogo']
+					if artwork.get('landscape'): omdb_meta['landscape'] = artwork['landscape']
+					if artwork.get('poster') and not omdb_meta.get('poster'): omdb_meta['poster'] = artwork['poster']
+					metacache_set('tvshow', id_type, omdb_meta, EXPIRES_1_DAYS, current_time)
+					return omdb_meta
 			if id_type == 'tmdb_id': meta = {'tmdb_id': media_id, 'imdb_id': 'tt0000000', 'tvdb_id': '0000000', 'blank_entry': True}
 			elif id_type == 'imdb_id': meta = {'tmdb_id': '0000000', 'imdb_id': media_id, 'tvdb_id': '0000000', 'blank_entry': True}
 			else: meta = {'tmdb_id': '0000000', 'imdb_id': 'tt0000000', 'tvdb_id': media_id, 'blank_entry': True}
@@ -291,6 +323,27 @@ def movieset_meta(media_id, api_key, current_time=None):
 	return meta
 
 def episodes_meta(season, meta):
+	def _process_trakt(s_eps, s_num, total_seasons, tvshow_status):
+		if s_num == 1:
+			s_type = 'premiere_finale' if (total_seasons == 1 and tvshow_status in finished_show_check) else 'premiere'
+		else:
+			s_type = 'finale' if (total_seasons == s_num and tvshow_status in finished_show_check) else ''
+		for i, ep in enumerate(s_eps):
+			ep_num = ep.get('number', 0)
+			ep_type = ''
+			try:
+				if ep_num == 1:
+					ep_type = 'series_premiere' if 'premiere' in s_type else 'season_premiere'
+				elif i == len(s_eps) - 1:
+					ep_type = 'series_finale' if 'finale' in s_type else 'season_finale'
+			except Exception: pass
+			first_aired = ep.get('first_aired', '') or ''
+			try: dur = int(ep.get('runtime') or 30) * 60
+			except Exception: dur = 1800
+			yield {'writer': [], 'director': [], 'mediatype': 'episode', 'episode_type': ep_type,
+				'episode_id': ep.get('ids', {}).get('trakt', 0), 'title': ep.get('title', ''),
+				'plot': ep.get('overview', '') or '', 'duration': dur, 'premiered': first_aired[:10],
+				'season': s_num, 'episode': ep_num, 'rating': '', 'votes': '', 'thumb': None, 'guest_stars': []}
 	def _process():
 		midseason_premiere = False
 		for ep_data in details:
@@ -343,7 +396,22 @@ def episodes_meta(season, meta):
 			details = season_episodes_details(media_id, season)['episodes']
 			total_episodes = len(details)
 			data = list(_process())
-		except Exception: data, expiration = [], EXPIRES_4_DAYS
+		except Exception:
+			imdb_id = meta.get('imdb_id', '')
+			if imdb_id and imdb_id not in ('tt0000000', '', 'None', None):
+				from apis.trakt_api import trakt_show_all_episodes
+				all_seasons_raw = trakt_show_all_episodes(imdb_id)
+				if all_seasons_raw:
+					for s in all_seasons_raw:
+						s_num = s.get('number', 0)
+						if s_num == 0: continue
+						s_key = '%s_%s' % (media_id, s_num)
+						if metacache_get_season(s_key) is None:
+							s_data = list(_process_trakt(s.get('episodes', []), s_num, total_seasons, tvshow_status))
+							metacache_set_season(s_key, s_data, EXPIRES_4_DAYS)
+					data = metacache_get_season(prop_string) or []
+				else: data, expiration = [], EXPIRES_4_DAYS
+			else: data, expiration = [], EXPIRES_4_DAYS
 	except Exception: data, expiration = [], EXPIRES_4_DAYS
 	metacache_set_season(prop_string, data, expiration)
 	return data
@@ -356,6 +424,8 @@ def all_episodes_meta(meta, include_specials=False):
 	try:
 		data = []
 		seasons = [i['season_number'] for i in meta['season_data']]
+		if not seasons and meta.get('total_seasons', 0) > 0:
+			seasons = list(range(1, int(meta['total_seasons']) + 1))
 		if not include_specials: seasons = [i for i in seasons if not i == 0]
 		threads = [Thread(target=_get_tmdb_episodes, args=(i,)) for i in seasons]
 		[i.start() for i in threads]
