@@ -127,3 +127,13 @@ The repo serves `addons.xml` from **raw.githubusercontent.com**. If Kodi still s
 
 ---
 *VibeStream is built for speed and stability. Enjoy the ultimate streaming experience.*
+
+## Codebase Improvements & Roadmap
+
+Based on recent code reviews, the following architectural and code-level improvements are planned to improve performance, maintainability, and readability:
+
+1. **Refactoring the Routing Logic (`router.py`)**: Convert large, sequential blocks of `if` statements to dictionary-based routing to speed up script execution and clean up the file structure.
+2. **Eliminating Silent Failures**: Replace generic `try/except: pass` blocks (e.g., in `calendar_view.py`) with explicit exception handling or logging to track issues (like failing to parse a date).
+3. **Separating UI from Logic**: Move hardcoded Kodi color tags into `calendar_view.xml` using item properties, leaving Python logic cleaner.
+4. **DRYing out `navigator.py`**: Use helper functions for creating context menu (`cm_items`) configurations to eliminate boilerplate code.
+5. **Handling Timeouts / Logging**: Buffer logs in memory or fully rely on Kodi's highly-optimized internal `xbmc.log` instead of synchronously writing to disk, preventing timeouts.
